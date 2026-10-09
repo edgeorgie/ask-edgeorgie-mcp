@@ -1,16 +1,14 @@
 /**
  * Retrieval over the local corpus (resume.txt, RELIABILITY-REPORT.md,
  * BUILD-LOG.md — public evidence only).
- * Same scoring contract as repoask-mcp's src/retrieval.ts: embed the question
- * with the corpus's own fitted TF-IDF model, topK + diversify-by-source-file
- * so one document can't crowd out the rest, return citations with exact
- * source file + line range.
+ * Same scoring contract as repoask-mcp's src/retrieval.ts: both import
+ * embedTfidf/topK/diversify from @edgeorgie/retrieval-core and apply them to
+ * their own index, so one document can't crowd out the rest, return
+ * citations with exact source file + line range.
  */
 
 import type { CorpusIndex } from "./corpus.js";
-import { embedTfidf } from "./embedder.js";
-import { topK, diversify, type Scored } from "./vector.js";
-import type { Chunk } from "./chunk.js";
+import { embedTfidf, topK, diversify, type Scored, type Chunk } from "@edgeorgie/retrieval-core";
 
 export interface Citation {
   rank: number;

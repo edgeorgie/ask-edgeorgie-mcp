@@ -62,10 +62,15 @@ This reuses the exact working deployment shape already proven for
   call the exact same `src/engine.ts` functions the MCP tools call, so the
   human-facing web UI (`public/`) and the agent-facing MCP server are
   provably the same engine, not a parallel copy.
-- Retrieval logic (`src/chunk.ts`, `src/embedder.ts`, `src/vector.ts`) is a
-  direct copy of repoask-mcp's TF-IDF retrieval stack — same chunking window,
-  same stopword list, same cosine-similarity scoring — just pointed at a
-  local text corpus instead of a fetched GitHub repo.
+- Retrieval logic — chunking, TF-IDF embedding, cosine scoring, prompt/citation
+  building — is imported from
+  [`@edgeorgie/retrieval-core`](https://github.com/edgeorgie/retrieval-core),
+  a package extracted from this repo and repoask-mcp after a direct diff
+  showed their `chunk.ts`/`vector.ts`/`embedder.ts`/`rag.ts` were
+  byte-identical. Same chunking window, same stopword list, same
+  cosine-similarity scoring, now maintained once instead of copy-pasted
+  twice — pointed here at a local text corpus instead of a fetched GitHub
+  repo (see `src/corpus.ts`).
 
 ### Deployment gotchas (pre-applied from repoask-mcp's deployment debugging)
 
