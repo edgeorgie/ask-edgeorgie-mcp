@@ -10,7 +10,26 @@
  */
 
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import type { Request as ExpressRequest, Response as ExpressResponse } from "express";
 import { handleMcpRequest } from "../src/http-server.js";
+
+/**
+ * Vercel's (req, res) and Express's (req, res) are both just thin wrappers
+ * around Node's IncomingMessage/ServerResponse with slightly different added
+ * methods (VercelRequest adds `query`/`cookies`/`body` parsing conventions
+ * that happen to be a structural superset of what express.Request declares).
+ * `handleMcpRequest` (src/http-server.ts) only reads method/headers/body and
+ * calls res.status()/json()/writeHead()/end() — all present on both types.
+ * We cast through the real target type (ExpressRequest/ExpressResponse)
+ * instead of through `any`, so a genuine shape mismatch (e.g. a renamed
+ * method on either side) still fails typecheck instead of being silenced.
+ */
+function asExpressRequest(req: VercelRequest): ExpressRequest {
+  return req as unknown as ExpressRequest;
+}
+function asExpressResponse(res: VercelResponse): ExpressResponse {
+  return res as unknown as ExpressResponse;
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   if (req.method === "GET") {
@@ -33,7 +52,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return;
   }
   try {
-    await handleMcpRequest(req as unknown as any, res as unknown as any);
+    await handleMcpRequest(asExpressRequest(req), asExpressResponse(res));
   } catch (err) {
     console.error("MCP request error:", err);
     if (!res.headersSent) {
