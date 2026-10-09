@@ -2,34 +2,22 @@
 
 > Don't read my resume. **Ask it a question.**
 
-A live, public [MCP](https://modelcontextprotocol.io) server for **Edwin Jorge**
+A public [MCP](https://modelcontextprotocol.io) server for **Edwin Jorge**
 ([edgeorgie](https://github.com/edgeorgie)). Point Claude Desktop, Cursor, or any
-MCP client at this URL and ask real questions about my work experience, shipped
-projects, and skills — every answer is **grounded and cited** against my actual
-resume and project history, not generated/hallucinated.
+MCP client at this URL to ask about my work experience, shipped projects, and
+skills — answers are **grounded and cited** against my resume and project
+history.
 
 **Live URL:** `https://ask-edgeorgie-mcp.vercel.app` (health check) /
 `https://ask-edgeorgie-mcp.vercel.app/mcp` (MCP Streamable HTTP endpoint)
 
 ## Why this exists
 
-PostHog's own Product Engineer job posting asks:
-
-> "Have you built anything agents use? ... an API an agent can drive, an MCP
-> server, evals, docs written for a machine. Side projects count."
-
-While researching PostHog's current engineering team, I found that
-[Rafa Audibert](https://rafaaudibert.dev/), a current PostHog Product Engineer,
-runs an MCP server **directly on his own personal site**
-(`rafaaudibert.dev/mcp/`) — so a reviewer can point Claude/Cursor at it and ask
-*about him*, not about some unrelated codebase.
-
-That's the exact pattern this repo applies. My other MCP project,
-[repoask-mcp](https://github.com/edgeorgie/repoask-mcp), lets an agent ask
-questions about *arbitrary third-party GitHub repos* — useful, but it doesn't
-let an agent learn anything about me. This repo is the direct, correct
-application of Rafa's pattern: an agent that queries **this** server gets real,
-cited facts about **me**.
+repoask-mcp answers questions about someone else's GitHub repo, grounded and
+cited against the actual source instead of generated from scratch. I wanted
+the same thing pointed at myself: an agent that can answer real questions
+about my work using my resume and project history as the retrieval corpus,
+rather than whatever a model happens to already know (or guess) about me.
 
 ## Tools
 
@@ -39,10 +27,10 @@ cited facts about **me**.
 | `get_projects` | Returns the 3 real shipped artifacts ([triage-desk](https://github.com/edgeorgie/triage-desk), [eval-lab](https://github.com/edgeorgie/eval-lab), [repoask-mcp](https://github.com/edgeorgie/repoask-mcp)) with their real measured metrics and PR/commit/run URLs. |
 | `ask_about_edgeorgie` | Retrieval-based Q&A. TF-IDF search over a corpus built from `resume.txt`, `RELIABILITY-REPORT.md`, and `BUILD-LOG.md` (public evidence only). Every answer cites the exact source file + line range it came from. If no LLM key is set, the response is a deterministic citation dump (no generation at all); if `ANTHROPIC_API_KEY`/`OPENAI_API_KEY` is set, a model synthesizes prose but is instructed to ground every sentence in the retrieved excerpts and cite them inline — it never answers beyond what's indexed. |
 
-## The corpus — real content only
+## The corpus
 
-The entire retrieval corpus is a direct copy of files that already existed
-before this repo, with zero new biographical or project claims invented:
+The retrieval corpus is a direct copy of files that already existed
+before this repo, with no new biographical or project claims invented:
 
 - `resume.txt` — the actual resume.
 - `RELIABILITY-REPORT.md` — measured pass-rate/latency/accuracy numbers for
@@ -54,9 +42,8 @@ Internal job-search process documents (sprint logs, application drafts,
 employer-specific case-study notes) are intentionally excluded from this
 corpus — this server only serves content meant to be public.
 
-Nothing is embellished and nothing is answered beyond what's indexed — if a
-question has no good match in the corpus, the server says so rather than
-inventing an answer (see the test suite's "unrelated question" case).
+Questions outside the corpus get a "no good match" response rather than an
+invented answer (see the test suite's "unrelated question" case).
 
 ## Architecture — same proven pattern as repoask-mcp
 
@@ -132,7 +119,7 @@ const answer = await client.callTool({
 });
 ```
 
-## Real verification — not just "it compiles"
+## Verification
 
 - `npm test` → 5/5 passing: spins up the **compiled** server as a real
   subprocess and drives it with a real `@modelcontextprotocol/sdk` `Client`
@@ -147,7 +134,7 @@ const answer = await client.callTool({
 - See the "Remote deployment status" section below for the real public-URL
   verification.
 
-### Real transcript excerpt (deterministic mode — no LLM key configured, truthfully labeled)
+### Transcript excerpt (deterministic mode, no LLM key configured)
 
 > **Q: What AI agent infrastructure has this person built in production?**
 > Top citation: `resume.txt` — the Mercado Libre work-history bullet on
@@ -188,7 +175,7 @@ repo, same account already used for the other 8 live demos/repoask-mcp).
     with their real metrics/URLs.
   - `ask_about_edgeorgie("What AI agent infrastructure has this person built
     in production?")` → `answerMode: deterministic` (no LLM key set in this
-    deployment, truthfully labeled), top citation `resume.txt` — correctly
+    deployment), top citation `resume.txt` — correctly
     surfaces the Mercado Libre agent-architecture bullet.
   - `ask_about_edgeorgie("What's the most technically interesting thing they
     shipped?")` → top citation `BUILD-LOG.md` lines 1-26 (score 0.09) —
@@ -208,13 +195,12 @@ repo, same account already used for the other 8 live demos/repoask-mcp).
   `vercel.json` (not `rewrites`), `.vercelignore` excluding `dist/`, and the
   `ssoProtection: null` PATCH — see "Deployment gotchas" above.
 
-## What's intentionally NOT here
+## Scope
 
-- No new biographical claim beyond what's in `resume.txt`.
-- No new project claim beyond what's already verified in each repo's public
-  commit/PR history and `RELIABILITY-REPORT.md`.
-- No invented metric, URL, or quote. Every number in `get_projects`'s output
-  cites exactly where it was verified.
+- No biographical claim beyond what's in `resume.txt`.
+- No project claim beyond what's already in each repo's public commit/PR
+  history and `RELIABILITY-REPORT.md`; every number in `get_projects`'s
+  output cites exactly where it came from.
 - This repo does not modify `edgeorgie-portfolio` or `repoask-mcp` — wiring
   this server in as the portfolio's primary "ask an agent about me" CTA is a
   separate, follow-up workstream.

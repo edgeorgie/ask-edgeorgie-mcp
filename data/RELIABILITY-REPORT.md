@@ -3,11 +3,10 @@
 Date: 2026-10-09
 Author: edgeorgie (self-reported, measured locally — see "Reproduce" commands below)
 
-This report exists because pass/fail-only output doesn't satisfy PostHog's own bar for
-agent-reliability evidence ("measurements of task completion, accuracy, latency, and
-cost"). Everything below is a real, locally-executed run; no number here is invented,
-estimated, or rounded up from a smaller sample. Where a number is unglamorous (duplicate
-detection: 50%), it is reported as measured, not massaged.
+This report exists because pass/fail-only output doesn't capture the full picture of
+agent reliability — measurements of task completion, accuracy, latency, and cost tell
+you more. Every number below is a locally-executed run. Where a number is unglamorous
+(duplicate detection: 50%), it is reported as measured.
 
 ---
 
@@ -39,14 +38,14 @@ Per-variant breakdown (identical across all 3 runs):
 | Friendly concise | 12/12 | 20ms |
 | Formal | 12/12 | 20ms |
 
-**Cost field, honestly:** the CLI does not currently compute or print a cost estimate.
-There IS a cost-estimation module in the repo — `lib/cost.ts` (`estimateRun`/`actualCost`,
+**Cost field:** the CLI does not currently compute or print a cost estimate.
+There is a cost-estimation module in the repo — `lib/cost.ts` (`estimateRun`/`actualCost`,
 priced per-model USD/million-token tables for Claude Haiku 4.5 and GPT-4o mini) — but it
 is wired into the Next.js web app only, not into the CLI (`cli/bin/eval-lab.mjs`) or the
 GitHub Action. Because this benchmark ran the `demo` model (no tokens, no API call), the
-real cost is exactly $0 regardless; for a paid-model run, `lib/cost.ts`'s pricing table
+cost is exactly $0 regardless; for a paid-model run, `lib/cost.ts`'s pricing table
 would apply if someone ported it into the CLI — that port has not been done, and this
-report does not claim cost numbers that the CLI itself doesn't produce.
+report doesn't claim a cost number the CLI itself doesn't produce.
 
 **Why 100% across all 3 runs isn't surprising, and isn't cherry-picked:** the `demo`
 model is a deterministic hand-written stand-in (`cli/src/lib/demo.mjs`) with fixed
@@ -71,7 +70,7 @@ node bin/eval-lab.mjs run --config examples/benchmark.config.json --out /tmp/run
   benchmark of the eval *engine*, not of any production LLM's reliability.
 - 12 cases / 2 variants is still small; it exercises the breadth of assertion types
   (contains, not_contains, max_words, judge) but is not a statistically powered sample.
-- No cost field exists in the CLI's own output today (see above) — not fabricated here.
+- No cost field exists in the CLI's own output today (see above).
 
 ---
 
@@ -171,7 +170,7 @@ node --no-warnings --experimental-strip-types tests-local/benchmark-triage.mjs
 
 ---
 
-## Honest summary
+## Summary
 
 | Artifact | What's measured | Real number | Caveat |
 |---|---|---|---|
