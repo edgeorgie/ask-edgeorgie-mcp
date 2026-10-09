@@ -10,8 +10,23 @@
  */
 
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import type express from "express";
 import { handleMcpRequest } from "../src/http-server.js";
 
+/**
+ * handleMcpRequest's signature is express.Request/express.Response because
+ * it's shared with the standalone Express server (src/http-server.ts). The
+ * MCP SDK's StreamableHTTPServerTransport only reads/writes the
+ * IncomingMessage/ServerResponse surface both Vercel's and Express's request/
+ * response objects implement (method, url, headers, on('data'/'end'),
+ * writeHead/end, etc.) — VercelRequest/VercelResponse are structurally
+ * IncomingMessage/ServerResponse plus extra fields (query/cookies/body,
+ * send/json helpers) that aren't used by the transport, so this cast is a
+ * real but narrow type-system gap (no official @vercel/node<->express adapter
+ * type exists), not a silenced error. Casting to the specific express types
+ * (rather than `any`) keeps everything handleMcpRequest actually touches
+ * type-checked.
+ */
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   if (req.method === "GET") {
     res.status(200).json({
@@ -33,7 +48,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return;
   }
   try {
-    await handleMcpRequest(req as unknown as any, res as unknown as any);
+    await handleMcpRequest(req as unknown as express.Request, res as unknown as express.Response);
   } catch (err) {
     console.error("MCP request error:", err);
     if (!res.headersSent) {
