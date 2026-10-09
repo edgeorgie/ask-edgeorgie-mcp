@@ -1,0 +1,86 @@
+Resume - Edwin Jorge.docx
+Edwin Jorge
+
+Barranquilla, Colombia | LinkedIn | Portfolio | ed.jorge1122@gmail.com | +57 300 281 3676
+
+Software Engineer focused on AI-enabled full-stack development with 5+ years of experience building scalable web platforms using TypeScript, React, Next.js, and Node.js. Dual degrees in Electronic Engineering and Software Development. Contributed to applications serving 4.3M+ users across LATAM, delivering high-performance and intelligent digital experiences.
+
+WORK EXPERIENCE
+
+Mercado Libre            Remote
+
+Software Engineer          November 2022 – present
+
+Designed AI workflows and agent-based architectures, defining agent rules, skills, and orchestration across services.
+Led cross-platform initiatives (web, mobile, TV/Samsung/LG) using Spec-Driven Development and scalable frontend architecture.
+Built stateful and stateless React components with TypeScript, improving performance and maintainability.
+Implemented observability and monitoring using Kibana, NewRelic, Datadog, and Grafana aligned with SRE practices (SLA/SLI/SLO).
+Applied Clean Architecture and Domain-Driven Design (DDD) while refactoring legacy systems and improving code quality.
+Developed robust APIs with caching, idempotency, and low-latency performance.
+Implemented comprehensive testing (Unit, Integration, E2E) and improved reliability across services.
+Contributed to OTT video streaming platforms, including Chromecast Web Receiver development.
+Collaborated with engineering, product, and design teams to deliver scalable features and technical documentation.
+
+Vansa            Remote
+
+Front-end Developer          February 2022 – July 2022
+
+Built React-based frontend applications using JavaScript, SASS, and Framer Motion.
+Developed responsive dashboards using HTML5 (JSX), CSS Grid, and modern UI patterns.
+Optimized performance, accessibility (a11y), and cross-browser compatibility.
+Applied Atomic Design, SOLID principles, and Clean Architecture to deliver reusable and maintainable components.
+
+Freelance          Remote
+
+Front-end Developer & UI/UX Designer         April 2020 – February 2022
+
+Designed frontend architecture and design systems for web applications.
+Translated Figma UI/UX designs into scalable React interfaces with reusable components and hooks.
+Implemented responsive UI using CSS/SASS (Grid, Flexbox, media queries) and animations with Framer Motion.
+Improved Time to Interactive (TTI) using Next.js Server-Side Rendering (SSR) and SEO optimization.
+
+LEADERSHIP EXPERIENCE
+
+University of the Coast (CUC)             Barranquilla, Colombia
+
+Student program representative of electronic engineering         February 2022 – November 2022
+
+University of Antioquia (UdeA)            Medellín, Colombia (online/remote)
+
+Head of development and design         July 2021 – December 2021
+
+Led two development teams using the MERN stack.
+Planned product roadmaps using Figma and Trello.
+Coordinated sprint planning and task assignment using SCRUM methodology.
+
+IEEE student branch            Barranquilla, Colombia
+
+Volunteer - Lead and board member         March 2019 – May 2019
+
+Coordinated and was a speaker at 2 online events: Python Workshop (+50 attendants) & Application Architecture: IoT and Electronics (+100 attendants).
+
+SKILLS
+
+AI Engineering & Agentic Systems
+
+Prompt Engineering • LLM Integration (OpenAI, LLaMA, Local Models) • AI Agents • Agentic Workflows • Retrieval-Augmented Generation (RAG) • Embeddings • Context Engineering • AI-Assisted Development Workflows • AI Coding Tools (Claude Code, LLM-powered IDEs, CLI tooling)
+
+Frontend Engineering
+
+TypeScript • JavaScript (ES6+) • React • Next.js • Component Architecture • Design Systems • Accessibility (a11y) • Responsive Design • Performance Optimization
+
+Backend & APIs
+
+Node.js • Express.js • Python • REST APIs • API Reliability (Caching, Idempotency, Low-Latency Design)
+
+Databases & Data Layer
+
+MongoDB • MySQL • SQLite • AstraDB • SQLAlchemy • Vector Databases • Data Modeling
+
+Architecture & Engineering Practices
+
+Software Architecture • Clean Architecture • Domain-Driven Design (DDD) • Design Patterns • Scalability • Observability • Code Refactoring
+
+Testing & DevOps
+
+Jest • Cypress • Unit Testing • Integration Testing • End-to-End Testing • CI/CD • Git • GitHub • Agile Methodologies

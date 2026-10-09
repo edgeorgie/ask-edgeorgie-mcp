@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ask-edgeorgie-mcp — Ask an AI agent about Edwin Jorge</title>
+<meta name="description" content="A public MCP server + API that lets an AI agent (or a human) ask grounded, cited questions about Edwin Jorge's real experience and shipped projects." />
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main>
+    <header>
+      <h1>ask-edgeorgie-mcp</h1>
+      <p class="tagline">Don't read my resume. <strong>Ask it a question.</strong></p>
+      <p class="sub">
+        A live, public <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener">MCP</a> server
+        for Edwin Jorge (<a href="https://github.com/edgeorgie" target="_blank" rel="noopener">edgeorgie</a>).
+        Point Claude Desktop, Cursor, or any MCP client at this URL and ask about my real experience,
+        shipped projects, and skills — every answer is grounded and cited, never invented.
+        Inspired directly by PostHog Product Engineer
+        <a href="https://rafaaudibert.dev/mcp/" target="_blank" rel="noopener">Rafa Audibert's own personal-site MCP endpoint</a>.
+      </p>
+    </header>
+
+    <section class="panel">
+      <h2>Ask about me</h2>
+      <form id="ask-form">
+        <input id="question" type="text" placeholder="e.g. What AI agent infrastructure has this person built in production?" required />
+        <button type="submit">Ask</button>
+      </form>
+      <div id="result" class="result" hidden></div>
+    </section>
+
+    <section class="panel">
+      <h2>Connect an agent directly</h2>
+      <pre><code>{
+  "mcpServers": {
+    "ask-edgeorgie": {
+      "url": "https://ask-edgeorgie-mcp.vercel.app/mcp"
+    }
+  }
+}</code></pre>
+      <p class="small">Tools exposed: <code>get_experience</code>, <code>get_projects</code>, <code>ask_about_edgeorgie</code>.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Why this exists</h2>
+      <p class="small">
+        PostHog's own job posting asks: "Have you built anything agents use? ... an MCP server, evals,
+        docs written for a machine." Rafa Audibert, a current PostHog Product Engineer, answers that by
+        running an MCP server directly on his own site so a reviewer can query him, not just read about
+        him. This is the same pattern applied directly: an agent asking <em>this</em> server learns real,
+        cited facts about me — not about an arbitrary third-party repo.
+      </p>
+    </section>
+
+    <footer>
+      <a href="https://github.com/edgeorgie/ask-edgeorgie-mcp" target="_blank" rel="noopener">Source on GitHub</a>
+    </footer>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
