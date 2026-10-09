@@ -24,7 +24,7 @@ import { fileURLToPath } from "node:url";
 import { buildCorpusIndex } from "./corpus.js";
 import { retrieveFromCorpus, type Citation } from "./retrieval.js";
 import { synthesize, deterministicAnswer } from "./llm.js";
-import type { Chunk } from "./chunk.js";
+import type { Chunk } from "@edgeorgie/retrieval-core";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 

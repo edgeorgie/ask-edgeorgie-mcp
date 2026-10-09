@@ -13,16 +13,16 @@
  *
  * No other text is added to the corpus and no biographical/project claim is
  * invented here — this module only chunks and indexes what's already on disk.
- * Retrieval reuses the exact TF-IDF + chunk + topK/diversify logic from
- * repoask-mcp (src/chunk.ts, src/embedder.ts, src/vector.ts), swapping the
- * "fetch files from a GitHub repo" source for "read local corpus files".
+ * Chunking/TF-IDF/retrieval logic is imported from @edgeorgie/retrieval-core,
+ * the package extracted from this file's shared code with repoask-mcp's
+ * src/indexer.ts, swapping the "fetch files from a GitHub repo" source for
+ * "read local corpus files".
  */
 
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { chunkFile, embedText, type Chunk } from "./chunk.js";
-import { fitTfidf, embedBatchTfidf, type TfidfModel, type Vector } from "./embedder.js";
+import { chunkFile, embedText, fitTfidf, embedBatchTfidf, type Chunk, type TfidfModel, type Vector } from "@edgeorgie/retrieval-core";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
