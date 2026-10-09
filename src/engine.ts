@@ -5,11 +5,11 @@
  *
  * get_experience  -> returns resume.txt's work-history section verbatim.
  * get_projects    -> returns the 3 real shipped artifacts with their real
- *                    metrics/URLs, every field traceable to progress.log /
- *                    RELIABILITY-REPORT.md (sources cited inline).
+ *                    metrics/URLs, every field traceable to each repo's
+ *                    public commit/PR history and RELIABILITY-REPORT.md.
  * ask_about_edgeorgie -> TF-IDF retrieval over the full corpus (resume.txt +
- *                    progress-log.txt + case-study/build-log/reliability
- *                    docs), same scoring/citation contract as repoask-mcp.
+ *                    RELIABILITY-REPORT.md + BUILD-LOG.md, public evidence
+ *                    only), same scoring/citation contract as repoask-mcp.
  *                    Every claim in the deterministic answer is a direct
  *                    excerpt from an indexed source file + line range —
  *                    nothing is generated beyond what's indexed unless an
