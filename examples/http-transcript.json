@@ -1,0 +1,494 @@
+{
+  "serverUrl": "https://ask-edgeorgie-mcp.vercel.app/mcp",
+  "ranAt": "2026-10-09T23:03:22.824Z",
+  "list_tools": {
+    "tools": [
+      {
+        "name": "get_experience",
+        "title": "Get Edwin Jorge's (edgeorgie) real work experience",
+        "description": "Returns the candidate's actual work history exactly as written on his resume (resume.txt) — employer, title, dates, and bullets, verbatim, no embellishment. Covers Mercado Libre (Software Engineer, Nov 2022-present, AI workflows/agent-based architectures at 4.3M+ LATAM users), Vansa, and Freelance roles.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {},
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": {
+          "type": "object",
+          "properties": {
+            "source": {
+              "type": "string"
+            },
+            "summary": {
+              "type": "string"
+            },
+            "roles": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "employer": {
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "dates": {
+                    "type": "string"
+                  },
+                  "bullets": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "employer",
+                  "title",
+                  "dates",
+                  "bullets"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "source",
+            "summary",
+            "roles"
+          ],
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_projects",
+        "title": "Get Edwin Jorge's (edgeorgie) real shipped project evidence",
+        "description": "Returns the 3 real, publicly shipped artifacts (triage-desk, eval-lab, repoask-mcp) with their real measured metrics, PR/commit/run URLs, and live demo links — sourced from each repo's public commit history and RELIABILITY-REPORT.md. No metric here is estimated or invented; every claim cites exactly where it was verified.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {},
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": {
+          "type": "object",
+          "properties": {
+            "projects": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "repo": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "realMetrics": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "evidence": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "source": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "repo",
+                  "description",
+                  "realMetrics",
+                  "evidence",
+                  "source"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "projects"
+          ],
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "ask_about_edgeorgie",
+        "title": "Ask a grounded, cited question about Edwin Jorge (edgeorgie)",
+        "description": "Answers a natural-language question about the candidate's experience, projects, or skills using TF-IDF retrieval over a corpus built ONLY from his real resume.txt, RELIABILITY-REPORT.md, and BUILD-LOG.md (public evidence only). Returns citations with exact source file + line range. If ANTHROPIC_API_KEY or OPENAI_API_KEY is set, also returns a synthesized prose answer with inline [n] citations grounded strictly in the retrieved excerpts; otherwise 'answer' is a deterministic citation dump and 'answerMode' is 'deterministic'. Never answers beyond what's indexed — if nothing relevant is found, it says so rather than inventing an answer.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "question": {
+              "type": "string",
+              "minLength": 3,
+              "description": "Natural-language question about edgeorgie's experience/projects/skills."
+            },
+            "topK": {
+              "description": "Number of citations to return. Default 6.",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20
+            }
+          },
+          "required": [
+            "question"
+          ],
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": {
+          "type": "object",
+          "properties": {
+            "question": {
+              "type": "string"
+            },
+            "answer": {
+              "type": "string"
+            },
+            "answerMode": {
+              "type": "string",
+              "enum": [
+                "llm",
+                "deterministic"
+              ]
+            },
+            "model": {
+              "type": "string"
+            },
+            "citations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "rank": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "source": {
+                    "type": "string"
+                  },
+                  "startLine": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "endLine": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "score": {
+                    "type": "number"
+                  },
+                  "excerpt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "rank",
+                  "source",
+                  "startLine",
+                  "endLine",
+                  "score",
+                  "excerpt"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "question",
+            "answer",
+            "answerMode",
+            "citations"
+          ],
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      }
+    ]
+  },
+  "get_experience": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Software Engineer focused on AI-enabled full-stack development with 5+ years of experience building scalable web platforms using TypeScript, React, Next.js, and Node.js. Dual degrees in Electronic Engineering and Software Development. Contributed to applications serving 4.3M+ users across LATAM, delivering high-performance and intelligent digital experiences.\n\nMercado Libre — Software Engineer (November 2022 – present)\n  - Designed AI workflows and agent-based architectures, defining agent rules, skills, and orchestration across services.\n  - Led cross-platform initiatives (web, mobile, TV/Samsung/LG) using Spec-Driven Development and scalable frontend architecture.\n  - Built stateful and stateless React components with TypeScript, improving performance and maintainability.\n  - Implemented observability and monitoring using Kibana, NewRelic, Datadog, and Grafana aligned with SRE practices (SLA/SLI/SLO).\n  - Applied Clean Architecture and Domain-Driven Design (DDD) while refactoring legacy systems and improving code quality.\n  - Developed robust APIs with caching, idempotency, and low-latency performance.\n  - Implemented comprehensive testing (Unit, Integration, E2E) and improved reliability across services.\n  - Contributed to OTT video streaming platforms, including Chromecast Web Receiver development.\n  - Collaborated with engineering, product, and design teams to deliver scalable features and technical documentation.\n\nVansa — Front-end Developer (February 2022 – July 2022)\n  - Built React-based frontend applications using JavaScript, SASS, and Framer Motion.\n  - Developed responsive dashboards using HTML5 (JSX), CSS Grid, and modern UI patterns.\n  - Optimized performance, accessibility (a11y), and cross-browser compatibility.\n  - Applied Atomic Design, SOLID principles, and Clean Architecture to deliver reusable and maintainable components.\n\nFreelance — Front-end Developer & UI/UX Designer (April 2020 – February 2022)\n  - Designed frontend architecture and design systems for web applications.\n  - Translated Figma UI/UX designs into scalable React interfaces with reusable components and hooks.\n  - Implemented responsive UI using CSS/SASS (Grid, Flexbox, media queries) and animations with Framer Motion.\n  - Improved Time to Interactive (TTI) using Next.js Server-Side Rendering (SSR) and SEO optimization."
+      }
+    ],
+    "structuredContent": {
+      "source": "resume.txt (verbatim parse, no rewording)",
+      "summary": "Software Engineer focused on AI-enabled full-stack development with 5+ years of experience building scalable web platforms using TypeScript, React, Next.js, and Node.js. Dual degrees in Electronic Engineering and Software Development. Contributed to applications serving 4.3M+ users across LATAM, delivering high-performance and intelligent digital experiences.",
+      "roles": [
+        {
+          "employer": "Mercado Libre",
+          "title": "Software Engineer",
+          "dates": "November 2022 – present",
+          "bullets": [
+            "Designed AI workflows and agent-based architectures, defining agent rules, skills, and orchestration across services.",
+            "Led cross-platform initiatives (web, mobile, TV/Samsung/LG) using Spec-Driven Development and scalable frontend architecture.",
+            "Built stateful and stateless React components with TypeScript, improving performance and maintainability.",
+            "Implemented observability and monitoring using Kibana, NewRelic, Datadog, and Grafana aligned with SRE practices (SLA/SLI/SLO).",
+            "Applied Clean Architecture and Domain-Driven Design (DDD) while refactoring legacy systems and improving code quality.",
+            "Developed robust APIs with caching, idempotency, and low-latency performance.",
+            "Implemented comprehensive testing (Unit, Integration, E2E) and improved reliability across services.",
+            "Contributed to OTT video streaming platforms, including Chromecast Web Receiver development.",
+            "Collaborated with engineering, product, and design teams to deliver scalable features and technical documentation."
+          ]
+        },
+        {
+          "employer": "Vansa",
+          "title": "Front-end Developer",
+          "dates": "February 2022 – July 2022",
+          "bullets": [
+            "Built React-based frontend applications using JavaScript, SASS, and Framer Motion.",
+            "Developed responsive dashboards using HTML5 (JSX), CSS Grid, and modern UI patterns.",
+            "Optimized performance, accessibility (a11y), and cross-browser compatibility.",
+            "Applied Atomic Design, SOLID principles, and Clean Architecture to deliver reusable and maintainable components."
+          ]
+        },
+        {
+          "employer": "Freelance",
+          "title": "Front-end Developer & UI/UX Designer",
+          "dates": "April 2020 – February 2022",
+          "bullets": [
+            "Designed frontend architecture and design systems for web applications.",
+            "Translated Figma UI/UX designs into scalable React interfaces with reusable components and hooks.",
+            "Implemented responsive UI using CSS/SASS (Grid, Flexbox, media queries) and animations with Framer Motion.",
+            "Improved Time to Interactive (TTI) using Next.js Server-Side Rendering (SSR) and SEO optimization."
+          ]
+        }
+      ]
+    }
+  },
+  "get_projects": {
+    "content": [
+      {
+        "type": "text",
+        "text": "## triage-desk\nGitHub-webhook-triggered autonomous triage bot (not a human-clicked UI demo). Fires on real `issues: [opened]` / `pull_request_target: [opened]` webhooks, posts a triage comment and applies kind/priority labels via Octokit using the workflow's GITHUB_TOKEN. Falls back to a deterministic heuristic classifier when no LLM key is configured (truthfully labeled in each run, not faked as an LLM call).\n\nMetrics:\n- Webhook-triggered run (issue #26 opened -> bot commented + labeled) completed in 22s, conclusion: success\n- Heuristic classifier accuracy: 83.3% (15/18) on both kind and priority, self-labeled ground truth, n=18 — see RELIABILITY-REPORT.md\n- Duplicate detection: 1/2 (50%) — near-verbatim duplicate caught, paraphrased duplicate missed (Jaccard token-overlap limitation)\n- 22/22 local unit tests passing\n- eval-lab-gated CI: 6/6 cases passed (cross-dogfooded, see eval-lab entry below)\n\n## eval-lab\nInstallable CLI + reusable GitHub Action for evaluating prompts/agents (variant runner, deterministic checks, LLM judge, regression diff vs. a baseline). Dogfooded in its own CI and in triage-desk's CI (eval-lab gates triage-desk's real heuristic-triage logic). Ships an offline `demo` model so it runs at $0 cost with zero API key.\n\nMetrics:\n- Benchmark: 100% pass rate (24/24 cells), 3 runs, avg latency 20.21ms/cell, wall-clock ~255-259ms/run, $0 cost — see RELIABILITY-REPORT.md section 1\n- 7/7 local unit tests passing (node:test)\n- PR CI run caught a real regression: baseline run reported 'all 2 cells passed'; regressed run reported '1 regression(s), 0 fix(es)' and exited 1\n\n## repoask-mcp\nMCP server (official @modelcontextprotocol/sdk) that lets an agent index any public GitHub repo and ask it questions, getting back TF-IDF-retrieved citations with exact file+line ranges (optional LLM synthesis layered on top). Ships both stdio and Streamable HTTP transports from one shared tool factory, plus a human-usable web UI backed by the identical engine. Deployed live and publicly reachable with no auth wall.\n\nMetrics:\n- 3/3 automated tests passing against real network calls to GitHub (no mocks)\n- Live public URL verified with a bare unauthenticated curl: GET / -> 200 health JSON, no SSO redirect\n- Real external MCP SDK Client (StreamableHTTPClientTransport) over the open internet: list_tools, index_repo(octocat/git-consortium) -> fileCount=2, chunkCount=8; ask_repo -> 4 real citations\n- Vercel deployment debugging: 3 real root causes found and fixed (builds-vs-rewrites build-target detection, routes-vs-rewrites routing-mode mismatch once builds was added, ssoProtection deploymentProtection PATCHed off via the Vercel API) — this debugging story is documented start-to-finish in BUILD-LOG.md and progress.log"
+      }
+    ],
+    "structuredContent": {
+      "projects": [
+        {
+          "name": "triage-desk",
+          "repo": "https://github.com/edgeorgie/triage-desk",
+          "description": "GitHub-webhook-triggered autonomous triage bot (not a human-clicked UI demo). Fires on real `issues: [opened]` / `pull_request_target: [opened]` webhooks, posts a triage comment and applies kind/priority labels via Octokit using the workflow's GITHUB_TOKEN. Falls back to a deterministic heuristic classifier when no LLM key is configured (truthfully labeled in each run, not faked as an LLM call).",
+          "realMetrics": [
+            "Webhook-triggered run (issue #26 opened -> bot commented + labeled) completed in 22s, conclusion: success",
+            "Heuristic classifier accuracy: 83.3% (15/18) on both kind and priority, self-labeled ground truth, n=18 — see RELIABILITY-REPORT.md",
+            "Duplicate detection: 1/2 (50%) — near-verbatim duplicate caught, paraphrased duplicate missed (Jaccard token-overlap limitation)",
+            "22/22 local unit tests passing",
+            "eval-lab-gated CI: 6/6 cases passed (cross-dogfooded, see eval-lab entry below)"
+          ],
+          "evidence": [
+            "PR #25 (webhook conversion): https://github.com/edgeorgie/triage-desk/pull/25",
+            "PR #27 (eval-lab CI gate): https://github.com/edgeorgie/triage-desk/pull/27",
+            "PR #28 (ACCURACY.md benchmark): https://github.com/edgeorgie/triage-desk/pull/28",
+            "Real webhook run: https://github.com/edgeorgie/triage-desk/actions/runs/37983913473",
+            "Real bot comment: https://github.com/edgeorgie/triage-desk/issues/26#issuecomment-6088283797"
+          ],
+          "source": "progress.log 2026-10-09 entries (triage-desk sections); RELIABILITY-REPORT.md section 2"
+        },
+        {
+          "name": "eval-lab",
+          "repo": "https://github.com/edgeorgie/eval-lab",
+          "description": "Installable CLI + reusable GitHub Action for evaluating prompts/agents (variant runner, deterministic checks, LLM judge, regression diff vs. a baseline). Dogfooded in its own CI and in triage-desk's CI (eval-lab gates triage-desk's real heuristic-triage logic). Ships an offline `demo` model so it runs at $0 cost with zero API key.",
+          "realMetrics": [
+            "Benchmark: 100% pass rate (24/24 cells), 3 runs, avg latency 20.21ms/cell, wall-clock ~255-259ms/run, $0 cost — see RELIABILITY-REPORT.md section 1",
+            "7/7 local unit tests passing (node:test)",
+            "PR CI run caught a real regression: baseline run reported 'all 2 cells passed'; regressed run reported '1 regression(s), 0 fix(es)' and exited 1"
+          ],
+          "evidence": [
+            "PR #21 (CLI + Action + dogfood): https://github.com/edgeorgie/eval-lab/pull/21",
+            "PR #22 (exec-model bugfix: npx-symlink main-module guard never matched, silently exited 0): https://github.com/edgeorgie/eval-lab/pull/22",
+            "PR #23 (BENCHMARKS.md): https://github.com/edgeorgie/eval-lab/pull/23",
+            "Real CI run (regression caught, exit 1): https://github.com/edgeorgie/eval-lab/actions/runs/37983754854",
+            "Post-merge run on main: https://github.com/edgeorgie/eval-lab/actions/runs/37983891269"
+          ],
+          "source": "progress.log 2026-10-09 entries (eval-lab sections); RELIABILITY-REPORT.md section 1"
+        },
+        {
+          "name": "repoask-mcp",
+          "repo": "https://github.com/edgeorgie/repoask-mcp",
+          "description": "MCP server (official @modelcontextprotocol/sdk) that lets an agent index any public GitHub repo and ask it questions, getting back TF-IDF-retrieved citations with exact file+line ranges (optional LLM synthesis layered on top). Ships both stdio and Streamable HTTP transports from one shared tool factory, plus a human-usable web UI backed by the identical engine. Deployed live and publicly reachable with no auth wall.",
+          "realMetrics": [
+            "3/3 automated tests passing against real network calls to GitHub (no mocks)",
+            "Live public URL verified with a bare unauthenticated curl: GET / -> 200 health JSON, no SSO redirect",
+            "Real external MCP SDK Client (StreamableHTTPClientTransport) over the open internet: list_tools, index_repo(octocat/git-consortium) -> fileCount=2, chunkCount=8; ask_repo -> 4 real citations",
+            "Vercel deployment debugging: 3 real root causes found and fixed (builds-vs-rewrites build-target detection, routes-vs-rewrites routing-mode mismatch once builds was added, ssoProtection deploymentProtection PATCHed off via the Vercel API) — this debugging story is documented start-to-finish in BUILD-LOG.md and progress.log"
+          ],
+          "evidence": [
+            "Build commit (stdio + tools): https://github.com/edgeorgie/repoask-mcp/commit/9a866c5",
+            "HTTP transport + Vercel wrapper commit: https://github.com/edgeorgie/repoask-mcp/commit/b23effc",
+            "Public deployment fix commit: https://github.com/edgeorgie/repoask-mcp/commit/72b6e89",
+            "Web UI commit: https://github.com/edgeorgie/repoask-mcp/commit/fb88c31 (PR #1)",
+            "Live URL: https://repoask-mcp.vercel.app (health) / https://repoask-mcp.vercel.app/mcp (MCP endpoint)"
+          ],
+          "source": "progress.log 2026-10-09 entries ('Artifact C shipped', 'Streamable HTTP transport SHIPPED', 'PUBLIC VERCEL DEPLOYMENT FIXED AND VERIFIED', 'GETS A REAL HUMAN-USABLE WEB UI'); BUILD-LOG.md 'The MCP server's deployment wall' section"
+        }
+      ]
+    }
+  },
+  "ask_about_edgeorgie_q1": {
+    "question": "What AI agent infrastructure has this person built in production?",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "No LLM key configured (ANTHROPIC_API_KEY / OPENAI_API_KEY) — returning the top-matching source excerpts directly with their citations. Read the cited file+line ranges to answer the question yourself, or set an LLM key for prose synthesis.\n\n[1] resume.txt (lines 49-78):\nHead of development and design         July 2021 – December 2021\n\nLed two development teams using the MERN stack.\nPlanned product roadmaps using Figma and Trello.\nCoordinated sprint planning and task assignment using SCRUM methodology.\n\nIEEE student branch            Barranquilla, Colombia\n\n\n---\n\n[2] resume.txt (lines 1-30):\nResume - Edwin Jorge.docx\nEdwin Jorge\n\nBarranquilla, Colombia | LinkedIn | Portfolio | ed.jorge1122@gmail.com | +57 300 281 3676\n\nSoftware Engineer focused on AI-enabled full-stack development with 5+ years of experience building scalable web platforms using TypeScript, React, Next.js, and Node.js. Dual degrees in Electronic Engineering and Software Development. Contributed to applications serving 4.3M+ users across LATAM, delivering high-performance and intelligent digital experiences.\n\nWORK EXPERIENCE\n\n---\n\n[3] RELIABILITY-REPORT.md (lines 153-173):\n```bash\ncd triage-desk\nnode --no-warnings --experimental-strip-types tests-local/benchmark-triage.mjs\n# Prints JSON with per-run accuracy/latency/confusion + full per-case raw results.\n```\n\n### Limitations\n- **Self-labeled ground truth** (18/18 labels assigned by the same person who wrote this\n\n---\n\n[4] RELIABILITY-REPORT.md (lines 1-26):\n# Reliability Benchmark Report — eval-lab & triage-desk\n\nDate: 2026-10-09\nAuthor: edgeorgie (self-reported, measured locally — see \"Reproduce\" commands below)\n\nThis report exists because pass/fail-only output doesn't satisfy PostHog's own bar for\nagent-reliability evidence (\"measurements of task completion, accuracy, latency, and\ncost\"). Everything below is a real, locally-executed run; no number here is invented,\n\n---\n\n[5] RELIABILITY-REPORT.md (lines 63-92):\nnode bin/eval-lab.mjs run --config examples/benchmark.config.json --out /tmp/run-1.json\nnode bin/eval-lab.mjs run --config examples/benchmark.config.json --out /tmp/run-2.json\nnode bin/eval-lab.mjs run --config examples/benchmark.config.json --out /tmp/run-3.json\n# Per-cell latency / pass counts are in each run-N.json's \"cells\" array (ms, pass fields).\n```\n\n### Limitations\n- Offline `demo` model only — zero real LLM calls, zero real API latency/cost. This is a\n\n---\n\n[6] BUILD-LOG.md (lines 1-26):\n# Build log: triage-desk, eval-lab, repoask-mcp\n\n*Posted 2026-10-09. Working notes from converting three side projects from \"demo I click through\" into \"thing an agent or CI pipeline actually drives.\" Writing this the way I'd want to read it — including the parts that didn't work on the first try.*\n\nI keep a progress log while I work (mostly for myself, partly so I don't quietly round a \"mostly works\" into a \"it works\"). This is the cleaned-up version of a few days from that log, for the three things I actually shipped: a webhook-triggered GitHub triage bot, an eval CLI/Action, and a fresh MCP server built off an older RAG side project. I'm not going to pretend any of this went in a straight line.\n\n## Pinning repos doesn't have an API. At all.\n"
+        }
+      ],
+      "structuredContent": {
+        "question": "What AI agent infrastructure has this person built in production?",
+        "answer": "No LLM key configured (ANTHROPIC_API_KEY / OPENAI_API_KEY) — returning the top-matching source excerpts directly with their citations. Read the cited file+line ranges to answer the question yourself, or set an LLM key for prose synthesis.\n\n[1] resume.txt (lines 49-78):\nHead of development and design         July 2021 – December 2021\n\nLed two development teams using the MERN stack.\nPlanned product roadmaps using Figma and Trello.\nCoordinated sprint planning and task assignment using SCRUM methodology.\n\nIEEE student branch            Barranquilla, Colombia\n\n\n---\n\n[2] resume.txt (lines 1-30):\nResume - Edwin Jorge.docx\nEdwin Jorge\n\nBarranquilla, Colombia | LinkedIn | Portfolio | ed.jorge1122@gmail.com | +57 300 281 3676\n\nSoftware Engineer focused on AI-enabled full-stack development with 5+ years of experience building scalable web platforms using TypeScript, React, Next.js, and Node.js. Dual degrees in Electronic Engineering and Software Development. Contributed to applications serving 4.3M+ users across LATAM, delivering high-performance and intelligent digital experiences.\n\nWORK EXPERIENCE\n\n---\n\n[3] RELIABILITY-REPORT.md (lines 153-173):\n```bash\ncd triage-desk\nnode --no-warnings --experimental-strip-types tests-local/benchmark-triage.mjs\n# Prints JSON with per-run accuracy/latency/confusion + full per-case raw results.\n```\n\n### Limitations\n- **Self-labeled ground truth** (18/18 labels assigned by the same person who wrote this\n\n---\n\n[4] RELIABILITY-REPORT.md (lines 1-26):\n# Reliability Benchmark Report — eval-lab & triage-desk\n\nDate: 2026-10-09\nAuthor: edgeorgie (self-reported, measured locally — see \"Reproduce\" commands below)\n\nThis report exists because pass/fail-only output doesn't satisfy PostHog's own bar for\nagent-reliability evidence (\"measurements of task completion, accuracy, latency, and\ncost\"). Everything below is a real, locally-executed run; no number here is invented,\n\n---\n\n[5] RELIABILITY-REPORT.md (lines 63-92):\nnode bin/eval-lab.mjs run --config examples/benchmark.config.json --out /tmp/run-1.json\nnode bin/eval-lab.mjs run --config examples/benchmark.config.json --out /tmp/run-2.json\nnode bin/eval-lab.mjs run --config examples/benchmark.config.json --out /tmp/run-3.json\n# Per-cell latency / pass counts are in each run-N.json's \"cells\" array (ms, pass fields).\n```\n\n### Limitations\n- Offline `demo` model only — zero real LLM calls, zero real API latency/cost. This is a\n\n---\n\n[6] BUILD-LOG.md (lines 1-26):\n# Build log: triage-desk, eval-lab, repoask-mcp\n\n*Posted 2026-10-09. Working notes from converting three side projects from \"demo I click through\" into \"thing an agent or CI pipeline actually drives.\" Writing this the way I'd want to read it — including the parts that didn't work on the first try.*\n\nI keep a progress log while I work (mostly for myself, partly so I don't quietly round a \"mostly works\" into a \"it works\"). This is the cleaned-up version of a few days from that log, for the three things I actually shipped: a webhook-triggered GitHub triage bot, an eval CLI/Action, and a fresh MCP server built off an older RAG side project. I'm not going to pretend any of this went in a straight line.\n\n## Pinning repos doesn't have an API. At all.\n",
+        "answerMode": "deterministic",
+        "citations": [
+          {
+            "rank": 1,
+            "source": "resume.txt",
+            "startLine": 49,
+            "endLine": 78,
+            "score": 0.116,
+            "excerpt": "Head of development and design         July 2021 – December 2021\n\nLed two development teams using the MERN stack.\nPlanned product roadmaps using Figma and Trello.\nCoordinated sprint planning and task assignment using SCRUM methodology.\n\nIEEE student branch            Barranquilla, Colombia\n\nVolunteer - Lead and board member         March 2019 – May 2019\n\nCoordinated and was a speaker at 2 online events: Python Workshop (+50 attendants) & Application Architecture: IoT and Electronics (+100 attendants).\n\nSKILLS\n\nAI Engineering & Agentic Systems\n\nPrompt Engineering • LLM Integration (OpenAI, LLaMA, Local Models) • AI Agents • Agentic Workflows • Retrieval-Augmented Generation (RAG) • Embeddings • Context Engineering • AI-Assisted Development Workflows • AI Coding Tools (Claude Code, LLM-powered IDEs, CLI tooling)\n\nFrontend Engineering\n\nTypeScript • JavaScript (ES6+) • React • Next.js • Component Architecture • Design Systems • Accessibility (a11y) • Responsive Design • Performance Optimization\n\nBackend & APIs\n\nNode.js • Express.js • Python • REST APIs • API Reliability (Caching, Idempotency, Low-Latency Design)\n\nDatabases & Data Layer\n\nMongoDB • MySQL • SQLite • AstraDB • SQLAlchemy • Vector Databases • Data Modeling"
+          },
+          {
+            "rank": 2,
+            "source": "resume.txt",
+            "startLine": 1,
+            "endLine": 30,
+            "score": 0.108,
+            "excerpt": "Resume - Edwin Jorge.docx\nEdwin Jorge\n\nBarranquilla, Colombia | LinkedIn | Portfolio | ed.jorge1122@gmail.com | +57 300 281 3676\n\nSoftware Engineer focused on AI-enabled full-stack development with 5+ years of experience building scalable web platforms using TypeScript, React, Next.js, and Node.js. Dual degrees in Electronic Engineering and Software Development. Contributed to applications serving 4.3M+ users across LATAM, delivering high-performance and intelligent digital experiences.\n\nWORK EXPERIENCE\n\nMercado Libre            Remote\n\nSoftware Engineer          November 2022 – present\n\nDesigned AI workflows and agent-based architectures, defining agent rules, skills, and orchestration across services.\nLed cross-platform initiatives (web, mobile, TV/Samsung/LG) using Spec-Driven Development and scalable frontend architecture.\nBuilt stateful and stateless React components with TypeScript, improving performance and maintainability.\nImplemented observability and monitoring using Kibana, NewRelic, Datadog, and Grafana aligned with SRE practices (SLA/SLI/SLO).\nApplied Clean Architecture and Domain-Driven Design (DDD) while refactoring legacy systems and improving code quality.\nDeveloped robust APIs with caching, idempotency, and low-latency performance.\nImplemented comprehensive testing (Unit, Integration, E2E) and improved reliability across services.\nContributed to OTT video streaming platforms, including Chromecast Web Receiver development.\nCollaborated with engineering, product, and design teams to deliver scalable features and technical documentation.\n\nVansa            Remote\n\nFront-end Developer          February 2022 – July 2022\n\nBuilt React-based frontend applications using JavaScript, SASS, and Framer Motion.\nDeveloped responsive dashboards using HTML5 (JSX), CSS Grid, and modern UI patterns.\nOptimized performance, accessibility (a11y), and cross-browser compatibility."
+          },
+          {
+            "rank": 3,
+            "source": "RELIABILITY-REPORT.md",
+            "startLine": 153,
+            "endLine": 173,
+            "score": 0.087,
+            "excerpt": "```bash\ncd triage-desk\nnode --no-warnings --experimental-strip-types tests-local/benchmark-triage.mjs\n# Prints JSON with per-run accuracy/latency/confusion + full per-case raw results.\n```\n\n### Limitations\n- **Self-labeled ground truth** (18/18 labels assigned by the same person who wrote this\n  report, reading the heuristic's own rules) — not an independent or external benchmark.\n  Treat this as \"does the heuristic behave the way a careful reader of its own code would\n  expect,\" not \"does this match how a real maintainer would triage.\"\n- 18 cases is still a small sample; the 83.3% number has wide uncertainty bounds at n=18\n  (a couple of case-wording changes would visibly move the percentage).\n- This benchmarks the heuristic fallback only, not the LLM-reasoning path (which requires\n  an ANTHROPIC_API_KEY/OPENAI_API_KEY not present in this environment).\n- Duplicate detection was only tested with 2 duplicate-intended cases; a 50% rate on n=2\n  is directionally informative (token overlap is brittle to paraphrasing) but not a\n  statistically solid estimate.\n\n---"
+          },
+          {
+            "rank": 4,
+            "source": "RELIABILITY-REPORT.md",
+            "startLine": 1,
+            "endLine": 26,
+            "score": 0.063,
+            "excerpt": "# Reliability Benchmark Report — eval-lab & triage-desk\n\nDate: 2026-10-09\nAuthor: edgeorgie (self-reported, measured locally — see \"Reproduce\" commands below)\n\nThis report exists because pass/fail-only output doesn't satisfy PostHog's own bar for\nagent-reliability evidence (\"measurements of task completion, accuracy, latency, and\ncost\"). Everything below is a real, locally-executed run; no number here is invented,\nestimated, or rounded up from a smaller sample. Where a number is unglamorous (duplicate\ndetection: 50%), it is reported as measured, not massaged.\n\n---\n\n## 1. eval-lab — offline demo-model benchmark\n\n**What was run:** a 12-case / 2-prompt-variant suite (24 cells total) against eval-lab's\nbuilt-in offline `demo` model (deterministic, zero API key, zero cost — no network call,\nso \"cost\" is genuinely $0, not an estimate of a free tier). Cases cover refund, password\nreset, double-charge, cancellation, a neutral question, a bug report, positive feedback,\nand duplicates of several of those with slightly different wording, to stress variant\nbehavior rather than trivially repeat the same input. Full config:\n`eval-lab/cli/examples/benchmark.config.json`.\n\nRun 3 times back-to-back on the same machine to check the numbers are stable, not a\none-off."
+          },
+          {
+            "rank": 5,
+            "source": "RELIABILITY-REPORT.md",
+            "startLine": 63,
+            "endLine": 92,
+            "score": 0.046,
+            "excerpt": "node bin/eval-lab.mjs run --config examples/benchmark.config.json --out /tmp/run-1.json\nnode bin/eval-lab.mjs run --config examples/benchmark.config.json --out /tmp/run-2.json\nnode bin/eval-lab.mjs run --config examples/benchmark.config.json --out /tmp/run-3.json\n# Per-cell latency / pass counts are in each run-N.json's \"cells\" array (ms, pass fields).\n```\n\n### Limitations\n- Offline `demo` model only — zero real LLM calls, zero real API latency/cost. This is a\n  benchmark of the eval *engine*, not of any production LLM's reliability.\n- 12 cases / 2 variants is still small; it exercises the breadth of assertion types\n  (contains, not_contains, max_words, judge) but is not a statistically powered sample.\n- No cost field exists in the CLI's own output today (see above) — not fabricated here.\n\n---\n\n## 2. triage-desk — heuristic triage accuracy benchmark\n\n**What was run:** `lib/heuristic-triage.ts`'s `heuristicTriage()` function (the exact\ncode the production bot falls back to when no LLM key is configured — see\n`scripts/triage-bot.ts`), run directly in Node via a new local harness\n(`tests-local/benchmark-triage.mjs`), NOT via GitHub Actions, against 18 synthetic issue\nbodies spanning bug / feature / question / docs / support / duplicate cases.\n\n**Ground truth is self-labeled.** The expected kind/priority for each of the 18 cases was\nassigned by me, reading the heuristic's own keyword rules, not sourced from an external\ndataset or a third party's judgment. This measures internal consistency/predictability of\nthe heuristic against a human's best-effort labeling of realistic issue text — it is NOT\nan independently validated benchmark and should not be read as proof the heuristic matches\nreal-world maintainer judgment. Some cases were deliberately written to be ambiguous\n(e.g. \"Dashboard feels slow — not sure if this is a bug or just me\") specifically to find"
+          },
+          {
+            "rank": 6,
+            "source": "BUILD-LOG.md",
+            "startLine": 1,
+            "endLine": 26,
+            "score": 0.034,
+            "excerpt": "# Build log: triage-desk, eval-lab, repoask-mcp\n\n*Posted 2026-10-09. Working notes from converting three side projects from \"demo I click through\" into \"thing an agent or CI pipeline actually drives.\" Writing this the way I'd want to read it — including the parts that didn't work on the first try.*\n\nI keep a progress log while I work (mostly for myself, partly so I don't quietly round a \"mostly works\" into a \"it works\"). This is the cleaned-up version of a few days from that log, for the three things I actually shipped: a webhook-triggered GitHub triage bot, an eval CLI/Action, and a fresh MCP server built off an older RAG side project. I'm not going to pretend any of this went in a straight line.\n\n## Pinning repos doesn't have an API. At all.\n\nFirst task was boring repo hygiene — archive 32 dead tutorial clones, pin the ones that matter. Archiving was easy, `gh repo archive`, done, verified `isArchived:true` on all 32. Pinning was not. I assumed this was a `gh` CLI gap and went looking for the right flag or a GraphQL mutation. There isn't one. I introspected the GraphQL schema's `mutationType.fields` directly — no `pinItem`, no `pinRepository`, nothing. The old REST endpoint (`PUT /user/pinned_repositories`) 404s. Repo pinning on GitHub is, as far as I can tell, a web-UI-only feature with zero programmatic path in 2026. That's a genuine surprise — I expected \"I'm holding this wrong,\" not \"this capability doesn't exist for anyone.\" I left a note for myself to just drag-and-drop pin the five that matter, instead of burning more time hunting for an API that isn't there.\n\n## eval-lab's CLI was silently passing when it should have failed\n\neval-lab started as a browser-only eval demo. I pulled the engine out into a framework-agnostic CLI (`npx eval-lab run`) plus a GitHub Action, wired up a dogfood workflow that runs a passing baseline then a deliberately regressed prompt variant, and asserted the Action actually caught the regression. First version: it didn't catch anything. The CI job reported success on a config I'd broken on purpose.\n\nThe bug was a main-module guard: `import.meta.url === file://${argv[1]}` — a pattern meant to make the file both importable and runnable as a script. It works fine when you run `node cli/bin/eval-lab.mjs` directly. It silently fails when the file is invoked through the `npx` bin symlink, which is exactly how `action.yml` calls it. The comparison just never matched, so the whole CLI body never ran, and node happily exited 0 having done nothing. I only caught this because I later added `--exec` support and watched the CI run for *that* PR report green on a config I knew should fail — went back, ran `npx --no-install eval-lab` on the regressed config manually, confirmed it exited 0 with zero output. Fixed it with a realpath-resolved comparison instead of a raw string match, re-verified exit 1 three ways (direct node, manual symlink, npx). The unsettling part: this bug would have shipped silently in any CI pipeline using the Action as documented, exit code always 0, nobody the wiser. ([PR #22](https://github.com/edgeorgie/eval-lab/pull/22))\n\n## NODE_ENV=production quietly deleted my build tools\n\nBuilding the HTTP transport for repoask-mcp, `npm run build` started failing with `tsc: not found` — despite `typescript` sitting right there in `package.json`. Took a minute to realize why: this sandbox has `NODE_ENV=production` set globally, and `npm install` respects that by skipping devDependencies entirely, no warning, no error, just a smaller `node_modules` than I expected. Not a code bug, just an environment variable I didn't know was set, doing exactly what it's documented to do. `npm install --include=dev` fixed it. Filing this under \"read your env before you blame your code.\"\n\n## The MCP server's deployment wall: four providers, one wall\n\nOnce the stdio-transport MCP server was working (ported retrieval logic from repoask: chunking, TF-IDF embedding swapped in for the browser's transformer-worker since there's no headless equivalent, vector scoring — real tests against octocat repos, 3/3 passing, a committed transcript of an actual MCP client session), I built a Streamable HTTP transport and a Vercel serverless wrapper so it could be reached over the network instead of only from a local process. Locally it works — I ran a real `StreamableHTTPClientTransport` client against `localhost:3000/mcp`, got back real citations, committed the transcript.\n\nGetting it *publicly* reachable is where I stalled. I went through Vercel, Railway, Render, and Fly in that order (Vercel first since I already have 8 apps live there). Every single one wants an interactive login — OAuth through a logged-in browser session or a pre-existing access token — and I have neither bound to this environment. Vercel: no token, no `~/.vercel/auth.json`. Railway and Render: GitHub-OAuth-only signup, and the GitHub CLI token I have authorizes `gh`/git operations but can't complete a browser OAuth consent flow. Fly: same pattern, didn't bother going further once it was the third confirmation. I didn't fake a URL for this. The README says plainly that remote deployment is pending a human doing one interactive login; the code (`vercel.json`, `api/mcp.ts`) is deploy-ready today, it's purely an access problem, not a code problem."
+          }
+        ]
+      }
+    }
+  },
+  "ask_about_edgeorgie_q2": {
+    "question": "What's the most technically interesting thing they shipped?",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "No LLM key configured (ANTHROPIC_API_KEY / OPENAI_API_KEY) — returning the top-matching source excerpts directly with their citations. Read the cited file+line ranges to answer the question yourself, or set an LLM key for prose synthesis.\n\n[1] BUILD-LOG.md (lines 1-26):\n# Build log: triage-desk, eval-lab, repoask-mcp\n\n*Posted 2026-10-09. Working notes from converting three side projects from \"demo I click through\" into \"thing an agent or CI pipeline actually drives.\" Writing this the way I'd want to read it — including the parts that didn't work on the first try.*\n\nI keep a progress log while I work (mostly for myself, partly so I don't quietly round a \"mostly works\" into a \"it works\"). This is the cleaned-up version of a few days from that log, for the three things I actually shipped: a webhook-triggered GitHub triage bot, an eval CLI/Action, and a fresh MCP server built off an older RAG side project. I'm not going to pretend any of this went in a straight line.\n\n## Pinning repos doesn't have an API. At all.\n"
+        }
+      ],
+      "structuredContent": {
+        "question": "What's the most technically interesting thing they shipped?",
+        "answer": "No LLM key configured (ANTHROPIC_API_KEY / OPENAI_API_KEY) — returning the top-matching source excerpts directly with their citations. Read the cited file+line ranges to answer the question yourself, or set an LLM key for prose synthesis.\n\n[1] BUILD-LOG.md (lines 1-26):\n# Build log: triage-desk, eval-lab, repoask-mcp\n\n*Posted 2026-10-09. Working notes from converting three side projects from \"demo I click through\" into \"thing an agent or CI pipeline actually drives.\" Writing this the way I'd want to read it — including the parts that didn't work on the first try.*\n\nI keep a progress log while I work (mostly for myself, partly so I don't quietly round a \"mostly works\" into a \"it works\"). This is the cleaned-up version of a few days from that log, for the three things I actually shipped: a webhook-triggered GitHub triage bot, an eval CLI/Action, and a fresh MCP server built off an older RAG side project. I'm not going to pretend any of this went in a straight line.\n\n## Pinning repos doesn't have an API. At all.\n",
+        "answerMode": "deterministic",
+        "citations": [
+          {
+            "rank": 1,
+            "source": "BUILD-LOG.md",
+            "startLine": 1,
+            "endLine": 26,
+            "score": 0.09,
+            "excerpt": "# Build log: triage-desk, eval-lab, repoask-mcp\n\n*Posted 2026-10-09. Working notes from converting three side projects from \"demo I click through\" into \"thing an agent or CI pipeline actually drives.\" Writing this the way I'd want to read it — including the parts that didn't work on the first try.*\n\nI keep a progress log while I work (mostly for myself, partly so I don't quietly round a \"mostly works\" into a \"it works\"). This is the cleaned-up version of a few days from that log, for the three things I actually shipped: a webhook-triggered GitHub triage bot, an eval CLI/Action, and a fresh MCP server built off an older RAG side project. I'm not going to pretend any of this went in a straight line.\n\n## Pinning repos doesn't have an API. At all.\n\nFirst task was boring repo hygiene — archive 32 dead tutorial clones, pin the ones that matter. Archiving was easy, `gh repo archive`, done, verified `isArchived:true` on all 32. Pinning was not. I assumed this was a `gh` CLI gap and went looking for the right flag or a GraphQL mutation. There isn't one. I introspected the GraphQL schema's `mutationType.fields` directly — no `pinItem`, no `pinRepository`, nothing. The old REST endpoint (`PUT /user/pinned_repositories`) 404s. Repo pinning on GitHub is, as far as I can tell, a web-UI-only feature with zero programmatic path in 2026. That's a genuine surprise — I expected \"I'm holding this wrong,\" not \"this capability doesn't exist for anyone.\" I left a note for myself to just drag-and-drop pin the five that matter, instead of burning more time hunting for an API that isn't there.\n\n## eval-lab's CLI was silently passing when it should have failed\n\neval-lab started as a browser-only eval demo. I pulled the engine out into a framework-agnostic CLI (`npx eval-lab run`) plus a GitHub Action, wired up a dogfood workflow that runs a passing baseline then a deliberately regressed prompt variant, and asserted the Action actually caught the regression. First version: it didn't catch anything. The CI job reported success on a config I'd broken on purpose.\n\nThe bug was a main-module guard: `import.meta.url === file://${argv[1]}` — a pattern meant to make the file both importable and runnable as a script. It works fine when you run `node cli/bin/eval-lab.mjs` directly. It silently fails when the file is invoked through the `npx` bin symlink, which is exactly how `action.yml` calls it. The comparison just never matched, so the whole CLI body never ran, and node happily exited 0 having done nothing. I only caught this because I later added `--exec` support and watched the CI run for *that* PR report green on a config I knew should fail — went back, ran `npx --no-install eval-lab` on the regressed config manually, confirmed it exited 0 with zero output. Fixed it with a realpath-resolved comparison instead of a raw string match, re-verified exit 1 three ways (direct node, manual symlink, npx). The unsettling part: this bug would have shipped silently in any CI pipeline using the Action as documented, exit code always 0, nobody the wiser. ([PR #22](https://github.com/edgeorgie/eval-lab/pull/22))\n\n## NODE_ENV=production quietly deleted my build tools\n\nBuilding the HTTP transport for repoask-mcp, `npm run build` started failing with `tsc: not found` — despite `typescript` sitting right there in `package.json`. Took a minute to realize why: this sandbox has `NODE_ENV=production` set globally, and `npm install` respects that by skipping devDependencies entirely, no warning, no error, just a smaller `node_modules` than I expected. Not a code bug, just an environment variable I didn't know was set, doing exactly what it's documented to do. `npm install --include=dev` fixed it. Filing this under \"read your env before you blame your code.\"\n\n## The MCP server's deployment wall: four providers, one wall\n\nOnce the stdio-transport MCP server was working (ported retrieval logic from repoask: chunking, TF-IDF embedding swapped in for the browser's transformer-worker since there's no headless equivalent, vector scoring — real tests against octocat repos, 3/3 passing, a committed transcript of an actual MCP client session), I built a Streamable HTTP transport and a Vercel serverless wrapper so it could be reached over the network instead of only from a local process. Locally it works — I ran a real `StreamableHTTPClientTransport` client against `localhost:3000/mcp`, got back real citations, committed the transcript.\n\nGetting it *publicly* reachable is where I stalled. I went through Vercel, Railway, Render, and Fly in that order (Vercel first since I already have 8 apps live there). Every single one wants an interactive login — OAuth through a logged-in browser session or a pre-existing access token — and I have neither bound to this environment. Vercel: no token, no `~/.vercel/auth.json`. Railway and Render: GitHub-OAuth-only signup, and the GitHub CLI token I have authorizes `gh`/git operations but can't complete a browser OAuth consent flow. Fly: same pattern, didn't bother going further once it was the third confirmation. I didn't fake a URL for this. The README says plainly that remote deployment is pending a human doing one interactive login; the code (`vercel.json`, `api/mcp.ts`) is deploy-ready today, it's purely an access problem, not a code problem."
+          }
+        ]
+      }
+    }
+  },
+  "ask_about_edgeorgie_q3": {
+    "question": "What is their measured accuracy on the triage bot and what are its known failure modes?",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "No LLM key configured (ANTHROPIC_API_KEY / OPENAI_API_KEY) — returning the top-matching source excerpts directly with their citations. Read the cited file+line ranges to answer the question yourself, or set an LLM key for prose synthesis.\n\n[1] RELIABILITY-REPORT.md (lines 168-187):\n- Duplicate detection was only tested with 2 duplicate-intended cases; a 50% rate on n=2\n  is directionally informative (token overlap is brittle to paraphrasing) but not a\n  statistically solid estimate.\n\n---\n\n## Honest summary\n\n\n---\n\n[2] RELIABILITY-REPORT.md (lines 63-92):\nnode bin/eval-lab.mjs run --config examples/benchmark.config.json --out /tmp/run-1.json\nnode bin/eval-lab.mjs run --config examples/benchmark.config.json --out /tmp/run-2.json\nnode bin/eval-lab.mjs run --config examples/benchmark.config.json --out /tmp/run-3.json\n# Per-cell latency / pass counts are in each run-N.json's \"cells\" array (ms, pass fields).\n```\n\n### Limitations\n- Offline `demo` model only — zero real LLM calls, zero real API latency/cost. This is a\n\n---\n\n[3] RELIABILITY-REPORT.md (lines 1-26):\n# Reliability Benchmark Report — eval-lab & triage-desk\n\nDate: 2026-10-09\nAuthor: edgeorgie (self-reported, measured locally — see \"Reproduce\" commands below)\n\nThis report exists because pass/fail-only output doesn't satisfy PostHog's own bar for\nagent-reliability evidence (\"measurements of task completion, accuracy, latency, and\ncost\"). Everything below is a real, locally-executed run; no number here is invented,\n\n---\n\n[4] BUILD-LOG.md (lines 1-26):\n# Build log: triage-desk, eval-lab, repoask-mcp\n\n*Posted 2026-10-09. Working notes from converting three side projects from \"demo I click through\" into \"thing an agent or CI pipeline actually drives.\" Writing this the way I'd want to read it — including the parts that didn't work on the first try.*\n\nI keep a progress log while I work (mostly for myself, partly so I don't quietly round a \"mostly works\" into a \"it works\"). This is the cleaned-up version of a few days from that log, for the three things I actually shipped: a webhook-triggered GitHub triage bot, an eval CLI/Action, and a fresh MCP server built off an older RAG side project. I'm not going to pretend any of this went in a straight line.\n\n## Pinning repos doesn't have an API. At all.\n"
+        }
+      ],
+      "structuredContent": {
+        "question": "What is their measured accuracy on the triage bot and what are its known failure modes?",
+        "answer": "No LLM key configured (ANTHROPIC_API_KEY / OPENAI_API_KEY) — returning the top-matching source excerpts directly with their citations. Read the cited file+line ranges to answer the question yourself, or set an LLM key for prose synthesis.\n\n[1] RELIABILITY-REPORT.md (lines 168-187):\n- Duplicate detection was only tested with 2 duplicate-intended cases; a 50% rate on n=2\n  is directionally informative (token overlap is brittle to paraphrasing) but not a\n  statistically solid estimate.\n\n---\n\n## Honest summary\n\n\n---\n\n[2] RELIABILITY-REPORT.md (lines 63-92):\nnode bin/eval-lab.mjs run --config examples/benchmark.config.json --out /tmp/run-1.json\nnode bin/eval-lab.mjs run --config examples/benchmark.config.json --out /tmp/run-2.json\nnode bin/eval-lab.mjs run --config examples/benchmark.config.json --out /tmp/run-3.json\n# Per-cell latency / pass counts are in each run-N.json's \"cells\" array (ms, pass fields).\n```\n\n### Limitations\n- Offline `demo` model only — zero real LLM calls, zero real API latency/cost. This is a\n\n---\n\n[3] RELIABILITY-REPORT.md (lines 1-26):\n# Reliability Benchmark Report — eval-lab & triage-desk\n\nDate: 2026-10-09\nAuthor: edgeorgie (self-reported, measured locally — see \"Reproduce\" commands below)\n\nThis report exists because pass/fail-only output doesn't satisfy PostHog's own bar for\nagent-reliability evidence (\"measurements of task completion, accuracy, latency, and\ncost\"). Everything below is a real, locally-executed run; no number here is invented,\n\n---\n\n[4] BUILD-LOG.md (lines 1-26):\n# Build log: triage-desk, eval-lab, repoask-mcp\n\n*Posted 2026-10-09. Working notes from converting three side projects from \"demo I click through\" into \"thing an agent or CI pipeline actually drives.\" Writing this the way I'd want to read it — including the parts that didn't work on the first try.*\n\nI keep a progress log while I work (mostly for myself, partly so I don't quietly round a \"mostly works\" into a \"it works\"). This is the cleaned-up version of a few days from that log, for the three things I actually shipped: a webhook-triggered GitHub triage bot, an eval CLI/Action, and a fresh MCP server built off an older RAG side project. I'm not going to pretend any of this went in a straight line.\n\n## Pinning repos doesn't have an API. At all.\n",
+        "answerMode": "deterministic",
+        "citations": [
+          {
+            "rank": 1,
+            "source": "RELIABILITY-REPORT.md",
+            "startLine": 168,
+            "endLine": 187,
+            "score": 0.131,
+            "excerpt": "- Duplicate detection was only tested with 2 duplicate-intended cases; a 50% rate on n=2\n  is directionally informative (token overlap is brittle to paraphrasing) but not a\n  statistically solid estimate.\n\n---\n\n## Honest summary\n\n| Artifact | What's measured | Real number | Caveat |\n|---|---|---|---|\n| eval-lab | Offline demo-model matrix, 24 cells, 3 runs | 100% pass rate, 20.21ms avg/cell, $0 cost (no cost field wired into CLI) | Measures the eval engine's own correctness/stability, not a real LLM |\n| triage-desk | Heuristic triage, 18 self-labeled cases, 3 runs | 83.3% kind accuracy, 83.3% priority accuracy, 50% duplicate-detection (n=2), <0.3ms avg/case | Self-labeled ground truth, small sample, heuristic path only |\n\nNeither number is a sweeping reliability claim. eval-lab's 100% reflects a\ndeterministic offline stand-in behaving as designed, not a production LLM's accuracy.\ntriage-desk's 83.3% is a real, reproducible measurement of where a pure-heuristic\nclassifier breaks (keyword absence, keyword-in-rhetorical-question, paraphrased\nduplicates) — which is arguably more useful evidence of engineering judgment than a\nhigher, less-scrutinized number would have been."
+          },
+          {
+            "rank": 2,
+            "source": "RELIABILITY-REPORT.md",
+            "startLine": 63,
+            "endLine": 92,
+            "score": 0.121,
+            "excerpt": "node bin/eval-lab.mjs run --config examples/benchmark.config.json --out /tmp/run-1.json\nnode bin/eval-lab.mjs run --config examples/benchmark.config.json --out /tmp/run-2.json\nnode bin/eval-lab.mjs run --config examples/benchmark.config.json --out /tmp/run-3.json\n# Per-cell latency / pass counts are in each run-N.json's \"cells\" array (ms, pass fields).\n```\n\n### Limitations\n- Offline `demo` model only — zero real LLM calls, zero real API latency/cost. This is a\n  benchmark of the eval *engine*, not of any production LLM's reliability.\n- 12 cases / 2 variants is still small; it exercises the breadth of assertion types\n  (contains, not_contains, max_words, judge) but is not a statistically powered sample.\n- No cost field exists in the CLI's own output today (see above) — not fabricated here.\n\n---\n\n## 2. triage-desk — heuristic triage accuracy benchmark\n\n**What was run:** `lib/heuristic-triage.ts`'s `heuristicTriage()` function (the exact\ncode the production bot falls back to when no LLM key is configured — see\n`scripts/triage-bot.ts`), run directly in Node via a new local harness\n(`tests-local/benchmark-triage.mjs`), NOT via GitHub Actions, against 18 synthetic issue\nbodies spanning bug / feature / question / docs / support / duplicate cases.\n\n**Ground truth is self-labeled.** The expected kind/priority for each of the 18 cases was\nassigned by me, reading the heuristic's own keyword rules, not sourced from an external\ndataset or a third party's judgment. This measures internal consistency/predictability of\nthe heuristic against a human's best-effort labeling of realistic issue text — it is NOT\nan independently validated benchmark and should not be read as proof the heuristic matches\nreal-world maintainer judgment. Some cases were deliberately written to be ambiguous\n(e.g. \"Dashboard feels slow — not sure if this is a bug or just me\") specifically to find"
+          },
+          {
+            "rank": 3,
+            "source": "RELIABILITY-REPORT.md",
+            "startLine": 1,
+            "endLine": 26,
+            "score": 0.096,
+            "excerpt": "# Reliability Benchmark Report — eval-lab & triage-desk\n\nDate: 2026-10-09\nAuthor: edgeorgie (self-reported, measured locally — see \"Reproduce\" commands below)\n\nThis report exists because pass/fail-only output doesn't satisfy PostHog's own bar for\nagent-reliability evidence (\"measurements of task completion, accuracy, latency, and\ncost\"). Everything below is a real, locally-executed run; no number here is invented,\nestimated, or rounded up from a smaller sample. Where a number is unglamorous (duplicate\ndetection: 50%), it is reported as measured, not massaged.\n\n---\n\n## 1. eval-lab — offline demo-model benchmark\n\n**What was run:** a 12-case / 2-prompt-variant suite (24 cells total) against eval-lab's\nbuilt-in offline `demo` model (deterministic, zero API key, zero cost — no network call,\nso \"cost\" is genuinely $0, not an estimate of a free tier). Cases cover refund, password\nreset, double-charge, cancellation, a neutral question, a bug report, positive feedback,\nand duplicates of several of those with slightly different wording, to stress variant\nbehavior rather than trivially repeat the same input. Full config:\n`eval-lab/cli/examples/benchmark.config.json`.\n\nRun 3 times back-to-back on the same machine to check the numbers are stable, not a\none-off."
+          },
+          {
+            "rank": 4,
+            "source": "BUILD-LOG.md",
+            "startLine": 1,
+            "endLine": 26,
+            "score": 0.043,
+            "excerpt": "# Build log: triage-desk, eval-lab, repoask-mcp\n\n*Posted 2026-10-09. Working notes from converting three side projects from \"demo I click through\" into \"thing an agent or CI pipeline actually drives.\" Writing this the way I'd want to read it — including the parts that didn't work on the first try.*\n\nI keep a progress log while I work (mostly for myself, partly so I don't quietly round a \"mostly works\" into a \"it works\"). This is the cleaned-up version of a few days from that log, for the three things I actually shipped: a webhook-triggered GitHub triage bot, an eval CLI/Action, and a fresh MCP server built off an older RAG side project. I'm not going to pretend any of this went in a straight line.\n\n## Pinning repos doesn't have an API. At all.\n\nFirst task was boring repo hygiene — archive 32 dead tutorial clones, pin the ones that matter. Archiving was easy, `gh repo archive`, done, verified `isArchived:true` on all 32. Pinning was not. I assumed this was a `gh` CLI gap and went looking for the right flag or a GraphQL mutation. There isn't one. I introspected the GraphQL schema's `mutationType.fields` directly — no `pinItem`, no `pinRepository`, nothing. The old REST endpoint (`PUT /user/pinned_repositories`) 404s. Repo pinning on GitHub is, as far as I can tell, a web-UI-only feature with zero programmatic path in 2026. That's a genuine surprise — I expected \"I'm holding this wrong,\" not \"this capability doesn't exist for anyone.\" I left a note for myself to just drag-and-drop pin the five that matter, instead of burning more time hunting for an API that isn't there.\n\n## eval-lab's CLI was silently passing when it should have failed\n\neval-lab started as a browser-only eval demo. I pulled the engine out into a framework-agnostic CLI (`npx eval-lab run`) plus a GitHub Action, wired up a dogfood workflow that runs a passing baseline then a deliberately regressed prompt variant, and asserted the Action actually caught the regression. First version: it didn't catch anything. The CI job reported success on a config I'd broken on purpose.\n\nThe bug was a main-module guard: `import.meta.url === file://${argv[1]}` — a pattern meant to make the file both importable and runnable as a script. It works fine when you run `node cli/bin/eval-lab.mjs` directly. It silently fails when the file is invoked through the `npx` bin symlink, which is exactly how `action.yml` calls it. The comparison just never matched, so the whole CLI body never ran, and node happily exited 0 having done nothing. I only caught this because I later added `--exec` support and watched the CI run for *that* PR report green on a config I knew should fail — went back, ran `npx --no-install eval-lab` on the regressed config manually, confirmed it exited 0 with zero output. Fixed it with a realpath-resolved comparison instead of a raw string match, re-verified exit 1 three ways (direct node, manual symlink, npx). The unsettling part: this bug would have shipped silently in any CI pipeline using the Action as documented, exit code always 0, nobody the wiser. ([PR #22](https://github.com/edgeorgie/eval-lab/pull/22))\n\n## NODE_ENV=production quietly deleted my build tools\n\nBuilding the HTTP transport for repoask-mcp, `npm run build` started failing with `tsc: not found` — despite `typescript` sitting right there in `package.json`. Took a minute to realize why: this sandbox has `NODE_ENV=production` set globally, and `npm install` respects that by skipping devDependencies entirely, no warning, no error, just a smaller `node_modules` than I expected. Not a code bug, just an environment variable I didn't know was set, doing exactly what it's documented to do. `npm install --include=dev` fixed it. Filing this under \"read your env before you blame your code.\"\n\n## The MCP server's deployment wall: four providers, one wall\n\nOnce the stdio-transport MCP server was working (ported retrieval logic from repoask: chunking, TF-IDF embedding swapped in for the browser's transformer-worker since there's no headless equivalent, vector scoring — real tests against octocat repos, 3/3 passing, a committed transcript of an actual MCP client session), I built a Streamable HTTP transport and a Vercel serverless wrapper so it could be reached over the network instead of only from a local process. Locally it works — I ran a real `StreamableHTTPClientTransport` client against `localhost:3000/mcp`, got back real citations, committed the transcript.\n\nGetting it *publicly* reachable is where I stalled. I went through Vercel, Railway, Render, and Fly in that order (Vercel first since I already have 8 apps live there). Every single one wants an interactive login — OAuth through a logged-in browser session or a pre-existing access token — and I have neither bound to this environment. Vercel: no token, no `~/.vercel/auth.json`. Railway and Render: GitHub-OAuth-only signup, and the GitHub CLI token I have authorizes `gh`/git operations but can't complete a browser OAuth consent flow. Fly: same pattern, didn't bother going further once it was the third confirmation. I didn't fake a URL for this. The README says plainly that remote deployment is pending a human doing one interactive login; the code (`vercel.json`, `api/mcp.ts`) is deploy-ready today, it's purely an access problem, not a code problem."
+          }
+        ]
+      }
+    }
+  }
+}
