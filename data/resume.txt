@@ -15,7 +15,7 @@ Designed AI workflows and agent-based architectures, defining agent rules, skill
 Using that agentic-architecture workflow, delivered 10+ initiatives end-to-end solo (100% individually owned), 5 of them directly monetizable and the rest product-improvement initiatives, together reaching 4M+ users across LATAM.
 Led those initiatives directly, owning scope, delivery, and cross-team coordination end-to-end.
 Led cross-platform initiatives (web, mobile, TV/Samsung/LG) using Spec-Driven Development and scalable frontend architecture.
-Worked across platforms beyond desktop web: mobile WebViews and AI-assisted native development for Android and iOS.
+Worked across platforms beyond desktop web: mobile WebViews and AI-assisted native development for Android (Kotlin) and iOS (Swift).
 Shipped a production feature used by 1.5M+ users, delivered in record time with zero production incidents.
 Built stateful and stateless React components with TypeScript, improving performance and maintainability.
 Implemented observability and monitoring using Kibana, NewRelic, Datadog, and Grafana aligned with SRE practices (SLA/SLI/SLO).

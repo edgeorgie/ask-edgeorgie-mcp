@@ -25,3 +25,16 @@ Barranquilla, Colombia. Currently fully remote at Mercado Libre (since November 
 ## Do you have the agent/MCP projects (triage-desk, eval-lab, repoask-mcp, ask-edgeorgie-mcp, crispy-profiling, simplescope) doing something besides AI/agents?
 
 Yes — my production experience at Mercado Libre is full-stack and cross-platform (web, mobile WebViews, smart TV receivers for LG/Samsung/Vidaa/TitanOS), with real SRE practice (Kibana/NewRelic/Datadog/Grafana, SLA/SLI/SLO) and Clean Architecture/DDD on legacy refactors — not just an AI-agent specialist footnote. The agent/MCP side projects are a deliberate specialty built on top of that general engineering foundation, not a replacement for it.
+
+## What's your core technical stack, and how comfortable are you picking up a new one?
+
+JavaScript/TypeScript is my core expertise — that's where I'm deepest and fastest. I don't shy away from new stacks though: at Mercado Libre I did AI-assisted native development in Kotlin (Android) and Swift (iOS) alongside the web work, picking both up on the job rather than coming in already fluent. I'm self-taught by background — I hold an Electronic Engineering degree alongside Software Development, and most of what I know about AI/agentic systems specifically I taught myself outside of any formal course.
+
+## Do you design, or just build to someone else's design?
+
+Both. UX and interaction design are something I actively work on, not just hand off — the projects I've shipped (this portfolio included) are my own design decisions, not a template. I care about how something feels to use, not just whether the API underneath is correct.
+
+## What do you do outside of work?
+
+A few real things, not just a hobbies line for the sake of one: I play video games, but I also build them — at 15 I built and shipped a 2D platformer on my own, which got about 50 downloads. I'm now teaching myself game development and design in Unreal Engine (5.8.3) as a self-directed project, same self-taught approach I bring to engineering generally. I'm also learning to play guitar. I go to the gym 4 mornings a week — I'm a morning person, prefer getting trained and moving early in the day over doing it later.
+
