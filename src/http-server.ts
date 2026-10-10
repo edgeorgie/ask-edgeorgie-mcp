@@ -7,8 +7,8 @@
  * factory in create-server.ts) over HTTP so any MCP client on the network —
  * not just a local subprocess — can connect. This is what makes it possible
  * for a recruiter to literally point Claude Desktop/Cursor at a public URL
- * and ask about the candidate, the same way Rafa Audibert's MCP endpoint
- * works at rafaaudibert.dev/mcp/.
+ * and ask about the candidate directly, instead of just reading a static
+ * resume.
  *
  * Runs STATELESS (sessionIdGenerator: undefined) — same documented pattern
  * used by repoask-mcp, because serverless platforms like Vercel don't

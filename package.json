@@ -1,7 +1,7 @@
 {
   "name": "ask-edgeorgie-mcp",
   "version": "1.0.0",
-  "description": "MCP server that lets an agent ask real, grounded, cited questions about Edwin Jorge (edgeorgie) — his work experience, shipped projects, and skills — sourced from his actual resume and project evidence, never hallucinated. Direct application of the pattern PostHog Product Engineer Rafa Audibert runs on his own site (rafaaudibert.dev/mcp/).",
+  "description": "MCP server that lets an agent ask real, grounded, cited questions about Edwin Jorge (edgeorgie) — his work experience, shipped projects, and skills — sourced from his actual resume and project evidence, never hallucinated.",
   "type": "module",
   "main": "dist/server.js",
   "bin": {

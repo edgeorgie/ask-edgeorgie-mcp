@@ -2,10 +2,9 @@
 /**
  * ask-edgeorgie-mcp — an MCP server that lets an agent ask grounded, cited
  * questions about Edwin Jorge (edgeorgie): his real work experience, real
- * shipped projects, and real skills. Direct application of the pattern
- * PostHog Product Engineer Rafa Audibert runs on his own site
- * (rafaaudibert.dev/mcp/) — a personal-site MCP endpoint a recruiter's
- * agent can query directly, instead of a static resume PDF.
+ * shipped projects, and real skills. A personal-site MCP endpoint so a
+ * recruiter's agent can query him directly, instead of parsing a static
+ * resume PDF.
  *
  * Retrieval is 100% local (TF-IDF over a corpus built from resume.txt,
  * RELIABILITY-REPORT.md, and BUILD-LOG.md — public evidence only, no
