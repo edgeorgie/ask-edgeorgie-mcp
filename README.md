@@ -126,6 +126,10 @@ const answer = await client.callTool({
 
 ## Verification
 
+`npm test` runs a `pretest` hook (`npm run build`) first, so a fresh clone +
+`npm install && npm test` works without any manual build step — tests spin up
+the compiled server from `dist/`, which doesn't exist until `pretest` builds it.
+
 - `npm test` → 5/5 passing: spins up the **compiled** server as a real
   subprocess and drives it with a real `@modelcontextprotocol/sdk` `Client`
   over stdio (`list_tools` shape, `get_experience` structural check incl.
