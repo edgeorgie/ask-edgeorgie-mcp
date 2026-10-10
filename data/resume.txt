@@ -12,13 +12,18 @@ Mercado Libre            Remote
 Software Engineer          November 2022 – present
 
 Designed AI workflows and agent-based architectures, defining agent rules, skills, and orchestration across services.
+Using that agentic-architecture workflow, delivered 10+ initiatives end-to-end solo (100% individually owned), 5 of them directly monetizable and the rest product-improvement initiatives, together reaching 4M+ users across LATAM.
+Led those initiatives directly, owning scope, delivery, and cross-team coordination end-to-end.
 Led cross-platform initiatives (web, mobile, TV/Samsung/LG) using Spec-Driven Development and scalable frontend architecture.
+Worked across platforms beyond desktop web: mobile WebViews and AI-assisted native development for Android and iOS.
+Shipped a production feature used by 1.5M+ users, delivered in record time with zero production incidents.
 Built stateful and stateless React components with TypeScript, improving performance and maintainability.
 Implemented observability and monitoring using Kibana, NewRelic, Datadog, and Grafana aligned with SRE practices (SLA/SLI/SLO).
 Applied Clean Architecture and Domain-Driven Design (DDD) while refactoring legacy systems and improving code quality.
 Developed robust APIs with caching, idempotency, and low-latency performance.
 Implemented comprehensive testing (Unit, Integration, E2E) and improved reliability across services.
-Contributed to OTT video streaming platforms, including Chromecast Web Receiver development.
+Contributed to OTT video streaming platforms, including Chromecast Web Receiver development and smart TV web receivers for LG, Samsung (Tizen), Vidaa, and TitanOS.
+Worked on advertising (ads) initiatives with measurable success.
 Collaborated with engineering, product, and design teams to deliver scalable features and technical documentation.
 
 Vansa            Remote
