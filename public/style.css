@@ -44,3 +44,15 @@ pre { background: #0e1114; border: 1px solid var(--border); border-radius: 6px; 
 .small { color: var(--muted); font-size: 0.85rem; }
 footer { margin-top: 40px; font-size: 0.85rem; }
 .loading { color: var(--muted); }
+
+.story-timeline { margin-top: 16px; }
+.story-beat { position: relative; padding: 0 0 22px 26px; border-left: 2px solid var(--border); }
+.story-beat:last-child { border-left-color: transparent; padding-bottom: 0; }
+.story-beat::before {
+  content: ""; position: absolute; left: -7px; top: 2px; width: 12px; height: 12px;
+  border-radius: 50%; background: var(--bg); border: 2px solid var(--accent);
+}
+.story-beat .year { display: block; color: var(--accent); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px; }
+.story-beat .label { display: block; font-size: 1rem; color: var(--text); margin-bottom: 4px; }
+.story-beat .body { color: var(--muted); font-size: 0.88rem; margin: 0; }
+.story-intro { color: var(--muted); font-size: 0.9rem; margin-bottom: 18px; }

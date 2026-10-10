@@ -37,3 +37,21 @@ form.addEventListener("submit", async (e) => {
     resultEl.innerHTML = `<p class="loading">Request failed: ${escapeHtml(String(err))}</p>`;
   }
 });
+
+const storyEl = document.getElementById("story");
+if (storyEl) {
+  fetch("/api/story")
+    .then((res) => res.json())
+    .then((data) => {
+      const beatsHtml = (data.beats || [])
+        .map(
+          (b) =>
+            `<div class="story-beat"><span class="year">${escapeHtml(b.year)}</span><span class="label">${escapeHtml(b.label)}</span><p class="body">${escapeHtml(b.body)}</p></div>`,
+        )
+        .join("");
+      storyEl.innerHTML = `<p class="story-intro">${escapeHtml(data.intro || "")}</p>${beatsHtml}`;
+    })
+    .catch((err) => {
+      storyEl.innerHTML = `<p class="loading">Could not load story: ${escapeHtml(String(err))}</p>`;
+    });
+}

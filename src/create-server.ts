@@ -10,7 +10,7 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { doGetExperience, doGetProjects, doAskAboutEdgeorgie } from "./engine.js";
+import { doGetExperience, doGetProjects, doAskAboutEdgeorgie, doGetStory } from "./engine.js";
 
 export function createAskEdgeorgieServer(): McpServer {
   const server = new McpServer({
@@ -92,6 +92,47 @@ export function createAskEdgeorgieServer(): McpServer {
           },
         ],
         structuredContent: { projects } as unknown as Record<string, unknown>,
+      };
+    },
+  );
+
+  server.registerTool(
+    "get_story",
+    {
+      title: "Get Edwin Jorge's (edgeorgie) personal story as a timeline",
+      description:
+        "Returns a chronological, beat-by-beat narrative of who the candidate is beyond the resume — " +
+        "from shipping a solo 2D platformer at 15, through his Electronic Engineering + Software " +
+        "degrees, picking up Kotlin/Swift on the job, owning UX/design decisions, to what he's " +
+        "self-teaching right now (Unreal Engine game dev, guitar, a 4x/week morning gym routine). " +
+        "Structured as ordered beats (year, label, body), not a single prose block — render it as an " +
+        "actual timeline rather than dumping the text. Every beat is a real, first-person fact, not " +
+        "generated or inferred.",
+      inputSchema: {},
+      outputSchema: {
+        intro: z.string(),
+        beats: z.array(
+          z.object({
+            year: z.string(),
+            label: z.string(),
+            body: z.string(),
+          }),
+        ),
+        source: z.string(),
+      },
+    },
+    async () => {
+      const result = await doGetStory();
+      return {
+        content: [
+          {
+            type: "text",
+            text: `${result.intro}\n\n${result.beats
+              .map((b) => `[${b.year}] ${b.label}\n${b.body}`)
+              .join("\n\n")}`,
+          },
+        ],
+        structuredContent: result as unknown as Record<string, unknown>,
       };
     },
   );

@@ -25,11 +25,11 @@ async function withClient(fn: (client: Client) => Promise<void>) {
   }
 }
 
-test("list_tools exposes the 3 expected tools", async () => {
+test("list_tools exposes the 4 expected tools", async () => {
   await withClient(async (client) => {
     const { tools } = await client.listTools();
     const names = tools.map((t) => t.name).sort();
-    assert.deepEqual(names, ["ask_about_edgeorgie", "get_experience", "get_projects"]);
+    assert.deepEqual(names, ["ask_about_edgeorgie", "get_experience", "get_projects", "get_story"]);
   });
 });
 
@@ -49,6 +49,16 @@ test("get_projects returns all 5 real shipped artifacts", async () => {
     const res: any = await client.callTool({ name: "get_projects", arguments: {} });
     const names = res.structuredContent.projects.map((p: any) => p.name).sort();
     assert.deepEqual(names, ["crispy-profiling", "eval-lab", "repoask-mcp", "simplescope", "triage-desk"]);
+  });
+});
+
+test("get_story returns a real chronological timeline, not prose", async () => {
+  await withClient(async (client) => {
+    const res: any = await client.callTool({ name: "get_story", arguments: {} });
+    const beats = res.structuredContent.beats;
+    assert.ok(Array.isArray(beats) && beats.length >= 5, "expected at least 5 story beats");
+    assert.ok(beats.every((b: any) => b.year && b.label && b.body), "every beat needs year/label/body");
+    assert.ok(beats.some((b: any) => /15/.test(b.year)), "expected the age-15 origin beat");
   });
 });
 

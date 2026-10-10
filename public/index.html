@@ -22,14 +22,20 @@
 
     <section class="panel">
       <h2>Ask about me</h2>
-      <p class="small" style="opacity:.7">No LLM key is configured on this deployment, so answers return as a
-        direct, cited excerpt dump rather than generated prose. Retrieval and citations are real either way —
-        check the answerMode badge in the result.</p>
+      <p class="small" id="ask-hint" style="opacity:.7">Answers are grounded and cited either way — check the
+        <code>answerMode</code> badge on the result to see whether this deployment is running LLM synthesis or
+        a deterministic citation dump.</p>
       <form id="ask-form">
         <input id="question" type="text" placeholder="e.g. What AI agent infrastructure has this person built in production?" required />
         <button type="submit">Ask</button>
       </form>
       <div id="result" class="result" hidden></div>
+    </section>
+
+    <section class="panel">
+      <h2>My story</h2>
+      <p class="small" style="opacity:.7">Not a bullet list — a timeline. Same habit from age 15 to now.</p>
+      <div id="story" class="story-timeline"><p class="loading">Loading…</p></div>
     </section>
 
     <section class="panel">
@@ -41,7 +47,7 @@
     }
   }
 }</code></pre>
-      <p class="small">Tools exposed: <code>get_experience</code>, <code>get_projects</code>, <code>ask_about_edgeorgie</code>.</p>
+      <p class="small">Tools exposed: <code>get_experience</code>, <code>get_projects</code>, <code>get_story</code>, <code>ask_about_edgeorgie</code>.</p>
     </section>
 
     <section class="panel">

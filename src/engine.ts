@@ -215,6 +215,72 @@ export async function doGetProjects(): Promise<ProjectResult[]> {
 }
 
 // ---------------------------------------------------------------------------
+// get_story
+// ---------------------------------------------------------------------------
+
+export interface StoryBeat {
+  year: string;
+  label: string;
+  body: string;
+}
+
+export interface StoryResult {
+  intro: string;
+  beats: StoryBeat[];
+  source: string;
+}
+
+/**
+ * Same chronological narrative as the portfolio's "Beyond the code" timeline
+ * (edgeorgie-portfolio src/data/content.ts `beyond`) — kept in sync by hand
+ * since this repo has no shared package with the portfolio. Returned as
+ * structured beats (year/label/body), not one prose paragraph, so an agent
+ * or UI can render it as an actual timeline instead of a wall of text.
+ * Every beat is a real, candidate-stated fact — see RECRUITER-FAQ.md's
+ * "What do you do outside of work?" and "core technical stack" entries for
+ * the first-person source.
+ */
+export async function doGetStory(): Promise<StoryResult> {
+  return {
+    intro:
+      "The same habit, from age 15 to now: build it yourself to understand it, whatever 'it' is.",
+    beats: [
+      {
+        year: "Age 15",
+        label: "Shipped my first game, solo",
+        body: "Built and released a 2D platformer entirely on my own — no team, no course. It got about 50 downloads. First time I remember building something just to see if I could, and then actually finishing it.",
+      },
+      {
+        year: "Degree",
+        label: "Electronic Engineering, then Software",
+        body: "Dual degrees — Electronic Engineering and Software Development. The electronics background is part of why a new stack doesn't feel intimidating: used to learning a discipline from its fundamentals up.",
+      },
+      {
+        year: "On the job",
+        label: "Kotlin and Swift, learned by shipping",
+        body: "JavaScript/TypeScript is the core expertise, but at Mercado Libre I picked up Kotlin (Android) and Swift (iOS) for AI-assisted native work — learned both while shipping, not before. Same pattern as the platformer: figure it out by building the real thing.",
+      },
+      {
+        year: "Always",
+        label: "Design isn't handed to me, I own it",
+        body: "UX and interaction design on these projects — this portfolio and MCP included — are my own decisions, not a template someone else made. Caring how something feels to use, not only whether the API underneath is correct.",
+      },
+      {
+        year: "Right now",
+        label: "Self-teaching Unreal Engine (5.8.3)",
+        body: "Still building games, not just playing them — currently self-teaching game development and design in Unreal Engine. Same self-directed approach as the platformer at 15, just a bigger engine.",
+      },
+      {
+        year: "Right now",
+        label: "Guitar, and the gym at sunrise",
+        body: "Learning to play guitar. At the gym 4 mornings a week — a morning person, prefers getting moving early over pushing it to the end of the day.",
+      },
+    ],
+    source: "RECRUITER-FAQ.md 'What do you do outside of work?' / 'core technical stack' entries; mirrors edgeorgie-portfolio's 'Beyond the code' timeline.",
+  };
+}
+
+// ---------------------------------------------------------------------------
 // ask_about_edgeorgie
 // ---------------------------------------------------------------------------
 
