@@ -44,11 +44,11 @@ test("get_experience returns real resume roles including Mercado Libre", async (
   });
 });
 
-test("get_projects returns the 3 real shipped artifacts", async () => {
+test("get_projects returns all 5 real shipped artifacts", async () => {
   await withClient(async (client) => {
     const res: any = await client.callTool({ name: "get_projects", arguments: {} });
     const names = res.structuredContent.projects.map((p: any) => p.name).sort();
-    assert.deepEqual(names, ["eval-lab", "repoask-mcp", "triage-desk"]);
+    assert.deepEqual(names, ["crispy-profiling", "eval-lab", "repoask-mcp", "simplescope", "triage-desk"]);
   });
 });
 
