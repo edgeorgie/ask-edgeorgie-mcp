@@ -177,6 +177,40 @@ export async function doGetProjects(): Promise<ProjectResult[]> {
       source:
         "progress.log 2026-10-09 entries ('Artifact C shipped', 'Streamable HTTP transport SHIPPED', 'PUBLIC VERCEL DEPLOYMENT FIXED AND VERIFIED', 'GETS A REAL HUMAN-USABLE WEB UI'); BUILD-LOG.md 'The MCP server's deployment wall' section",
     },
+    {
+      name: "crispy-profiling",
+      repo: "https://github.com/edgeorgie/crispy-profiling",
+      description:
+        "React re-render profiler shipped as four surfaces off one engine: CLI, GitHub Action, MCP server, and an Agent Skill (skills/react-render-profiling/SKILL.md) so Claude Code, Cursor, Codex and similar tools can measure a re-render fix instead of guessing at one. Opens the target app in headless Chromium, drives described interactions, and reports which components re-rendered, how many times, why (props/state/context/parent), and which renders were avoidable. Published to npm.",
+      realMetrics: [
+        "Published and installable: `npm i -D crispy-profiling` (https://www.npmjs.com/package/crispy-profiling)",
+        "Validated against 5 real open-source apps (Redux Essentials, Next.js App Router Playground, Excalidraw, shadcn-admin, react-admin) — found a fixable re-render problem in each",
+        "OpenSSF Scorecard badge live on the repo; CI badge live and green",
+        "Tested on React 19, validated on 18.3 and 19.0 apps",
+      ],
+      evidence: [
+        "npm package: https://www.npmjs.com/package/crispy-profiling",
+        "Repo: https://github.com/edgeorgie/crispy-profiling",
+        "Agent Skill: https://github.com/edgeorgie/crispy-profiling/blob/develop/skills/react-render-profiling/SKILL.md",
+        "CI status: https://github.com/edgeorgie/crispy-profiling/actions/workflows/ci.yml",
+      ],
+      source: "Live GitHub repo README + npm registry listing, read directly (not from a secondary log) on 2026-10-10.",
+    },
+    {
+      name: "simplescope",
+      repo: "https://github.com/edgeorgie/simplescope",
+      description:
+        "Interactive, visual, gamified platform for learning algorithms by watching real JavaScript run — not static diagrams. Built with Next.js (App Router) + TypeScript, Tailwind v4, shadcn/ui, MDX lessons; optional account/progress-sync via Better Auth + Drizzle on Neon Postgres, with the site fully functional with zero environment variables (progress falls back to browser localStorage) when accounts aren't configured.",
+      realMetrics: [
+        "Deployed live and publicly reachable: https://simplescope-one.vercel.app",
+        "Works with zero required env vars — graceful degradation design (accounts hide automatically, localStorage progress still works) verified from the repo's own README, not assumed",
+      ],
+      evidence: [
+        "Live site: https://simplescope-one.vercel.app",
+        "Repo: https://github.com/edgeorgie/simplescope",
+      ],
+      source: "Live GitHub repo README, read directly on 2026-10-10.",
+    },
   ];
 }
 

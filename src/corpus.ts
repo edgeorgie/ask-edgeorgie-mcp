@@ -40,6 +40,7 @@ export const CORPUS_FILES = [
   "resume.txt",
   "RELIABILITY-REPORT.md",
   "BUILD-LOG.md",
+  "RECRUITER-FAQ.md",
 ] as const;
 
 export interface CorpusIndex {
