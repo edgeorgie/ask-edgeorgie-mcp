@@ -27,6 +27,32 @@ rather than whatever a model happens to already know (or guess) about me.
 | `get_projects` | Returns the 3 real shipped artifacts ([triage-desk](https://github.com/edgeorgie/triage-desk), [eval-lab](https://github.com/edgeorgie/eval-lab), [repoask-mcp](https://github.com/edgeorgie/repoask-mcp)) with their real measured metrics and PR/commit/run URLs. |
 | `ask_about_edgeorgie` | Retrieval-based Q&A. TF-IDF search over a corpus built from `resume.txt`, `RELIABILITY-REPORT.md`, and `BUILD-LOG.md` (public evidence only). Every answer cites the exact source file + line range it came from. If no LLM key is set, the response is a deterministic citation dump (no generation at all); if `ANTHROPIC_API_KEY`/`OPENAI_API_KEY` is set, a model synthesizes prose but is instructed to ground every sentence in the retrieved excerpts and cite them inline — it never answers beyond what's indexed. |
 
+## Rate limiting
+
+`/mcp` and `/api/ask` are public and unauthenticated, so both enforce
+in-memory rate limiting (`src/rate-limit.ts`) before doing any real work:
+
+- **Per-caller sliding window:** 10 requests/minute per IP (best-effort, via
+  `X-Forwarded-For`/socket address).
+- **Global hard ceiling:** 60 requests/minute total, regardless of caller
+  identity — this is the no-key-required cost ceiling. It matters because
+  `ask_about_edgeorgie` currently falls back to cheap, deterministic TF-IDF
+  retrieval when no `ANTHROPIC_API_KEY`/`OPENAI_API_KEY` is set, but the
+  moment either key IS configured, every unthrottled request becomes a real,
+  billed LLM call — this ceiling bounds worst-case spend even if per-IP
+  limiting is defeated (spoofed headers, rotating IPs).
+
+Exceeding either limit returns `429` with a `Retry-After` header (seconds).
+
+**Known limitation:** this is a plain in-memory sliding window, which does
+**not** survive serverless reality on Vercel — each cold start resets the
+counters, and concurrent requests on different warm instances see independent
+counters, so the "global" ceiling is really per-instance today. Before this
+endpoint is ever put under real load with a paid LLM key behind it, replace
+this with a distributed store shared across instances (Upstash Redis, Vercel
+KV) so limits hold across cold starts and horizontal scaling. See the comment
+block at the top of `src/rate-limit.ts` for the full rationale.
+
 ## The corpus
 
 The retrieval corpus is a direct copy of files that already existed
