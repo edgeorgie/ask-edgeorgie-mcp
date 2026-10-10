@@ -4,11 +4,11 @@
 
 ## What's your biggest weakness / area you're actively working on?
 
-I tend to take on too much ownership at once instead of delegating. At Mercado Libre I ended up individually owning 10+ initiatives end-to-end — which shows I can carry real scope solo, but it also means I default to solving things myself rather than recognizing earlier when something would benefit from more hands or another perspective. I'm actively working on catching that pattern sooner, not just pushing through it.
+I genuinely like working on a team — I'm not someone who prefers working alone by default. The honest pattern is more specific than that: when I hit a problem I find genuinely interesting, I get absorbed in solving it myself before thinking to loop others in. At Mercado Libre that's part of how I ended up individually owning 10+ initiatives end-to-end — real scope carried solo, which shows capability, but also shows I don't always pause to pull in another perspective when a problem has hooked me. I'm actively working on catching that earlier: noticing the pull to just keep solving it myself, and deliberately checking whether the team should be in the loop instead.
 
 ## Why are you looking to leave Mercado Libre / why are you job searching?
 
-I want new challenges and experience with AI without being limited to one company's internal tooling. I want to experiment more broadly with the agent/AI ecosystem, grow technically beyond a single internal stack, and be in an environment with more movement and change — not because anything is wrong where I am, but because I've gotten what I can from this specific setup and want to push further.
+I've grown a lot at Mercado Libre — owned real scope, shipped production AI-agent workflows, worked across web/mobile/TV at LATAM scale. I'm looking for what's next because I want to keep compounding that growth in a wider AI/agent ecosystem than one company's internal tooling can expose me to: more surface area to learn from, more different problems and teams to grow alongside, not a step away from something that isn't working.
 
 ## Are you open to relocation? Do you need visa sponsorship?
 
