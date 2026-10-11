@@ -1,0 +1,63 @@
+name: External metric freshness
+
+# WHY THIS IS SEPARATE FROM ci.yml
+#
+# This repo's claims about ITS OWN state are guarded by derived tests that run
+# in CI: a mirror of CORPUS_FILES, the get_projects list, the README's test-file
+# count, which files tsc actually covers. All of those have a local authority to
+# derive from, so they are deterministic and offline.
+#
+# A handful of claims do not. `crispy-profiling`'s npm download total lives on
+# api.npmjs.org, and it only ever increases — so it goes stale by simply
+# existing, with every local check green. It did exactly that: the served
+# corpus told readers 754 while npm reported 1266.
+#
+# Putting that network call in ci.yml would fail unrelated PRs whenever a third
+# party was briefly unreachable, which trains people to re-run red builds
+# instead of reading them. So freshness runs here, on a timer, where a failure
+# means precisely one thing: a published claim is no longer true.
+
+on:
+  schedule:
+    # Weekly. The claim is dated in prose, so a reader can always judge its age;
+    # this job's job is to notice when the gap has grown too wide to leave.
+    - cron: "17 6 * * 1"
+  # Manual runs for when a figure has just been updated and should be confirmed.
+  workflow_dispatch:
+  # Also on changes to the claim surfaces or the checker itself, so a bad update
+  # is caught immediately rather than up to a week later.
+  pull_request:
+    paths:
+      - "src/engine.ts"
+      - "data/BUILD-LOG.md"
+      - "scripts/check-external-metrics.ts"
+      - ".github/workflows/external-metrics.yml"
+
+concurrency:
+  group: external-metrics-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  freshness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --include=dev
+
+      # Exits 1 on drift and 2 when a source is unreachable. The distinction
+      # matters: an unreachable registry is explicitly NOT reported as a pass,
+      # because "could not check" and "nothing changed" are different states
+      # and conflating them is how a risk gets marked cleared without ever
+      # being measured.
+      - name: Check claims against live sources
+        run: npm run check:external

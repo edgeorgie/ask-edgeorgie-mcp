@@ -53,7 +53,9 @@ const repoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 /** Mirrors the live schema's `minLength` on a limitations entry. */
 const MIN_LIMITATION_CHARS = 40;
 
-const TRANSCRIPTS = ["examples/transcript.json", "examples/http-transcript.json"] as const;
+const STDIO_TRANSCRIPT = "examples/transcript.json";
+const HTTP_TRANSCRIPT = "examples/http-transcript.json";
+const TRANSCRIPTS = [STDIO_TRANSCRIPT, HTTP_TRANSCRIPT] as const;
 
 interface TranscriptProject {
   name?: string;
@@ -139,6 +141,38 @@ test("both committed transcripts record the same project set the engine returns"
  * content (under 40 chars); it does not catch plausible-length filler written
  * upstream. Reviewing `src/engine.ts` is what covers that, and claiming
  * otherwise here would be the same overstatement this file exists to stop.
+ *
+ * WHY THE TWO TRANSCRIPTS ARE HELD TO DIFFERENT STANDARDS.
+ *
+ * The first version of this guard compared BOTH transcripts to the local
+ * engine, and that was a latent deadlock rather than a strictness win. The
+ * stdio transcript is produced by the code in the working tree, so local
+ * equality is exactly right. The HTTP transcript is produced by the DEPLOYED
+ * server — which, by construction, cannot know about an engine change until
+ * that change is deployed, and a change is only deployed after it merges,
+ * which requires this suite to be green. Any edit to engine data therefore
+ * made CI unpassable: regenerating against production re-records the OLD
+ * values, and hand-editing the file to the new ones is precisely the
+ * falsification this guard exists to prevent.
+ *
+ * It fired for real on a one-word metric correction, with the only green paths
+ * being "fake the evidence" or "revert the fix". A guard whose cheapest escape
+ * is forging the recording is worse than no guard.
+ *
+ * So the HTTP transcript is held to what a recording of a remote server can
+ * honestly prove: INTERNAL CONSISTENCY between its own two representations,
+ * derived through the production renderer. That still catches every mutation
+ * measured against the prose half (fabricated `Adoption:` section, inflated
+ * accuracy, invented stars, cross-wired caveats), because each edits the text
+ * a client displays while leaving the structured half it was rendered from
+ * untouched.
+ *
+ * Honestly stated limit: a falsification applied CONSISTENTLY to both halves
+ * of the HTTP recording passes until production catches up, at which point the
+ * next regeneration overwrites it. The manual step that closes the window is
+ * re-running the HTTP harness after the deploy lands
+ * (`node --import tsx examples/run-session.ts <url>/mcp examples/http-transcript.json`),
+ * which is the same command the header already documents.
  */
 test("every project's recorded limitations are verbatim what the engine returns", async () => {
   const live = new Map((await doGetProjects()).map((p) => [p.name, p.limitations]));
@@ -163,25 +197,45 @@ test("every project's recorded limitations are verbatim what the engine returns"
     }
   }
 
-  for (const relPath of TRANSCRIPTS) {
-    for (const project of projectsOf(await readTranscript(relPath), relPath)) {
-      const where = `${relPath} → ${project.name ?? "<unnamed>"}`;
-      const expected = live.get(project.name as string);
-      assert.ok(
-        expected,
-        `${where}: recorded a project the engine does not return (covered in detail by the ` +
-          `set-equality test above)`,
-      );
+  // The stdio transcript is produced by the working tree's own code, so exact
+  // equality against the engine is both correct and achievable. The HTTP
+  // transcript records the deployed server and is reconciled against its own
+  // structured half below — see this test's header for why.
+  for (const project of projectsOf(await readTranscript(STDIO_TRANSCRIPT), STDIO_TRANSCRIPT)) {
+    const where = `${STDIO_TRANSCRIPT} → ${project.name ?? "<unnamed>"}`;
+    const expected = live.get(project.name as string);
+    assert.ok(
+      expected,
+      `${where}: recorded a project the engine does not return (covered in detail by the ` +
+        `set-equality test above)`,
+    );
 
-      // deepEqual, in order, so reused filler and caveats attributed to the
-      // wrong artifact both fail — neither is detectable by shape or length.
-      assert.deepEqual(
-        project.limitations,
-        expected,
-        `${where}: the recorded \`limitations\` are not what the engine returns for this ` +
-          `project. Either the engine's caveats changed and the transcript was not ` +
-          `regenerated, or the transcript's caveats are filler/attributed to the wrong ` +
-          `artifact. Regenerate it (see this file's header) — do not hand-edit it to match.`,
+    // deepEqual, in order, so reused filler and caveats attributed to the
+    // wrong artifact both fail — neither is detectable by shape or length.
+    assert.deepEqual(
+      project.limitations,
+      expected,
+      `${where}: the recorded \`limitations\` are not what the engine returns for this ` +
+        `project. Either the engine's caveats changed and the transcript was not ` +
+        `regenerated, or the transcript's caveats are filler/attributed to the wrong ` +
+        `artifact. Regenerate it (see this file's header) — do not hand-edit it to match.`,
+    );
+  }
+
+  // The HTTP recording still has to clear the contract floor on its OWN
+  // entries, so a deployed server returning degenerate or absent caveats is
+  // caught even while its content legitimately lags the working tree.
+  for (const project of projectsOf(await readTranscript(HTTP_TRANSCRIPT), HTTP_TRANSCRIPT)) {
+    const where = `${HTTP_TRANSCRIPT} → ${project.name ?? "<unnamed>"}`;
+    assert.ok(
+      Array.isArray(project.limitations) && project.limitations.length > 0,
+      `${where}: no non-empty \`limitations\` in the recorded response.`,
+    );
+    for (const limitation of project.limitations as unknown[]) {
+      assert.ok(
+        typeof limitation === "string" && limitation.trim().length >= MIN_LIMITATION_CHARS,
+        `${where}: recorded limitation ${JSON.stringify(limitation)} is under ` +
+          `${MIN_LIMITATION_CHARS} chars of real text — filler, not a caveat.`,
       );
     }
   }
@@ -248,7 +302,8 @@ test("the recorded text block is what the server's own renderer produces", async
     "renderProjectsText() produced nothing — this guard would be vacuous",
   );
 
-  for (const relPath of TRANSCRIPTS) {
+  /** Pulls the single text block out of a recording, failing loudly if the shape changed. */
+  async function textBlockOf(relPath: string): Promise<string> {
     const transcript = await readTranscript(relPath);
     const content = transcript?.get_projects?.content;
     assert.ok(
@@ -267,18 +322,42 @@ test("the recorded text block is what the server's own renderer produces", async
         `${textBlocks.length}. More than one would mean half the prose escapes the ` +
         `comparison below.`,
     );
-
-    assert.equal(
-      textBlocks[0].text,
-      expected,
-      `${relPath}: the recorded get_projects text block is not what ` +
-        `renderProjectsText() produces from the current engine data. Either the engine ` +
-        `changed and the transcript was not regenerated, or the recorded prose was edited ` +
-        `— an inflated metric, a fabricated section, or caveats attributed to the wrong ` +
-        `project all land here. Regenerate it (see this file's header); do not hand-edit ` +
-        `it to match.`,
-    );
+    return textBlocks[0].text as string;
   }
+
+  // The stdio recording came from this working tree, so it must match the
+  // renderer exactly.
+  assert.equal(
+    await textBlockOf(STDIO_TRANSCRIPT),
+    expected,
+    `${STDIO_TRANSCRIPT}: the recorded get_projects text block is not what ` +
+      `renderProjectsText() produces from the current engine data. Either the engine ` +
+      `changed and the transcript was not regenerated, or the recorded prose was edited ` +
+      `— an inflated metric, a fabricated section, or caveats attributed to the wrong ` +
+      `project all land here. Regenerate it (see this file's header); do not hand-edit ` +
+      `it to match.`,
+  );
+
+  // The HTTP recording legitimately lags the working tree until a deploy lands,
+  // so it is reconciled against ITS OWN structured half, rendered through the
+  // same production function. This is the assertion that catches a tampered
+  // prose block: the displayed text must be exactly what the recorded
+  // structured data renders to, whatever that data happens to be.
+  const httpTranscript = await readTranscript(HTTP_TRANSCRIPT);
+  const recordedProjects = httpTranscript?.get_projects?.structuredContent?.projects;
+  assert.ok(
+    Array.isArray(recordedProjects) && recordedProjects.length > 0,
+    `${HTTP_TRANSCRIPT}: no structured projects to reconcile the text block against.`,
+  );
+  assert.equal(
+    await textBlockOf(HTTP_TRANSCRIPT),
+    renderProjectsText(recordedProjects),
+    `${HTTP_TRANSCRIPT}: the recorded text block is not what renderProjectsText() ` +
+      `produces from the structured half of the SAME recording. The two representations ` +
+      `of one response disagree, which means the prose was edited after capture — ` +
+      `exactly the falsification a reviewer reading examples/ would believe. Regenerate ` +
+      `it against the deployed server; do not hand-edit it.`,
+  );
 });
 
 /**
