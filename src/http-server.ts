@@ -2,9 +2,9 @@
 /**
  * ask-edgeorgie-mcp — Streamable HTTP transport (MCP spec 2025-03-26+).
  *
- * Remote entrypoint: exposes the same 3 tools as the stdio server
- * (get_experience, get_projects, ask_about_edgeorgie, built via the shared
- * factory in create-server.ts) over HTTP so any MCP client on the network —
+ * Remote entrypoint: exposes the same 4 tools as the stdio server
+ * (get_experience, get_projects, get_story, ask_about_edgeorgie, built via
+ * the shared factory in create-server.ts) over HTTP so any MCP client on the network —
  * not just a local subprocess — can connect. This is what makes it possible
  * for a recruiter to literally point Claude Desktop/Cursor at a public URL
  * and ask about the candidate directly, instead of just reading a static

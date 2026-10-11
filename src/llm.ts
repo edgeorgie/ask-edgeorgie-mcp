@@ -198,18 +198,39 @@ export async function synthesize(question: string, repoLabel: string, chunks: Ch
   return null;
 }
 
-/** Deterministic fallback used when no LLM key is configured: just the cited chunks, no generation. */
-export function deterministicAnswer(chunks: Chunk[]): string {
+/** True when at least one LLM provider key is present in the environment. */
+export function hasLlmKey(): boolean {
+  return Boolean(process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY);
+}
+
+/**
+ * Deterministic fallback: just the cited chunks, no generation.
+ *
+ * `reason` exists because the previous version hardcoded "No LLM key
+ * configured" into the answer body on EVERY non-LLM path, including the path
+ * where a key IS set and the provider call failed (e.g. an Anthropic 400 for
+ * an org-scoped key missing ANTHROPIC_WORKSPACE_ID). That made the
+ * user-visible text assert the wrong cause. Callers must pass which case
+ * they are in; the default stays "no-key" only for direct callers that have
+ * already checked hasLlmKey().
+ */
+export function deterministicAnswer(
+  chunks: Chunk[],
+  reason: "no-key" | "synthesis-failed" = "no-key",
+): string {
   if (chunks.length === 0) {
     return "No sufficiently similar chunks were found in the index for this question.";
   }
   const lines = chunks.map(
     (c, i) => `[${i + 1}] ${c.path} (lines ${c.start}-${c.end}):\n${c.text.split("\n").slice(0, 8).join("\n")}`,
   );
-  return (
-    "No LLM key configured (ANTHROPIC_API_KEY / OPENAI_API_KEY) — returning the top-matching source excerpts " +
-    "directly with their citations. Read the cited file+line ranges to answer the question yourself, " +
-    "or set an LLM key for prose synthesis.\n\n" +
-    lines.join("\n\n---\n\n")
-  );
+  const preamble =
+    reason === "no-key"
+      ? "No LLM key configured (ANTHROPIC_API_KEY / OPENAI_API_KEY) — returning the top-matching source excerpts " +
+        "directly with their citations. Read the cited file+line ranges to answer the question yourself, " +
+        "or set an LLM key for prose synthesis."
+      : "An LLM key IS configured on this deployment, but the synthesis call failed, so this response falls back " +
+        "to the top-matching source excerpts with their citations. This is a provider/configuration failure, not " +
+        "a missing key — read the cited file+line ranges to answer the question yourself.";
+  return `${preamble}\n\n${lines.join("\n\n---\n\n")}`;
 }

@@ -27,8 +27,8 @@ rather than whatever a model happens to already know (or guess) about me.
 |---|---|
 | `get_experience` | Returns my real work history straight from `resume.txt` — Mercado Libre, Vansa, Freelance — verbatim, no embellishment. |
 | `get_projects` | Returns the 5 real shipped artifacts ([triage-desk](https://github.com/edgeorgie/triage-desk), [eval-lab](https://github.com/edgeorgie/eval-lab), [repoask-mcp](https://github.com/edgeorgie/repoask-mcp), [crispy-profiling](https://github.com/edgeorgie/crispy-profiling), [simplescope](https://github.com/edgeorgie/simplescope)) with their real measured metrics and PR/commit/run URLs. |
-| `get_story` | Returns my background as a structured chronological timeline (year, label, detail) rather than prose, so a client can render it as a real timeline instead of a paragraph. Same beats as the portfolio's "Beyond the code" section, kept in sync deliberately. |
-| `ask_about_edgeorgie` | Retrieval-based Q&A. TF-IDF search over a corpus built from `resume.txt`, `RELIABILITY-REPORT.md`, and `BUILD-LOG.md` (public evidence only). Every answer cites the exact source file + line range it came from. If no LLM key is set, the response is a deterministic citation dump (no generation at all); if `ANTHROPIC_API_KEY`/`OPENAI_API_KEY` is set, a model synthesizes prose but is instructed to ground every sentence in the retrieved excerpts and cite them inline — it never answers beyond what's indexed. |
+| `get_story` | Returns my background as a structured chronological timeline (year, label, detail) rather than prose, so a client can render it as a real timeline instead of a paragraph. Same beats as the portfolio's "Beyond the code" section, kept in sync deliberately. This one is editorial copy maintained in `src/engine.ts`, not retrieval — it returns no file+line citations, and its `source` field says so. Use `ask_about_edgeorgie` when you need a citation. |
+| `ask_about_edgeorgie` | Retrieval-based Q&A. TF-IDF search over a corpus built from `resume.txt`, `RELIABILITY-REPORT.md`, `BUILD-LOG.md` and `RECRUITER-FAQ.md` (public evidence only). Every answer cites the exact source file + line range it came from. If no LLM key is set, the response is a deterministic citation dump (no generation at all) and `answerMode` is `deterministic`; if `ANTHROPIC_API_KEY`/`OPENAI_API_KEY` is set, a model synthesizes prose but is instructed to ground every sentence in the retrieved excerpts and cite them inline — it never answers beyond what's indexed. If a key is set but the provider call fails, `answerMode` is `synthesis-failed` and `llmKeyConfigured` is `true`, so the fallback is never misreported as a missing key. |
 
 ## Rate limiting
 
@@ -46,6 +46,12 @@ in-memory rate limiting (`src/rate-limit.ts`) before doing any real work:
   limiting is defeated (spoofed headers, rotating IPs).
 
 Exceeding either limit returns `429` with a `Retry-After` header (seconds).
+
+`/api/experience`, `/api/projects` and `/api/story` are deliberately **not**
+rate limited: each returns a compile-time constant or a single parsed local
+file — no retrieval, no provider call — so there is no per-request cost worth
+metering. That decision is recorded in each route's header comment; add a
+limiter the moment one of them starts doing real work.
 
 **Known limitation:** this is a plain in-memory sliding window, which does
 **not** survive serverless reality on Vercel — each cold start resets the
@@ -159,15 +165,24 @@ const answer = await client.callTool({
 `npm install && npm test` works without any manual build step — tests spin up
 the compiled server from `dist/`, which doesn't exist until `pretest` builds it.
 
-- `npm test` → 16/16 passing across three files: `tests/server.test.ts` spins
+- `npm test` → 25/25 passing across five files: `tests/server.test.ts` spins
   up the **compiled** server as a real subprocess and drives it with a real
   `@modelcontextprotocol/sdk` `Client` over stdio (`list_tools` shape, the
   health-check tool list matching the tools actually registered,
   `get_experience` structural check incl. Mercado Libre, `get_projects`
-  returns all 5 artifacts, `get_story` returns a real chronological timeline
+  returns all 5 artifacts, `get_story` returns a chronological timeline
   rather than prose, `ask_about_edgeorgie` grounds an MCP-related question in a
   real citation, and an unrelated/nonsense question correctly stays in
-  deterministic/no-fabrication mode); `tests/rate-limit.test.ts` covers the
+  deterministic/no-fabrication mode); `tests/health-endpoints.test.ts`
+  asserts on the **actual runtime responses** of `api/mcp.ts`'s GET handler
+  and of `src/http-server.ts` served over a real loopback socket, compared
+  against what `listTools()` really returns — so advertising fewer tools than
+  are registered fails regardless of how the array is constructed (a source-
+  text lint alone misses e.g. `[...].slice(0, 3)`), plus `GET /api/story`
+  200/405 coverage; `tests/llm-fallback-cause.test.ts` pins "no LLM key
+  configured" apart from "a key is configured but synthesis failed" in both
+  the `answerMode` value and the user-visible answer text;
+  `tests/rate-limit.test.ts` covers the
   per-caller window, the global ceiling and `Retry-After`;
   `tests/llm-prompt-injection.test.ts` covers prompt spotlighting and
   delimiter-forgery sanitization of retrieved content.
@@ -194,8 +209,12 @@ the compiled server from `dist/`, which doesn't exist until `pretest` builds it.
 > build log covering the repoask-mcp deployment debugging story, correctly
 > surfaced as the most relevant source for "technically interesting."
 
-Full real transcript (all 3 tools, 3 questions, exact JSON-RPC-level
-request/response): [`examples/transcript.json`](./examples/transcript.json).
+Full real transcript (`list_tools` plus `get_experience`, `get_projects` and
+3 `ask_about_edgeorgie` questions, exact JSON-RPC-level request/response):
+[`examples/transcript.json`](./examples/transcript.json). Note the committed
+transcripts predate `get_story` and do not exercise it — the tools they do
+cover are listed above, and `get_story`'s REST + MCP surface is covered by
+`tests/health-endpoints.test.ts` and `tests/server.test.ts` instead.
 
 ## Remote deployment status
 
