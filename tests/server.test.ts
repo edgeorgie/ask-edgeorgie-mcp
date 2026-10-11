@@ -85,8 +85,24 @@ test("get_projects over the real MCP transport returns exactly what the engine d
   // with a confusing "expected 5 artifacts" failure that said nothing about
   // the real defect. What matters at this layer is that the MCP transport
   // round-trips the engine's list intact, which is what this now asserts.
-  const expected = (await doGetProjects()).map((p) => p.name).sort();
+  const all = await doGetProjects();
+  const expected = all.map((p) => p.name).sort();
   assert.ok(expected.length > 0, "doGetProjects() returned no projects");
+
+  // Checked BEFORE the transport call, deliberately. `limitations` is declared
+  // `z.array(z.string()).min(1)` in the output schema, so an entry with no
+  // caveats makes the SDK reject the whole payload and `structuredContent`
+  // arrives undefined — a confusing `TypeError` reading `.projects` that says
+  // nothing about the real defect. Asserting on the engine first means the
+  // failure names the project that is missing caveats. The schema is still
+  // the backstop; this is the readable error in front of it.
+  assert.deepEqual(
+    all.filter((p) => !p.limitations?.length).map((p) => p.name),
+    [],
+    "every project must state limitations — an evidence tool that lists caveats on only " +
+      "some artifacts implies the others have none, which is not true of any of them. " +
+      "When this field was optional it was populated on 1 of 6 entries.",
+  );
 
   await withClient(async (client) => {
     const res: any = await client.callTool({ name: "get_projects", arguments: {} });
@@ -96,7 +112,8 @@ test("get_projects over the real MCP transport returns exactly what the engine d
     // Limitations must survive the transport too. They are the one field a
     // caller cannot reconstruct from anything else, and dropping them turns an
     // honest entry into an overstated one.
-    const withCaveats = (await doGetProjects()).filter((p) => p.limitations?.length);
+    const withCaveats = all.filter((p) => p.limitations?.length);
+
     for (const project of withCaveats) {
       const served = res.structuredContent.projects.find((p: any) => p.name === project.name);
       assert.deepEqual(
@@ -104,6 +121,24 @@ test("get_projects over the real MCP transport returns exactly what the engine d
         project.limitations,
         `"${project.name}"'s limitations did not survive the MCP transport`,
       );
+    }
+
+    // ...and they must reach the TEXT content block, not only
+    // structuredContent. Most chat-style MCP clients render the text block and
+    // never look at structuredContent, so a caller there would see every
+    // metric and none of the caveats attached to them — the one direction this
+    // tool must not fail in. There was no assertion on this path at all:
+    // deleting the entire caveat-rendering branch in src/create-server.ts was
+    // measured passing the full suite.
+    const text = res.content.map((c: any) => c.text ?? "").join("\n");
+    for (const project of withCaveats) {
+      for (const caveat of project.limitations!) {
+        assert.ok(
+          text.includes(caveat),
+          `"${project.name}"'s limitation is missing from the rendered text block, so a ` +
+            `text-only MCP client sees the metrics without the caveat: "${caveat.slice(0, 80)}…"`,
+        );
+      }
     }
   });
 });
