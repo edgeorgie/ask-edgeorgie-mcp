@@ -6,8 +6,8 @@
  * recruiter's agent can query him directly, instead of parsing a static
  * resume PDF.
  *
- * Retrieval is 100% local (TF-IDF over a corpus built from resume.txt,
- * RELIABILITY-REPORT.md, and BUILD-LOG.md — public evidence only, no
+ * Retrieval is 100% local (TF-IDF over the corpus listed in
+ * src/corpus.ts CORPUS_FILES — public evidence only, no
  * external embedding API, no paid key). An LLM key
  * (ANTHROPIC_API_KEY or OPENAI_API_KEY) is OPTIONAL and used only to turn
  * retrieved excerpts into prose with inline citations; without one,

@@ -110,8 +110,9 @@ export function createAskEdgeorgieServer(): McpServer {
         "actual timeline rather than dumping the text. Unlike ask_about_edgeorgie, this tool does NOT " +
         "do retrieval and returns no line-level citations: the beats are the candidate's own " +
         "hand-written summary, maintained as editorial copy in src/engine.ts. The underlying facts " +
-        "also appear in data/RECRUITER-FAQ.md, but the wording here is a paraphrase, not a quote from " +
-        "it — use ask_about_edgeorgie when you need a cited source file and line range.",
+        "also appear in data/RECRUITER-FAQ.md and some phrasing overlaps with it, so treat this as " +
+        "editorial copy rather than either a quote or a clean paraphrase — use ask_about_edgeorgie " +
+        "when you need a cited source file and line range.",
       inputSchema: {},
       outputSchema: {
         intro: z.string(),

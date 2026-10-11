@@ -246,13 +246,14 @@ export interface StoryResult {
  * PROVENANCE, stated precisely because this repo's whole contract is that a
  * `source` field names text you can go and read: these beats are the
  * candidate's own editorial copy, authored for the portfolio timeline and
- * maintained here by hand. They are NOT retrieved from data/ and they are
- * NOT verbatim quotes of any corpus file — the facts behind them (the 2D
- * platformer at 15, the dual degrees, Kotlin/Swift on the job, Unreal
- * Engine, guitar, the 4x/week morning gym routine) overlap with
- * RECRUITER-FAQ.md, but the wording does not, so `source` deliberately
- * describes the copy's origin instead of citing a file+line range it could
- * not back. Use doAskAboutEdgeorgie when a caller needs a citation.
+ * maintained here by hand. They are NOT retrieved from data/ at runtime. The
+ * facts behind them (the 2D platformer at 15, the dual degrees, Kotlin/Swift
+ * on the job, Unreal Engine, guitar, the 4x/week morning gym routine) also
+ * appear in RECRUITER-FAQ.md, and some phrasing genuinely overlaps with it —
+ * the longest shared runs measured 51, 45 and 39 characters — so this is
+ * NOT a clean paraphrase either. `source` therefore describes the copy's
+ * origin rather than citing a file+line range, because no single range backs
+ * the whole beat. Use doAskAboutEdgeorgie when a caller needs a citation.
  *
  * Deliberate design note: if anyone later makes this data file-driven (read
  * the beats out of data/), that creates an UNSPOTLIGHTED path from file

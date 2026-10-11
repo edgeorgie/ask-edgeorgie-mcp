@@ -1,6 +1,6 @@
 /**
- * Retrieval over the local corpus (resume.txt, RELIABILITY-REPORT.md,
- * BUILD-LOG.md — public evidence only).
+ * Retrieval over the local corpus (see src/corpus.ts CORPUS_FILES for the
+ * authoritative file list — public evidence only).
  * Same scoring contract as repoask-mcp's src/retrieval.ts: both import
  * embedTfidf/topK/diversify from @edgeorgie/retrieval-core and apply them to
  * their own index, so one document can't crowd out the rest, return
