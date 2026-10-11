@@ -30,6 +30,7 @@ import { fileURLToPath } from "node:url";
 import { buildCorpusIndex } from "./corpus.js";
 import { retrieveFromCorpus, type Citation } from "./retrieval.js";
 import { synthesize, deterministicAnswer, hasLlmKey } from "./llm.js";
+import { checkQuestionLength } from "./rate-limit.js";
 import type { Chunk } from "@edgeorgie/retrieval-core";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -329,6 +330,15 @@ export interface AskResult {
 }
 
 export async function doAskAboutEdgeorgie(question: string, topK?: number): Promise<AskResult> {
+  // Enforced here, not in the HTTP route, so every transport that can reach
+  // the billable synthesis path is covered by one check: REST /api/ask, the
+  // Streamable HTTP /mcp function, and the stdio server. A per-route check
+  // would have to be remembered four times.
+  const lengthCheck = checkQuestionLength(question);
+  if (!lengthCheck.ok) {
+    throw new Error(lengthCheck.error);
+  }
+
   const index = await buildCorpusIndex();
   const citations = retrieveFromCorpus(index, question, topK ?? 6);
   const chunksForPrompt: Chunk[] = citations.map((c) => ({

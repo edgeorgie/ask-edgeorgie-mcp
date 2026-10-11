@@ -133,3 +133,40 @@ test("ask_about_edgeorgie on an unrelated question returns no fabricated answer"
     assert.equal(structured.answerMode, "deterministic");
   });
 });
+
+test("an over-length question is rejected through the real MCP transport", async () => {
+  // This is the test that actually guards the cap. The unit tests in
+  // tests/rate-limit.test.ts only exercise checkQuestionLength as a pure
+  // function — deleting the call site in src/engine.ts would leave them all
+  // green while production went back to accepting a 19,500-character
+  // question (which it demonstrably did before the cap existed). Driving a
+  // real MCP client against the compiled server proves the check is wired
+  // into the path a caller can actually reach.
+  await withClient(async (client) => {
+    const oversized = "token ".repeat(4000); // 24,000 chars, well over the 2000 cap
+    const res: any = await client.callTool({
+      name: "ask_about_edgeorgie",
+      arguments: { question: oversized },
+    });
+    assert.equal(res.isError, true, "an over-length question must not be answered");
+    const text = JSON.stringify(res.content ?? res);
+    assert.match(text, /too long/i, `expected a length rejection, got: ${text.slice(0, 300)}`);
+    // The real length must appear, so a caller can see how far over they are.
+    assert.match(text, new RegExp(String(oversized.length)));
+  });
+});
+
+test("a question just under the cap is still answered normally", async () => {
+  // Pairs with the test above: proves the cap rejects on length rather than
+  // on some incidental property of a long string, and that a legitimately
+  // long question is not collateral damage.
+  await withClient(async (client) => {
+    const nearLimit = "What MCP server has this person built and deployed? " + "x".repeat(1900);
+    const res: any = await client.callTool({
+      name: "ask_about_edgeorgie",
+      arguments: { question: nearLimit.slice(0, 1999) },
+    });
+    assert.notEqual(res.isError, true, "a 1999-character question must still be answered");
+    assert.ok(res.structuredContent, "expected a normal structured answer");
+  });
+});
