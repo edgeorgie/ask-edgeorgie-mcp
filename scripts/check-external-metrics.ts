@@ -110,11 +110,20 @@ interface RepoClaim {
   /** Which GitHub field answers it. */
   metric: "stargazers_count" | "open_issues_count" | "forks_count" | "subscribers_count";
   /**
-   * Must capture the figure in group 1. Comma-tolerant: a `(\d+)` here is how
-   * the stars check was silently defeated by "1,000".
+   * Must capture the figure in group 1, and MUST carry the `g` flag — see
+   * `assertGlobal`. Comma-tolerant: a `(\d+)` here is how the stars check was
+   * silently defeated by "1,000".
    */
   pattern: RegExp;
-  /** Which prose surfaces must state it. Every one is required to match. */
+  /**
+   * Which prose surfaces are REQUIRED to state it. A declared surface missing
+   * the claim is "could not check" (exit 2).
+   *
+   * This is a floor, not a ceiling: the pattern is evaluated against EVERY
+   * surface, and any occurrence anywhere that disagrees with the live value is
+   * drift. Declaring a surface only adds the requirement that the claim be
+   * present there — it never exempts the others from being read.
+   */
   surfaces: SurfaceId[];
 }
 
@@ -142,17 +151,34 @@ const CLAIMS: RepoClaim[] = [
     label: "crispy-profiling stars",
     repo: "edgeorgie/crispy-profiling",
     metric: "stargazers_count",
-    pattern: /([\d,]+)\s+GitHub stars/,
+    pattern: /([\d,]+)\s+GitHub stars/g,
     surfaces: ["data/BUILD-LOG.md", "src/engine.ts limitations[]"],
   },
   {
     label: "crispy-profiling open issues",
     repo: "edgeorgie/crispy-profiling",
     metric: "open_issues_count",
-    pattern: /([\d,]+)\s+open issues? on the repo/,
+    pattern: /([\d,]+)\s+open issues? on the repo/g,
     surfaces: ["src/engine.ts limitations[]"],
   },
 ];
+
+/**
+ * A `RepoClaim.pattern` without the `g` flag silently degrades this check from
+ * "every occurrence" to "the first occurrence", which is the same non-global
+ * `.exec()` defect already fixed once for the download claim. The flag is load
+ * bearing, so it is asserted rather than trusted to survive editing.
+ */
+function assertGlobal(claims: RepoClaim[]): void {
+  const bad = claims.filter((c) => !c.pattern.flags.includes("g"));
+  if (bad.length > 0) {
+    throw new Error(
+      `CLAIMS pattern(s) missing the \`g\` flag: ${bad.map((c) => c.label).join(", ")}. ` +
+        `Without it only the first occurrence in each surface is read, so a second, ` +
+        `contradictory figure elsewhere in the same text is never compared.`,
+    );
+  }
+}
 
 interface Problem {
   kind: "drift" | "unchecked";
@@ -276,7 +302,17 @@ async function main(): Promise<number> {
     }
   }
 
-  // ── Repo-state claims: every DECLARED claim must be found, and must match.
+  // ── Repo-state claims: every DECLARED claim must be found on its declared
+  //    surfaces, and EVERY occurrence on EVERY surface must match the live
+  //    value — including surfaces the claim does not declare.
+  //
+  //    The declared-surface list alone was insufficient: an undeclared figure
+  //    matching the same pattern could be added to any other surface and go
+  //    unread, so a false "7 open issues on the repo" planted in
+  //    data/BUILD-LOG.md (a surface the open-issues row does not declare) was
+  //    served with this script reporting clean and exiting 0. Declaring a
+  //    surface now raises a presence REQUIREMENT; it never scopes the reading.
+  assertGlobal(CLAIMS);
   for (const claim of CLAIMS) {
     const gh = ghByRepo.get(claim.repo);
     const live = gh?.[claim.metric] as number | undefined;
@@ -289,30 +325,41 @@ async function main(): Promise<number> {
       continue;
     }
 
-    for (const surfaceId of claim.surfaces) {
-      const text = surfaces.get(surfaceId) ?? "";
-      const m = claim.pattern.exec(text);
-      if (!m) {
-        // THE CASE THE FIRST VERSION SWALLOWED. Not finding a declared claim
-        // is "could not check", never "clean".
-        problems.push({
-          kind: "unchecked",
-          surface: surfaceId,
-          message:
-            `declared claim "${claim.label}" was NOT FOUND (pattern ${claim.pattern}). ` +
-            `It was either removed or reworded — in both cases it is no longer being ` +
-            `verified, and a reworded false claim would be served silently. Restate the ` +
-            `claim, update the pattern, or delete the row from CLAIMS.`,
-        });
+    for (const [surfaceId, text] of surfaces) {
+      const matches = [...text.matchAll(claim.pattern)];
+
+      if (matches.length === 0) {
+        // Absent from a surface that is REQUIRED to state it: "could not
+        // check", never "clean". Absent from a surface that merely may
+        // mention it is fine and says nothing.
+        if (claim.surfaces.includes(surfaceId)) {
+          problems.push({
+            kind: "unchecked",
+            surface: surfaceId,
+            message:
+              `declared claim "${claim.label}" was NOT FOUND (pattern ${claim.pattern}). ` +
+              `It was either removed or reworded — in both cases it is no longer being ` +
+              `verified, and a reworded false claim would be served silently. Restate the ` +
+              `claim, update the pattern, or delete the row from CLAIMS.`,
+          });
+        }
         continue;
       }
-      const claimed = parseFigure(m[1]);
-      if (claimed !== live) {
-        problems.push({
-          kind: "drift",
-          surface: surfaceId,
-          message: `"${claim.label}" claims ${claimed}, live is ${live}.`,
-        });
+
+      for (const m of matches) {
+        const claimed = parseFigure(m[1]);
+        if (claimed !== live) {
+          problems.push({
+            kind: "drift",
+            surface: surfaceId,
+            message:
+              `"${claim.label}" claims ${claimed}, live is ${live}` +
+              (claim.surfaces.includes(surfaceId)
+                ? "."
+                : ` — found on a surface this claim does not declare, which is ` +
+                  `exactly the case a declared-surfaces-only read would have missed.`),
+          });
+        }
       }
     }
   }
