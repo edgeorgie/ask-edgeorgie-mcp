@@ -38,3 +38,21 @@ jobs:
 
       - name: Test
         run: npm test
+
+      # `--omit=dev` is the deliberate scope, not laziness. All 11 advisories
+      # in this repo resolve to a single devDependency subtree: `@vercel/node`
+      # pulls undici/@fastify/busboy, ts-morph/ajv and fast-glob/micromatch/
+      # braces. Nothing in that subtree reaches the deployed function —
+      # `@vercel/node` is used exclusively as `import type { VercelRequest,
+      # VercelResponse }` (grep the `api/` handlers: every import of it is a
+      # type-only import, erased by `tsc`), and Vercel supplies the real
+      # runtime. `npm audit fix --force` would downgrade it a major version to
+      # silence vulnerabilities that never ship.
+      #
+      # The production tree (`@modelcontextprotocol/sdk`, `express`, `zod`,
+      # `@edgeorgie/retrieval-core`) is currently 0 findings, so this gate
+      # starts green and fails the day something actually shipped regresses.
+      # Separate step from the suite so an advisory reads as an advisory, not a
+      # test failure.
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
