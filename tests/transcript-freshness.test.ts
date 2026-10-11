@@ -471,8 +471,21 @@ test("each transcript records the kind of origin it claims", async () => {
 
   for (const relPath of TRANSCRIPTS) {
     const transcript = await readTranscript(relPath);
-    const lagDays =
-      (Date.parse(engineCommitted) - Date.parse(transcript.ranAt as string)) / 86_400_000;
+    const ranAt = Date.parse(transcript.ranAt as string);
+
+    // A recording cannot have been made in the future. Without this, the lag
+    // bound below is one-directional: it only catches a transcript recorded
+    // too LONG BEFORE the engine, so setting `ranAt` to a far-future date made
+    // `lagDays` large and NEGATIVE and the whole suite stayed green — a stale
+    // recording could be laundered into a passing one by editing one string.
+    assert.ok(
+      ranAt <= Date.now() + 86_400_000,
+      `${relPath}: \`ranAt\` is ${transcript.ranAt}, which is in the future. The bound ` +
+        `below compares this against the engine's commit date, so a future value makes ` +
+        `any lag look acceptable. Regenerate the recording instead of editing its date.`,
+    );
+
+    const lagDays = (Date.parse(engineCommitted) - ranAt) / 86_400_000;
     assert.ok(
       lagDays <= MAX_TRANSCRIPT_LAG_DAYS,
       `${relPath} was recorded at ${transcript.ranAt}, ${Math.floor(lagDays)} days before ` +

@@ -263,7 +263,10 @@ export async function doGetProjects(): Promise<ProjectResult[]> {
       ],
       evidence: [
         "Live site: https://simplescope-one.vercel.app",
-        "Repo: https://github.com/edgeorgie/simplescope",
+        // Deliberately NOT a repo URL. `evidence[]` is the list of links a
+        // reviewer clicks, and this repo is private: the URL returns 404
+        // unauthenticated, so listing it offered a dead link as proof.
+        "No repo link: the GitHub repo is private and returns 404 to any reader, so the code is not independently inspectable. The deployed site is the only verifiable evidence for this artifact.",
       ],
       limitations: [
         "It carries NO LICENCE FILE — the GitHub API reports `NOASSERTION`, the only one of these six artifacts that is not MIT. Legally that means default copyright: nobody may reuse, modify or redistribute it, including a reviewer who only wants to clone and run it. This is stated rather than silently fixed because choosing a licence is a commitment on the author's own work, not an automated edit.",
