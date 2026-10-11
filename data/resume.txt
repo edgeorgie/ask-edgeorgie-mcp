@@ -1,7 +1,7 @@
 Resume - Edwin Jorge.docx
 Edwin Jorge
 
-Barranquilla, Colombia | LinkedIn | Portfolio | ed.jorge1122@gmail.com | +57 300 281 3676
+Barranquilla, Colombia | LinkedIn | Portfolio | ed.jorge1122@gmail.com
 
 Software Engineer focused on AI-enabled full-stack development with 5+ years of experience building scalable web platforms using TypeScript, React, Next.js, and Node.js. Dual degrees in Electronic Engineering and Software Development. Contributed to applications serving 4.3M+ users across LATAM, delivering high-performance and intelligent digital experiences.
 

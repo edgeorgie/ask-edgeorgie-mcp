@@ -79,7 +79,10 @@ export function createAskEdgeorgieServer(): McpServer {
             description: z.string(),
             realMetrics: z.array(z.string()),
             evidence: z.array(z.string()),
-            limitations: z.array(z.string()).min(1),
+            // Per-string minimum, not just `.min(1)` on the array. A single
+            // whitespace string satisfied an array-length check while stating
+            // nothing, which made the caveat policy cosmetic.
+            limitations: z.array(z.string().trim().min(40)).min(1),
             source: z.string(),
           }),
         ),

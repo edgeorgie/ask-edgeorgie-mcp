@@ -204,43 +204,75 @@ test("data/BUILD-LOG.md discusses every project the tool returns, not just names
   // episodes rather than the project list. The one thing it must never do is
   // fail to give the retrieval layer something citable about a project.
   //
-  // PRESENCE IS NOT ENOUGH, and this is the correction to an earlier revision
-  // of this guard. A mention-anywhere check passed over a BUILD-LOG.md
-  // TRUNCATED TO ITS TITLE LINE — because the title happens to enumerate all
-  // six names, `# Build log: triage-desk, eval-lab, ...`. In that state the
-  // corpus contains zero citable prose about any project and the guard was
-  // green, which is the exact failure it exists to prevent, one layer down.
+  // PRESENCE IS NOT ENOUGH, and NEITHER IS BLOCK LENGTH. Two earlier
+  // revisions of this guard were each defeated by a near-identical variant of
+  // the bug it was written for:
   //
-  // So the assertion is PROXIMITY-BASED: each name must appear with real
-  // surrounding prose in the same block. A title line, a table of contents or
-  // a bare list cannot satisfy it; a paragraph actually discussing the project
-  // can. MIN_CONTEXT_CHARS is the floor on "real prose", chosen well below the
-  // shortest genuine project paragraph in the file (the shortest is ~900
-  // chars) and far above any plausible enumeration line.
+  //   1. Mention-anywhere passed over a BUILD-LOG.md TRUNCATED TO ITS TITLE
+  //      LINE, because the title enumerates all six names.
+  //   2. Mention-in-a->=400-char-block passed over the title line plus ONE
+  //      682-char enumeration paragraph ("triage-desk, eval-lab, repoask-mcp,
+  //      crispy-profiling, simplescope and agentlens come down to one
+  //      idea..."), and over a corpus where agentlens's three real paragraphs
+  //      were deleted and the name merely dropped once inside a long
+  //      triage-desk paragraph. Length is not aboutness.
+  //
+  // So the assertion is that each project has a FOCUS BLOCK: a block of real
+  // prose that is ABOUT that project and not about the others. Three
+  // conditions together, each closing a measured hole:
+  //
+  //   - >= MIN_CONTEXT_CHARS  — a heading or a one-line list cannot pass.
+  //   - >= MIN_OCCURRENCES    — a single name-drop inside a paragraph about
+  //                             something else cannot pass. Sustained
+  //                             discussion refers back to its subject.
+  //   - names no OTHER project — an enumeration sentence listing all six, or
+  //                             a block about project A that mentions B in
+  //                             passing, cannot pass for any of them.
+  //
+  // The third is the load-bearing one: it is what makes "a long block that
+  // merely contains the name" insufficient, because filler that name-drops
+  // several projects fails for every project it names.
   const MIN_CONTEXT_CHARS = 400;
+  const MIN_OCCURRENCES = 2;
   const buildLog = await read("data", "BUILD-LOG.md");
 
-  // Blocks = paragraphs. A name's "context" is the longest block containing
-  // it; headings and list items are short by construction and so cannot pass.
+  // Blocks = paragraphs.
   const blocks = buildLog.split(/\n\s*\n/);
+  const boundaryFor = (name: string) => new RegExp(`(?<![\\w-])${name}(?![\\w-])`, "g");
 
   const unsupported: string[] = [];
   for (const name of expectedNames) {
-    const boundary = new RegExp(`(?<![\\w-])${name}(?![\\w-])`);
-    const best = blocks
-      .filter((block) => boundary.test(block))
-      .reduce((longest, block) => Math.max(longest, block.trim().length), 0);
-    if (best < MIN_CONTEXT_CHARS) {
-      unsupported.push(`${name} (longest containing block: ${best} chars)`);
+    const others = expectedNames.filter((other) => other !== name);
+    const focusBlocks = blocks.filter((block) => {
+      if (block.trim().length < MIN_CONTEXT_CHARS) return false;
+      if ((block.match(boundaryFor(name)) ?? []).length < MIN_OCCURRENCES) return false;
+      return !others.some((other) => boundaryFor(other).test(block));
+    });
+    if (focusBlocks.length === 0) {
+      // Report the best near-miss, so a genuine failure says what to change.
+      const best = blocks
+        .filter((block) => boundaryFor(name).test(block))
+        .map((block) => ({
+          len: block.trim().length,
+          occ: (block.match(boundaryFor(name)) ?? []).length,
+          others: others.filter((other) => boundaryFor(other).test(block)).length,
+        }))
+        .sort((a, b) => b.occ - a.occ)[0];
+      unsupported.push(
+        best
+          ? `${name} (best block: ${best.len} chars, ${best.occ} mention(s), names ${best.others} other project(s))`
+          : `${name} (not mentioned at all)`,
+      );
     }
   }
 
   assert.deepEqual(
     unsupported,
     [],
-    `data/BUILD-LOG.md names these projects but gives the retrieval layer no substantive ` +
-      `passage to cite for them — fewer than ${MIN_CONTEXT_CHARS} chars of prose in any block ` +
-      `mentioning them: [${unsupported.join(", ")}]. A name in a heading or a list is not ` +
-      `evidence; the corpus would answer "no reference" for an artifact get_projects advertises.`,
+    `data/BUILD-LOG.md has no passage actually ABOUT these projects, so the retrieval layer ` +
+      `has nothing substantive to cite for them: [${unsupported.join(", ")}]. A focus block is ` +
+      `>=${MIN_CONTEXT_CHARS} chars, mentions the project >=${MIN_OCCURRENCES} times, and does ` +
+      `not name another project — a heading, an enumeration of all six, or a passing mention ` +
+      `inside a paragraph about something else does not count as evidence.`,
   );
 });

@@ -90,18 +90,34 @@ test("get_projects over the real MCP transport returns exactly what the engine d
   assert.ok(expected.length > 0, "doGetProjects() returned no projects");
 
   // Checked BEFORE the transport call, deliberately. `limitations` is declared
-  // `z.array(z.string()).min(1)` in the output schema, so an entry with no
-  // caveats makes the SDK reject the whole payload and `structuredContent`
-  // arrives undefined — a confusing `TypeError` reading `.projects` that says
-  // nothing about the real defect. Asserting on the engine first means the
-  // failure names the project that is missing caveats. The schema is still
-  // the backstop; this is the readable error in front of it.
+  // with a per-string minimum length in the output schema, so a bad entry
+  // makes the SDK reject the whole payload and `structuredContent` arrives
+  // undefined — a confusing `TypeError` reading `.projects` that says nothing
+  // about the real defect. Asserting on the engine first means the failure
+  // names the offending project. The schema is still the backstop; this is the
+  // readable error in front of it.
+  //
+  // MIN_CAVEAT_CHARS exists because `.length >= 1` is not a policy. An earlier
+  // revision asserted only that the array was non-empty, and replacing all
+  // four of simplescope's caveats — including the missing-licence warning —
+  // with the single string `" "` was measured passing the whole suite. A
+  // caveat has to say something; the floor is set below the shortest real
+  // caveat in the engine and far above any placeholder.
+  const MIN_CAVEAT_CHARS = 40;
+  const thin = all.flatMap((p) =>
+    (p.limitations ?? []).length === 0
+      ? [`${p.name}: no limitations at all`]
+      : p.limitations
+          .filter((c) => c.trim().length < MIN_CAVEAT_CHARS)
+          .map((c) => `${p.name}: ${JSON.stringify(c)} (${c.trim().length} chars)`),
+  );
   assert.deepEqual(
-    all.filter((p) => !p.limitations?.length).map((p) => p.name),
+    thin,
     [],
-    "every project must state limitations — an evidence tool that lists caveats on only " +
-      "some artifacts implies the others have none, which is not true of any of them. " +
-      "When this field was optional it was populated on 1 of 6 entries.",
+    `every project must state SUBSTANTIVE limitations (>=${MIN_CAVEAT_CHARS} chars each). An ` +
+      `evidence tool that lists caveats on only some artifacts implies the others have none, ` +
+      `which is not true of any of them; and a placeholder string satisfies a length check ` +
+      `while stating nothing. Offenders: [${thin.join("; ")}]`,
   );
 
   await withClient(async (client) => {
@@ -111,10 +127,11 @@ test("get_projects over the real MCP transport returns exactly what the engine d
 
     // Limitations must survive the transport too. They are the one field a
     // caller cannot reconstruct from anything else, and dropping them turns an
-    // honest entry into an overstated one.
-    const withCaveats = all.filter((p) => p.limitations?.length);
-
-    for (const project of withCaveats) {
+    // honest entry into an overstated one. Every project has caveats (asserted
+    // above), so this iterates the full list rather than a filtered subset —
+    // an earlier `filter(p => p.limitations?.length)` was a tautology that
+    // read as if it were doing work.
+    for (const project of all) {
       const served = res.structuredContent.projects.find((p: any) => p.name === project.name);
       assert.deepEqual(
         served.limitations,
@@ -123,20 +140,48 @@ test("get_projects over the real MCP transport returns exactly what the engine d
       );
     }
 
-    // ...and they must reach the TEXT content block, not only
-    // structuredContent. Most chat-style MCP clients render the text block and
-    // never look at structuredContent, so a caller there would see every
-    // metric and none of the caveats attached to them — the one direction this
-    // tool must not fail in. There was no assertion on this path at all:
-    // deleting the entire caveat-rendering branch in src/create-server.ts was
-    // measured passing the full suite.
+    // ...and they must reach the TEXT content block, UNDER THEIR OWN PROJECT'S
+    // HEADING. Most chat-style MCP clients render the text block and never
+    // look at structuredContent, so a caller there would otherwise see every
+    // metric and none of the caveats attached to them.
+    //
+    // This is asserted PER SECTION, not against the whole joined text, and
+    // that distinction is load-bearing. There was originally no assertion on
+    // this path at all (deleting the render branch passed the full suite); the
+    // first fix asserted `text.includes(caveat)` over the whole blob, and that
+    // was defeated by rendering each project's caveats under the NEXT
+    // project's heading — every exact substring still present, so the guard
+    // stayed green while the server confidently told callers that
+    // simplescope's missing-licence warning belonged to crispy-profiling.
+    // Misattributed is worse than absent: it is wrong rather than silent.
     const text = res.content.map((c: any) => c.text ?? "").join("\n");
-    for (const project of withCaveats) {
-      for (const caveat of project.limitations!) {
+    for (const project of all) {
+      const heading = `## ${project.name}`;
+      const start = text.indexOf(heading);
+      assert.notEqual(
+        start,
+        -1,
+        `the rendered text block has no "${heading}" section, so nothing about ${project.name} ` +
+          `can be attributed to it by a text-only client`,
+      );
+      // The section runs to the next project heading, whichever comes first.
+      const nextStarts = all
+        .filter((other) => other.name !== project.name)
+        .map((other) => text.indexOf(`## ${other.name}`, start + heading.length))
+        .filter((index) => index !== -1);
+      const section = text.slice(start, nextStarts.length ? Math.min(...nextStarts) : undefined);
+
+      assert.ok(
+        section.includes("Limitations:"),
+        `"${project.name}"'s rendered section has no "Limitations:" label, so its caveats are ` +
+          `not identifiable as caveats by a text-only client`,
+      );
+      for (const caveat of project.limitations) {
         assert.ok(
-          text.includes(caveat),
-          `"${project.name}"'s limitation is missing from the rendered text block, so a ` +
-            `text-only MCP client sees the metrics without the caveat: "${caveat.slice(0, 80)}…"`,
+          section.includes(caveat),
+          `"${project.name}"'s limitation is missing from ITS OWN section of the rendered text ` +
+            `block (it may be absent, truncated, or attributed to a different project — all ` +
+            `three mislead a text-only MCP client): "${caveat.slice(0, 80)}…"`,
         );
       }
     }

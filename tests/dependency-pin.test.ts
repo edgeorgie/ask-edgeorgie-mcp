@@ -38,20 +38,25 @@ const SHA_FRAGMENT = /#([0-9a-f]{40})$/;
  * Specs that resolve to the npm REGISTRY. Everything else is treated as a git
  * dependency.
  *
- * Detection is by EXCLUSION, deliberately. An earlier revision matched git
- * specs by inclusion (`/^(github:|git\+|git:)/`) and therefore did not see
- * npm's shorthand form, `owner/repo#ref` — which is a fully-functional
- * floating git dependency with no scheme prefix at all. Reintroducing that
- * exact spec was measured passing the inclusion-based guard: the dependency
- * simply vanished from the set being checked, and the suite stayed green over
- * an empty list. A guard that stops seeing the thing it guards is worse than
- * no guard, because its green signals safety.
+ * Detection is by EXCLUSION, and the exclusion list is deliberately narrow.
+ * Two earlier revisions each missed a real floating git spec:
  *
- * So: anything that is not recognisably a registry range is a candidate, and
- * the assertions below demand it carry a 40-hex pin. A new dependency form
- * this function has never seen fails CLOSED (reported, not skipped).
+ *   1. Inclusion matching (`/^(github:|git\+|git:)/`) could not see npm's
+ *      shorthand `owner/repo#ref`, which has no scheme prefix at all.
+ *   2. Excluding anything starting with a digit (`\d`) could not see
+ *      `0xowner/repo#main` — GitHub usernames may begin with a digit, and
+ *      npm's own `npm-package-arg` classifies that spec as `type: "git"`.
+ *      Reintroducing it was measured passing: the dependency vanished from the
+ *      set and the suite stayed green over a short list.
+ *
+ * So a bare leading digit is no longer enough to be called a registry range —
+ * it must look like an actual semver version (`1`, `1.2`, `1.2.3-rc.1`), which
+ * `owner/repo#ref` cannot, because of the slash. A dependency form this
+ * function has never seen falls through to the git branch and is REPORTED
+ * (fails closed), never silently skipped.
  */
-const REGISTRY_SPEC = /^(\*|latest|[~^><=]|\d|workspace:|npm:|file:|link:)/;
+const REGISTRY_SPEC =
+  /^(\*|latest|[~^><=]|\d+(\.\d+)*([-+][\w.-]+)?$|\d+(\.\d+)*\s*(-\s*\d|\|\|)|workspace:|npm:|file:|link:)/;
 
 function gitDependencies(manifest: Record<string, unknown>): [string, string][] {
   const deps = {
