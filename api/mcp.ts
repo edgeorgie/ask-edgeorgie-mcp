@@ -13,6 +13,7 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import type express from "express";
 import { handleMcpRequest } from "../src/http-server.js";
 import { checkRateLimit, getClientId } from "../src/rate-limit.js";
+import { capture } from "../src/analytics.js";
 
 /**
  * handleMcpRequest's signature is express.Request/express.Response because
@@ -55,6 +56,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   const callerId = getClientId(req as unknown as { headers: Record<string, unknown>; socket?: { remoteAddress?: string } });
   const limit = checkRateLimit(callerId);
   if (!limit.allowed) {
+    await capture("rate_limited", { surface: "mcp", reason: limit.reason === "global" ? "global" : "per-caller" });
     res.setHeader("Retry-After", String(limit.retryAfterSeconds ?? 60));
     res.status(429).json({
       jsonrpc: "2.0",

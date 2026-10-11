@@ -75,6 +75,41 @@ spend limit on the key); closing the concurrency hole properly needs a
 distributed store (Upstash Redis / Vercel KV, `INCR` + TTL). See the comment
 block at the top of `src/rate-limit.ts` for the full rationale.
 
+## Environment variables
+
+None are required: a clean checkout answers in deterministic retrieval mode,
+which is what CI asserts. Every variable below is optional.
+
+| Variable | Effect when set |
+|---|---|
+| `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` | Turns on LLM synthesis in `ask_about_edgeorgie` (`answerMode: "llm"`). Billed to the key's owner, so read "Rate limiting" above first. `ANTHROPIC_MODEL` / `OPENAI_MODEL` override the provider's default model; `ANTHROPIC_WORKSPACE_ID` is needed by org-scoped Anthropic keys. |
+| `POSTHOG_KEY` | Turns on server-side product analytics (`src/analytics.ts`, via [posthog-node](https://github.com/PostHog/posthog-js/tree/main/packages/node)). Unset, the facade is a complete no-op: no client is created, no request leaves the function, nothing is logged. Set it in the Vercel project's environment variables to start recording. |
+| `PORT` | Listen port for the standalone Streamable HTTP server (`npm run start:http`); default 3000. Not used on Vercel. |
+
+### What analytics records, and what it never sends
+
+Three events, each with `app: "ask-edgeorgie-mcp"` and a fresh random
+`distinctId` per event (no person profile, no cookies, nothing linking two
+requests):
+
+- `question_asked`: `surface` (`web` for `POST /api/ask`, `mcp` for the
+  `ask_about_edgeorgie` tool), `mode` (the `answerMode` enum), `cited`
+  (boolean), `citations` (count), `latency_ms` (engine time, retrieval plus
+  any provider call) and `length_bucket` of the question: `<40`, `40-120`,
+  `120-300` or `300+`.
+- `mcp_tool_called`: `tool`, for each of the four MCP tools.
+- `rate_limited`: `surface` and `reason` (`per-caller` or `global`) whenever
+  the limiter rejects a request.
+
+Never sent: the question, the answer, citation text, caller IPs, emails or
+names. Only buckets, counts, booleans, durations and enums leave the server,
+and `tests/analytics.test.ts` asserts that shape. Each capture is awaited
+before the response is written, because a serverless function may be frozen
+as soon as its response ends; the client makes one attempt with a short
+timeout, so an analytics outage costs at most that timeout and never changes
+a response. The static web UI in `public/` ships no browser analytics; its
+usage is visible through the `surface: "web"` events above.
+
 ## The corpus
 
 The retrieval corpus is a direct copy of files that already existed
@@ -214,6 +249,9 @@ the compiled server from `dist/`, which doesn't exist until `pretest` builds it.
   `tests/typecheck-coverage.test.ts` asserts every tracked `.ts` file is
   reached by one of the two tsconfigs, so a new directory of TypeScript
   cannot arrive unchecked (see the typecheck note below);
+  `tests/analytics.test.ts` asserts the analytics facade is inert without
+  `POSTHOG_KEY` (no request, no console output), swallows a failed send when
+  a key is set, and builds `question_asked` from counts and buckets only;
   `tests/external-metric-claims.test.ts` guards the one claim class the other
   guards structurally cannot (see below).
 - **The guard class that could not be derived locally.** Every other guard here
@@ -245,7 +283,7 @@ the compiled server from `dist/`, which doesn't exist until `pretest` builds it.
   not. It also fails if a mutation did not *apply* — a `sed` that silently
   matches nothing scores as a guard passing when the guard was never
   exercised, which is the same false comfort one level up.
-- The suite is **14 test files**. That sentence is the only count this README
+- The suite is **15 test files**. That sentence is the only count this README
   states, and [`tests/readme-test-claims.test.ts`](tests/readme-test-claims.test.ts)
   derives the number from the real suite and asserts it matches. The previous
   wording claimed "28/28 passing across six files" long after the suite had
