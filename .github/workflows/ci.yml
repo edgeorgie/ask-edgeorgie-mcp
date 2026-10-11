@@ -39,20 +39,39 @@ jobs:
       - name: Test
         run: npm test
 
-      # `--omit=dev` is the deliberate scope, not laziness. All 11 advisories
-      # in this repo resolve to a single devDependency subtree: `@vercel/node`
-      # pulls undici/@fastify/busboy, ts-morph/ajv and fast-glob/micromatch/
-      # braces. Nothing in that subtree reaches the deployed function —
-      # `@vercel/node` is used exclusively as `import type { VercelRequest,
-      # VercelResponse }` (grep the `api/` handlers: every import of it is a
-      # type-only import, erased by `tsc`), and Vercel supplies the real
-      # runtime. `npm audit fix --force` would downgrade it a major version to
-      # silence vulnerabilities that never ship.
+      # SCOPE: `--omit=dev`, and this is NOT the claim that dev dependencies
+      # cannot affect what ships. In general they can — a compiler or bundler is
+      # a devDependency whose OUTPUT is the artifact. That class of build-time
+      # supply-chain compromise is blind to this flag and is covered elsewhere
+      # (`npm ci` against the committed lockfile, Dependabot alerts).
       #
-      # The production tree (`@modelcontextprotocol/sdk`, `express`, `zod`,
-      # `@edgeorgie/retrieval-core`) is currently 0 findings, so this gate
-      # starts green and fails the day something actually shipped regresses.
-      # Separate step from the suite so an advisory reads as an advisory, not a
-      # test failure.
+      # The narrower claim this rests on is about the advisories actually
+      # present. All of them resolve to one devDependency, `@vercel/node`:
+      #   @vercel/node
+      #     ├─ undici -> @fastify/busboy        (high x2)
+      #     ├─ ts-morph -> @ts-morph/common
+      #     │    ├─ fast-glob -> micromatch -> braces   (high)
+      #     │    └─ (via @vercel/static-config) ajv      (moderate)
+      #     └─ path-to-regexp@6                          (high)
+      # `@vercel/node` is consumed here only as a type: every reference in
+      # `api/` is `import type { VercelRequest, VercelResponse }`, erased by
+      # `tsc`, with Vercel supplying the real runtime — so none of that subtree
+      # is in the deployed function, and nothing in it runs at build time
+      # either. `npm audit fix --force` would downgrade it a major version
+      # (23 -> 4) to silence findings in code that never executes.
+      #
+      # Note `path-to-regexp` appears in BOTH trees: 6.1.0 under @vercel/node
+      # (flagged) and 8.4.2 under express -> router (unaffected). The prod-only
+      # scope keeps the express path, which is the one that actually serves
+      # requests.
+      #
+      # Known gap: `@edgeorgie/retrieval-core` is a git dependency, so npm audit
+      # has no advisory data for it and it is absent from the audit graph
+      # entirely. It declares no dependencies of its own, and it has its own CI.
+      #
+      # The rest of the production tree (@modelcontextprotocol/sdk, express,
+      # zod) is 0 findings today, so this gate starts green and fails when
+      # something reachable regresses. Separate step from the suite so an
+      # advisory reads as an advisory, not as a test failure.
       - name: Audit production dependencies
         run: npm audit --omit=dev --audit-level=high
