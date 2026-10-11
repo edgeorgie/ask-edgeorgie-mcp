@@ -5,7 +5,7 @@
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { checkRateLimit, _resetForTests, RATE_LIMIT_CONFIG } from "../src/rate-limit.js";
+import { checkRateLimit, checkQuestionLength, _resetForTests, RATE_LIMIT_CONFIG } from "../src/rate-limit.js";
 
 test("allows requests under the per-caller limit", () => {
   _resetForTests();
@@ -51,6 +51,11 @@ test("the window resets once enough time has elapsed", () => {
 });
 
 test("the global ceiling trips even across many distinct caller IDs", () => {
+  // SCOPE, stated because a green test here previously sat next to a README
+  // claiming more than this proves: it proves the ceiling holds WITHIN ONE
+  // PROCESS. It says nothing about the deployment, and the live measurement
+  // contradicts the stronger reading — 40 concurrent POSTs from one IP got
+  // 36x200 / 4x429, because each Vercel instance has its own empty Map.
   _resetForTests();
   const now = Date.now();
   let lastResult;
@@ -61,4 +66,35 @@ test("the global ceiling trips even across many distinct caller IDs", () => {
   }
   assert.equal(lastResult!.allowed, false);
   assert.equal(lastResult!.reason, "global");
+});
+
+test("checkQuestionLength accepts a question at exactly the limit", () => {
+  const atLimit = "a".repeat(RATE_LIMIT_CONFIG.MAX_QUESTION_LENGTH);
+  const result = checkQuestionLength(atLimit);
+  assert.equal(result.ok, true);
+  assert.equal(result.error, undefined);
+});
+
+test("checkQuestionLength rejects one character over the limit, naming the real length", () => {
+  const overLimit = "a".repeat(RATE_LIMIT_CONFIG.MAX_QUESTION_LENGTH + 1);
+  const result = checkQuestionLength(overLimit);
+  assert.equal(result.ok, false);
+  // The message must carry both numbers: a caller hitting this needs to know
+  // how far over they are, not just that they failed.
+  assert.match(result.error ?? "", new RegExp(String(RATE_LIMIT_CONFIG.MAX_QUESTION_LENGTH + 1)));
+  assert.match(result.error ?? "", new RegExp(String(RATE_LIMIT_CONFIG.MAX_QUESTION_LENGTH)));
+});
+
+test("the cap is small enough to bound prompt cost, and large enough for real questions", () => {
+  // Guards the constant itself against a future "just raise it" edit that
+  // would quietly restore the unbounded-input-token vector. 19,500 chars is
+  // the size actually accepted by production before the cap existed.
+  assert.ok(
+    RATE_LIMIT_CONFIG.MAX_QUESTION_LENGTH < 19_500,
+    "a cap at or above the measured abuse payload bounds nothing",
+  );
+  assert.ok(
+    RATE_LIMIT_CONFIG.MAX_QUESTION_LENGTH >= 500,
+    "a cap this low would reject legitimate multi-part questions",
+  );
 });

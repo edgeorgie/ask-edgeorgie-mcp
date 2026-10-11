@@ -32,20 +32,27 @@ rather than whatever a model happens to already know (or guess) about me.
 
 ## Rate limiting
 
-`/mcp` and `/api/ask` are public and unauthenticated, so both enforce
-in-memory rate limiting (`src/rate-limit.ts`) before doing any real work:
+`/mcp` and `/api/ask` are public and unauthenticated, and an
+`ANTHROPIC_API_KEY` **is** configured on the live deployment — a measured
+`POST /api/ask` returns `answerMode: "llm"`, model `claude-haiku-4-5`, so
+every anonymous request bills my own Anthropic account. Three controls apply
+(`src/rate-limit.ts`):
 
 - **Per-caller sliding window:** 10 requests/minute per IP (best-effort, via
   `X-Forwarded-For`/socket address).
-- **Global hard ceiling:** 60 requests/minute total, regardless of caller
-  identity — this is the no-key-required cost ceiling. It matters because
-  `ask_about_edgeorgie` currently falls back to cheap, deterministic TF-IDF
-  retrieval when no `ANTHROPIC_API_KEY`/`OPENAI_API_KEY` is set, but the
-  moment either key IS configured, every unthrottled request becomes a real,
-  billed LLM call — this ceiling bounds worst-case spend even if per-IP
-  limiting is defeated (spoofed headers, rotating IPs).
+- **Process-wide ceiling:** 60 requests/minute total within a single
+  instance, regardless of caller identity. Note "process-wide," not
+  "global" — see the measured limitation below.
+- **Question-length cap:** 2000 characters. Request-count limits alone do
+  not bound spend, because the question goes into the prompt verbatim: one
+  accepted request can carry an arbitrary input-token bill. Before this cap
+  existed, a single 19,500-character question was accepted and answered.
+  Enforced in `src/engine.ts` so it covers REST, `/mcp` and stdio alike;
+  `/api/ask` additionally maps it to `413` so an oversized question reads as
+  a client error rather than a server fault.
 
-Exceeding either limit returns `429` with a `Retry-After` header (seconds).
+Exceeding either rate limit returns `429` with a `Retry-After` header
+(seconds); an over-length question returns `413`.
 
 `/api/experience`, `/api/projects` and `/api/story` are deliberately **not**
 rate limited: each returns a compile-time constant or a single parsed local
@@ -53,13 +60,19 @@ file — no retrieval, no provider call — so there is no per-request cost wort
 metering. That decision is recorded in each route's header comment; add a
 limiter the moment one of them starts doing real work.
 
-**Known limitation:** this is a plain in-memory sliding window, which does
-**not** survive serverless reality on Vercel — each cold start resets the
-counters, and concurrent requests on different warm instances see independent
-counters, so the "global" ceiling is really per-instance today. Before this
-endpoint is ever put under real load with a paid LLM key behind it, replace
-this with a distributed store shared across instances (Upstash Redis, Vercel
-KV) so limits hold across cold starts and horizontal scaling. See the comment
+**Measured limitation — don't read these limits as a spend cap.** The window
+is a plain in-memory `Map`, and concurrency largely defeats it: 40
+simultaneous POSTs from one IP, no header manipulation, returned **36×200 /
+4×429** — 36 billable calls against a documented ceiling of 10. Vercel
+allocates instances in response to parallelism and each starts with an empty
+Map. The limits do bind a *sequential* caller exactly as configured (14 in a
+loop → 10×200 then 4×429), which is what they really control. Cold starts
+also reset the counters, but that is the lesser issue; plain parallelism needs
+no timing games. Forged `X-Forwarded-For` values are **not** the bypass —
+Vercel's edge sets that header and the platform value is what this code
+observes. The real hard ceiling belongs at the billing layer (an Anthropic
+spend limit on the key); closing the concurrency hole properly needs a
+distributed store (Upstash Redis / Vercel KV, `INCR` + TTL). See the comment
 block at the top of `src/rate-limit.ts` for the full rationale.
 
 ## The corpus
