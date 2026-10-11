@@ -190,7 +190,8 @@ the compiled server from `dist/`, which doesn't exist until `pretest` builds it.
   `@modelcontextprotocol/sdk` `Client` over stdio (`list_tools` shape, the
   health-check tool list matching the tools actually registered,
   `get_experience` structural check incl. Mercado Libre, `get_projects`
-  returns all 5 artifacts, `get_story` returns a chronological timeline
+  returns every artifact the engine advertises (set equality, derived at
+  runtime — not a hardcoded count), `get_story` returns a chronological timeline
   rather than prose, `ask_about_edgeorgie` grounds an MCP-related question in a
   real citation, and an unrelated/nonsense question correctly stays in
   deterministic/no-fabrication mode); `tests/health-endpoints.test.ts`
@@ -264,8 +265,8 @@ repo, same account already used for the other 8 live demos/repoask-mcp).
   results:
   - `get_experience` → 3 roles (Mercado Libre, Vansa, Freelance), parsed
     verbatim from the live-deployed copy of `resume.txt`.
-  - `get_projects` → all 5 artifacts (triage-desk, eval-lab, repoask-mcp,
-    crispy-profiling, simplescope) with their real metrics/URLs.
+  - `get_projects` → all 6 artifacts (triage-desk, eval-lab, repoask-mcp,
+    crispy-profiling, simplescope, agentlens) with their real metrics/URLs.
   - `ask_about_edgeorgie("What AI agent infrastructure has this person built
     in production?")` → `answerMode: deterministic` (no LLM key set in this
     deployment), top citation `resume.txt` — correctly

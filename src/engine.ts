@@ -120,10 +120,18 @@ export interface ProjectResult {
   /**
    * Caveats a caller cannot infer from `realMetrics` and would otherwise have
    * to discover for themselves (not published, no adoption, a capability the
-   * project deliberately does not have). Optional: absent means none were
-   * identified, never "none exist" — entries are only added when verified.
+   * project deliberately does not have).
+   *
+   * REQUIRED, and that is a deliberate change from an earlier optional
+   * version. When it was optional it was populated on 1 of 6 entries, which
+   * reads as a rhetorical flourish on a single project rather than a policy
+   * the tool applies — and it implies the other five have no caveats, which is
+   * false for all five (0 stars on every one of them, among other things).
+   * Making it required means a new project cannot be added without stating
+   * what is weak about it. `tests/server.test.ts` gates the non-empty check
+   * and the text-block rendering; `tsc` gates the field's presence.
    */
-  limitations?: string[];
+  limitations: string[];
   source: string;
 }
 
@@ -155,6 +163,17 @@ export async function doGetProjects(): Promise<ProjectResult[]> {
         "Real webhook run: https://github.com/edgeorgie/triage-desk/actions/runs/37983913473",
         "Real bot comment: https://github.com/edgeorgie/triage-desk/issues/26#issuecomment-6088283797",
       ],
+      // Every caveat below was verified against the live GitHub and npm APIs
+      // on 2026-10-11, not inferred from a log. Stated rather than omitted:
+      // `limitations` is REQUIRED on every entry (gated by
+      // tests/server.test.ts), because caveats on only some artifacts would
+      // imply the others have none, which is true of none of them.
+      limitations: [
+        "0 GitHub stars, 0 forks, 0 watchers — nobody but the author has used it. The webhook runs and the accuracy benchmark are real, the adoption is zero.",
+        "The 83.3% accuracy figure is self-labeled ground truth on n=18 issues authored by the same person who wrote the classifier, which is the weakest form of evaluation. It is an internal consistency check, not an independent benchmark.",
+        "The classifier that produced those numbers is the deterministic HEURISTIC path, not an LLM — no LLM key is configured in the deployed workflow, so the LLM branch has never run against real traffic.",
+        "Not published to any registry (`https://registry.npmjs.org/triage-desk` → 404). It runs as a GitHub Actions workflow in its own repo; using it elsewhere means copying the workflow.",
+      ],
       source: "progress.log 2026-10-09 entries (triage-desk sections); RELIABILITY-REPORT.md section 2",
     },
     {
@@ -173,6 +192,12 @@ export async function doGetProjects(): Promise<ProjectResult[]> {
         "PR #23 (BENCHMARKS.md): https://github.com/edgeorgie/eval-lab/pull/23",
         "Real CI run (regression caught, exit 1): https://github.com/edgeorgie/eval-lab/actions/runs/37983754854",
         "Post-merge run on main: https://github.com/edgeorgie/eval-lab/actions/runs/37983891269",
+      ],
+      limitations: [
+        "0 GitHub stars, 0 forks, 0 watchers. The CI integration is real and cross-dogfooded into triage-desk, but no third party has adopted it.",
+        "Not published to npm (`https://registry.npmjs.org/eval-lab` → 404, and the scoped `@edgeorgie/eval-lab` → 404 too). \"Installable CLI\" means installable from GitHub, not `npm i eval-lab`.",
+        "The 100% / 24-of-24 benchmark runs entirely against the built-in offline `demo` model, which is deterministic by design. It measures that the harness, checks and regression diff work — it measures nothing about any real model's quality, and the $0 cost and ~20ms latency are properties of the stub, not of a live provider.",
+        "The LLM-judge path exists but is not covered by the benchmark above, because running it needs a provider key that CI does not have.",
       ],
       source: "progress.log 2026-10-09 entries (eval-lab sections); RELIABILITY-REPORT.md section 1",
     },
@@ -194,6 +219,13 @@ export async function doGetProjects(): Promise<ProjectResult[]> {
         "Web UI commit: https://github.com/edgeorgie/repoask-mcp/commit/fb88c31 (PR #1)",
         "Live URL: https://repoask-mcp.vercel.app (health) / https://repoask-mcp.vercel.app/mcp (MCP endpoint)",
       ],
+      limitations: [
+        "0 GitHub stars, 0 forks, 0 watchers, not on npm (`https://registry.npmjs.org/repoask-mcp` → 404). Deployed and publicly callable is not the same as used by anyone.",
+        "Retrieval is TF-IDF over chunked files — lexical, not semantic. A question that shares no vocabulary with the source returns weak or no citations, and there is no embedding model anywhere in the path.",
+        "The deployed instance has no LLM key configured, so it answers in deterministic citation-only mode. The LLM synthesis layer is implemented but inert in production.",
+        "The 3/3 test figure is three tests. It covers the real network path to GitHub with no mocks, which is the valuable part, but it is a smoke suite rather than broad coverage.",
+        "No auth and no per-caller quota beyond a rate limit — anyone can make it index public repos on the author's deployment.",
+      ],
       source:
         "progress.log 2026-10-09 entries ('Artifact C shipped', 'Streamable HTTP transport SHIPPED', 'PUBLIC VERCEL DEPLOYMENT FIXED AND VERIFIED', 'GETS A REAL HUMAN-USABLE WEB UI'); BUILD-LOG.md 'The MCP server's deployment wall' section",
     },
@@ -214,6 +246,12 @@ export async function doGetProjects(): Promise<ProjectResult[]> {
         "Agent Skill: https://github.com/edgeorgie/crispy-profiling/blob/develop/skills/react-render-profiling/SKILL.md",
         "CI status: https://github.com/edgeorgie/crispy-profiling/actions/workflows/ci.yml",
       ],
+      limitations: [
+        "0 GitHub stars, 0 forks, 0 watchers. It is published and installable, which is a real bar most of these do not clear, but published is not adopted.",
+        "The download count is lifetime, not a rate. npm reports 754 for both last-week and last-month because the package was first published on 2026-10-05, so every window containing that date returns the same total. The daily series is 0 except 523 / 15 / 164 / 52 on four days around the author's own publishes — the shape of registry mirrors and CI pulls, not users.",
+        "The \"found a fixable re-render problem in each of 5 apps\" result was produced and judged by the author. No maintainer of those apps reviewed or accepted a fix, so it is evidence the tool detects something real, not evidence anyone wanted the finding.",
+        "2 open issues on the repo at the time of writing.",
+      ],
       source: "Live GitHub repo README + npm registry listing, read directly (not from a secondary log) on 2026-10-10.",
     },
     {
@@ -228,6 +266,12 @@ export async function doGetProjects(): Promise<ProjectResult[]> {
       evidence: [
         "Live site: https://simplescope-one.vercel.app",
         "Repo: https://github.com/edgeorgie/simplescope",
+      ],
+      limitations: [
+        "It carries NO LICENCE FILE — the GitHub API reports `NOASSERTION`, the only one of these six artifacts that is not MIT. Legally that means default copyright: nobody may reuse, modify or redistribute it, including a reviewer who only wants to clone and run it. This is stated rather than silently fixed because choosing a licence is a commitment on the author's own work, not an automated edit.",
+        "0 GitHub stars, 0 forks, 0 watchers, and 12 open issues — several of them unfinished product work (a Lighthouse audit, an SEO audit, per-page content gaps, a trademark/domain question), not stale noise. It is a live project, not a finished one.",
+        "It is the only artifact here with no automated-test or accuracy metric of any kind. Its evidence is that it is deployed and that the zero-env-var degradation works; there is no measured number behind it.",
+        "Not on npm and not intended to be — it is a deployed web app, not a package.",
       ],
       source: "Live GitHub repo README, read directly on 2026-10-10.",
     },

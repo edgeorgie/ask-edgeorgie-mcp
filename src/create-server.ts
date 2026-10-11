@@ -66,9 +66,10 @@ export function createAskEdgeorgieServer(): McpServer {
         "crispy-profiling, simplescope, agentlens) with their " +
         "real measured metrics, PR/commit/run URLs, and live demo links — sourced from each repo's public " +
         "commit history and RELIABILITY-REPORT.md. No metric here is estimated or invented; every claim cites exactly where " +
-        "it was verified. Where a project has caveats a caller could not infer from its metrics (not published to a " +
-        "registry, no adoption, a capability it deliberately lacks), those are returned in a `limitations` array rather " +
-        "than omitted.",
+        "it was verified. EVERY project also returns a non-empty `limitations` array stating caveats a caller could not " +
+        "infer from its metrics (no adoption, not on a registry, a self-labeled benchmark, a missing licence, a capability " +
+        "it deliberately lacks). Caveats are mandatory per entry, not added only where they happened to be noticed, so an " +
+        "absent caveat never means 'this one has none'.",
       inputSchema: {},
       outputSchema: {
         projects: z.array(
@@ -78,7 +79,7 @@ export function createAskEdgeorgieServer(): McpServer {
             description: z.string(),
             realMetrics: z.array(z.string()),
             evidence: z.array(z.string()),
-            limitations: z.array(z.string()).optional(),
+            limitations: z.array(z.string()).min(1),
             source: z.string(),
           }),
         ),

@@ -192,7 +192,7 @@ test("README's tools table row for get_projects lists exactly the projects the t
   assertStatesCount(row, "README's get_projects table row");
 });
 
-test("data/BUILD-LOG.md's project list covers every project the tool returns", async () => {
+test("data/BUILD-LOG.md discusses every project the tool returns, not just names it", async () => {
   // The build log is INDEXED CORPUS, not just docs: it is what the retrieval
   // tool cites to a recruiter. When it omitted agentlens, the live server
   // answered "I don't find any reference to agentlens" with a citation while
@@ -202,15 +202,45 @@ test("data/BUILD-LOG.md's project list covers every project the tool returns", a
   // of specific debugging episodes, legitimately covers projects in uneven
   // depth, and its numerals ("three ways", "four providers") describe those
   // episodes rather than the project list. The one thing it must never do is
-  // omit a project entirely.
+  // fail to give the retrieval layer something citable about a project.
+  //
+  // PRESENCE IS NOT ENOUGH, and this is the correction to an earlier revision
+  // of this guard. A mention-anywhere check passed over a BUILD-LOG.md
+  // TRUNCATED TO ITS TITLE LINE — because the title happens to enumerate all
+  // six names, `# Build log: triage-desk, eval-lab, ...`. In that state the
+  // corpus contains zero citable prose about any project and the guard was
+  // green, which is the exact failure it exists to prevent, one layer down.
+  //
+  // So the assertion is PROXIMITY-BASED: each name must appear with real
+  // surrounding prose in the same block. A title line, a table of contents or
+  // a bare list cannot satisfy it; a paragraph actually discussing the project
+  // can. MIN_CONTEXT_CHARS is the floor on "real prose", chosen well below the
+  // shortest genuine project paragraph in the file (the shortest is ~900
+  // chars) and far above any plausible enumeration line.
+  const MIN_CONTEXT_CHARS = 400;
   const buildLog = await read("data", "BUILD-LOG.md");
-  const mentioned = mentionedProjects(buildLog);
-  const missing = expectedNames.filter((name) => !mentioned.includes(name));
+
+  // Blocks = paragraphs. A name's "context" is the longest block containing
+  // it; headings and list items are short by construction and so cannot pass.
+  const blocks = buildLog.split(/\n\s*\n/);
+
+  const unsupported: string[] = [];
+  for (const name of expectedNames) {
+    const boundary = new RegExp(`(?<![\\w-])${name}(?![\\w-])`);
+    const best = blocks
+      .filter((block) => boundary.test(block))
+      .reduce((longest, block) => Math.max(longest, block.trim().length), 0);
+    if (best < MIN_CONTEXT_CHARS) {
+      unsupported.push(`${name} (longest containing block: ${best} chars)`);
+    }
+  }
+
   assert.deepEqual(
-    missing,
+    unsupported,
     [],
-    `data/BUILD-LOG.md never mentions [${missing.join(", ")}], so the retrieval tool cannot ` +
-      `cite any evidence for ${missing.length === 1 ? "it" : "them"} — the corpus would deny an ` +
-      `artifact exists that get_projects advertises`,
+    `data/BUILD-LOG.md names these projects but gives the retrieval layer no substantive ` +
+      `passage to cite for them — fewer than ${MIN_CONTEXT_CHARS} chars of prose in any block ` +
+      `mentioning them: [${unsupported.join(", ")}]. A name in a heading or a list is not ` +
+      `evidence; the corpus would answer "no reference" for an artifact get_projects advertises.`,
   );
 });

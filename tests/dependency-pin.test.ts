@@ -34,15 +34,31 @@ async function readJson(relPath: string): Promise<Record<string, unknown>> {
 /** `github:owner/repo#<sha>` / `git+ssh://...#<sha>` — the fragment is the pin. */
 const SHA_FRAGMENT = /#([0-9a-f]{40})$/;
 
-/** Dependency specs that resolve to a git host rather than the npm registry. */
+/**
+ * Specs that resolve to the npm REGISTRY. Everything else is treated as a git
+ * dependency.
+ *
+ * Detection is by EXCLUSION, deliberately. An earlier revision matched git
+ * specs by inclusion (`/^(github:|git\+|git:)/`) and therefore did not see
+ * npm's shorthand form, `owner/repo#ref` — which is a fully-functional
+ * floating git dependency with no scheme prefix at all. Reintroducing that
+ * exact spec was measured passing the inclusion-based guard: the dependency
+ * simply vanished from the set being checked, and the suite stayed green over
+ * an empty list. A guard that stops seeing the thing it guards is worse than
+ * no guard, because its green signals safety.
+ *
+ * So: anything that is not recognisably a registry range is a candidate, and
+ * the assertions below demand it carry a 40-hex pin. A new dependency form
+ * this function has never seen fails CLOSED (reported, not skipped).
+ */
+const REGISTRY_SPEC = /^(\*|latest|[~^><=]|\d|workspace:|npm:|file:|link:)/;
+
 function gitDependencies(manifest: Record<string, unknown>): [string, string][] {
   const deps = {
     ...((manifest.dependencies as Record<string, string>) ?? {}),
     ...((manifest.devDependencies as Record<string, string>) ?? {}),
   };
-  return Object.entries(deps).filter(([, spec]) =>
-    /^(github:|git\+|git:)/.test(spec),
-  );
+  return Object.entries(deps).filter(([, spec]) => !REGISTRY_SPEC.test(spec.trim()));
 }
 
 test("every git dependency is pinned to a full 40-hex commit SHA, not a floating ref", async () => {
@@ -51,9 +67,21 @@ test("every git dependency is pinned to a full 40-hex commit SHA, not a floating
 
   // Guards the guard: if the repo ever stops consuming a git dependency this
   // test would otherwise pass vacuously, asserting nothing about anything.
+  //
+  // The remedy named here is deliberately NOT "delete this file". An earlier
+  // revision said exactly that, which is dangerous advice: the most likely way
+  // to reach an empty set is not that the git dependency was legitimately
+  // removed, it is that a manifest edit changed its spec into a form
+  // `gitDependencies()` no longer recognises — the very regression this guard
+  // exists to catch. Telling the next maintainer to delete the guard on that
+  // signal hands them the loaded gun.
   assert.ok(
     gitDeps.length > 0,
-    "expected at least one git dependency — if that is no longer true, delete this file rather than letting it pass over an empty set",
+    "gitDependencies() matched NOTHING in package.json. Do not delete this file on this " +
+      "signal. Either (a) the git dependency was genuinely removed — confirm by hand that " +
+      "package.json's dependencies are all registry ranges, and only then retire this guard, " +
+      "or (b) its spec changed into a form this guard cannot see, which is the exact " +
+      "regression it exists to catch. Check case (b) first.",
   );
 
   for (const [name, spec] of gitDeps) {
