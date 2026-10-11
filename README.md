@@ -8,8 +8,10 @@ MCP client at this URL to ask about my work experience, shipped projects, and
 skills — answers are **grounded and cited** against my resume and project
 history.
 
-**Live URL:** `https://ask-edgeorgie-mcp.vercel.app` (health check) /
-`https://ask-edgeorgie-mcp.vercel.app/mcp` (MCP Streamable HTTP endpoint)
+**Live URL:** `https://ask-edgeorgie-mcp.vercel.app/mcp` — the MCP Streamable
+HTTP endpoint on `POST`, and the JSON health check on `GET` (also reachable at
+`/api/mcp`). The bare root `https://ask-edgeorgie-mcp.vercel.app/` serves the
+human-facing HTML landing page, not JSON. There is no `/health` route.
 
 ## Why this exists
 
@@ -157,13 +159,22 @@ const answer = await client.callTool({
 `npm install && npm test` works without any manual build step — tests spin up
 the compiled server from `dist/`, which doesn't exist until `pretest` builds it.
 
-- `npm test` → 15/15 passing: spins up the **compiled** server as a real
-  subprocess and drives it with a real `@modelcontextprotocol/sdk` `Client`
-  over stdio (`list_tools` shape, `get_experience` structural check incl.
-  Mercado Libre, `get_projects` returns all 5 artifacts, `get_story` returns a
-  real chronological timeline rather than prose, `ask_about_edgeorgie`
-  grounds an MCP-related question in a real citation, and an unrelated/
-  nonsense question correctly stays in deterministic/no-fabrication mode).
+- `npm test` → 16/16 passing across three files: `tests/server.test.ts` spins
+  up the **compiled** server as a real subprocess and drives it with a real
+  `@modelcontextprotocol/sdk` `Client` over stdio (`list_tools` shape, the
+  health-check tool list matching the tools actually registered,
+  `get_experience` structural check incl. Mercado Libre, `get_projects`
+  returns all 5 artifacts, `get_story` returns a real chronological timeline
+  rather than prose, `ask_about_edgeorgie` grounds an MCP-related question in a
+  real citation, and an unrelated/nonsense question correctly stays in
+  deterministic/no-fabrication mode); `tests/rate-limit.test.ts` covers the
+  per-caller window, the global ceiling and `Retry-After`;
+  `tests/llm-prompt-injection.test.ts` covers prompt spotlighting and
+  delimiter-forgery sanitization of retrieved content.
+- CI (`.github/workflows/ci.yml`) runs install → typecheck (`tsc --noEmit`) →
+  build → `npm test` on every push to `main` and every pull request, with no
+  secrets provided to any step, so the suite is held to passing in
+  deterministic mode on a clean checkout.
 - `examples/run-session.ts` is a standalone MCP client harness (same SDK
   `Client`, real stdio or real Streamable HTTP depending on args) that asks
   the real questions below and commits the literal transcript to
@@ -192,12 +203,15 @@ request/response): [`examples/transcript.json`](./examples/transcript.json).
 repo, same account already used for the other 8 live demos/repoask-mcp).
 
 - Health check, bare unauthenticated `curl`, zero Vercel session/cookie:
-  `curl https://ask-edgeorgie-mcp.vercel.app/` → real 200 JSON
+  `curl https://ask-edgeorgie-mcp.vercel.app/mcp` → real 200
+  `application/json`
   (`{"name":"ask-edgeorgie-mcp", ..., "tools":["get_experience","get_projects","get_story","ask_about_edgeorgie"], "status":"ok"}`),
   **no SSO redirect** — the project's `ssoProtection` was `PATCH`ed to `null`
   via `https://api.vercel.com/v9/projects/ask-edgeorgie-mcp` immediately after
   the first deploy (same fix already proven for repoask-mcp), confirmed by a
-  fresh deployment-protection check before this was written up.
+  fresh deployment-protection check before this was written up. The bare root
+  `/` is routed to the static landing page by `vercel.json` and returns
+  `text/html`; `/mcp` (or `/api/mcp`) is the route that returns the JSON.
 - `POST /mcp` `tools/list` over the real public internet → correct 4-tool
   schema (`get_experience`, `get_projects`, `get_story`, `ask_about_edgeorgie`).
 - Ran `examples/run-session.ts` with the real `@modelcontextprotocol/sdk`
@@ -224,9 +238,9 @@ repo, same account already used for the other 8 live demos/repoask-mcp).
     `RELIABILITY-REPORT.md` lines 63-92 and 168-187 (score 0.119/0.09) — the
     exact section with the real 83.3% triage-desk accuracy numbers and
     confusion-matrix failure modes.
-  - `GET /api/experience`, `GET /api/projects`, `POST /api/ask` (the
-    human-facing REST routes, same engine) also verified live and returning
-    correct real data.
+  - `GET /api/experience`, `GET /api/projects`, `GET /api/story`,
+    `POST /api/ask` (the human-facing REST routes, same engine) also verified
+    live and returning correct real data.
 - Deployment protection fixes applied proactively (not re-discovered) from
   repoask-mcp's own deployment debugging history: explicit `builds`/`routes` in
   `vercel.json` (not `rewrites`), `.vercelignore` excluding `dist/`, and the
