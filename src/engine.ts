@@ -122,14 +122,12 @@ export interface ProjectResult {
    * to discover for themselves (not published, no adoption, a capability the
    * project deliberately does not have).
    *
-   * REQUIRED, and that is a deliberate change from an earlier optional
-   * version. When it was optional it was populated on 1 of 6 entries, which
-   * reads as a rhetorical flourish on a single project rather than a policy
-   * the tool applies — and it implies the other five have no caveats, which is
-   * false for all five (0 stars on every one of them, among other things).
-   * Making it required means a new project cannot be added without stating
-   * what is weak about it. `tests/server.test.ts` gates the non-empty check
-   * and the text-block rendering; `tsc` gates the field's presence.
+   * REQUIRED, and each entry must be substantive — an optional field present
+   * on one project implies the others have no caveats, and a placeholder
+   * string satisfies a length check while saying nothing. `tsc` gates
+   * presence, the zod output schema gates per-string length, and
+   * `tests/server.test.ts` gates that each caveat reaches the rendered text
+   * block under its OWN project's heading.
    */
   limitations: string[];
   source: string;
@@ -170,7 +168,7 @@ export async function doGetProjects(): Promise<ProjectResult[]> {
       // imply the others have none, which is true of none of them.
       limitations: [
         "0 GitHub stars, 0 forks, 0 watchers — nobody but the author has used it. The webhook runs and the accuracy benchmark are real, the adoption is zero.",
-        "The 83.3% accuracy figure is self-labeled ground truth on n=18 issues authored by the same person who wrote the classifier, which is the weakest form of evaluation. It is an internal consistency check, not an independent benchmark.",
+        "The 83.3% accuracy figure is self-labeled ground truth on n=18 issues written by the same person who wrote the classifier. Treat it as an internal consistency check, not a benchmark.",
         "The classifier that produced those numbers is the deterministic HEURISTIC path, not an LLM — no LLM key is configured in the deployed workflow, so the LLM branch has never run against real traffic.",
         "Not published to any registry (`https://registry.npmjs.org/triage-desk` → 404). It runs as a GitHub Actions workflow in its own repo; using it elsewhere means copying the workflow.",
       ],
@@ -249,8 +247,8 @@ export async function doGetProjects(): Promise<ProjectResult[]> {
       limitations: [
         "0 GitHub stars, 0 forks, 0 watchers. It is published and installable, which is a real bar most of these do not clear, but published is not adopted.",
         "The download count is lifetime, not a rate. npm reports 754 for both last-week and last-month because the package was first published on 2026-10-05, so every window containing that date returns the same total. The daily series is 0 except 523 / 15 / 164 / 52 on four days around the author's own publishes — the shape of registry mirrors and CI pulls, not users.",
-        "The \"found a fixable re-render problem in each of 5 apps\" result was produced and judged by the author. No maintainer of those apps reviewed or accepted a fix, so it is evidence the tool detects something real, not evidence anyone wanted the finding.",
-        "2 open issues on the repo at the time of writing.",
+        "The \"found a fixable re-render problem in each of 5 apps\" result was produced and judged by the author. No maintainer of those apps reviewed or accepted a fix.",
+        "2 open issues on the repo at the time of writing, both unresolved product work.",
       ],
       source: "Live GitHub repo README + npm registry listing, read directly (not from a secondary log) on 2026-10-10.",
     },
@@ -271,7 +269,7 @@ export async function doGetProjects(): Promise<ProjectResult[]> {
         "It carries NO LICENCE FILE — the GitHub API reports `NOASSERTION`, the only one of these six artifacts that is not MIT. Legally that means default copyright: nobody may reuse, modify or redistribute it, including a reviewer who only wants to clone and run it. This is stated rather than silently fixed because choosing a licence is a commitment on the author's own work, not an automated edit.",
         "0 GitHub stars, 0 forks, 0 watchers, and 12 open issues — several of them unfinished product work (a Lighthouse audit, an SEO audit, per-page content gaps, a trademark/domain question), not stale noise. It is a live project, not a finished one.",
         "It is the only artifact here with no automated-test or accuracy metric of any kind. Its evidence is that it is deployed and that the zero-env-var degradation works; there is no measured number behind it.",
-        "Not on npm and not intended to be — it is a deployed web app, not a package.",
+        "Not on npm and not intended to be — it is a deployed web app. Nothing here is installable or agent-callable; it is the one artifact aimed only at humans.",
       ],
       source: "Live GitHub repo README, read directly on 2026-10-10.",
     },
