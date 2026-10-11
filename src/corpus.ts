@@ -6,6 +6,11 @@
  *   - resume.txt                  (candidate's actual resume)
  *   - RELIABILITY-REPORT.md       (measured pass-rate/latency/accuracy numbers)
  *   - BUILD-LOG.md                (first-person build/debugging narrative)
+ *   - RECRUITER-FAQ.md            (candidate's own answers to common questions)
+ *
+ * This comment is a hand-maintained mirror of CORPUS_FILES below, so
+ * tests/corpus-list.test.ts asserts the two agree — it went stale once when a
+ * fourth file was added and nothing complained.
  *
  * Internal job-search strategy/process documents (sprint logs, application
  * drafts, case-study talking points) are deliberately NOT part of this

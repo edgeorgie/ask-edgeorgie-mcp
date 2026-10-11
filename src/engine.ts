@@ -12,9 +12,10 @@
  *                    candidate's background as ordered beats. This is
  *                    editorial copy maintained in this file, NOT retrieval
  *                    over data/ — see doGetStory's own comment.
- * ask_about_edgeorgie -> TF-IDF retrieval over the full corpus (resume.txt +
- *                    RELIABILITY-REPORT.md + BUILD-LOG.md, public evidence
- *                    only), same scoring/citation contract as repoask-mcp.
+ * ask_about_edgeorgie -> TF-IDF retrieval over the full corpus (see
+ *                    src/corpus.ts CORPUS_FILES for the authoritative list;
+ *                    public evidence only),
+ *                    same scoring/citation contract as repoask-mcp.
  *                    Every claim in the deterministic answer is a direct
  *                    excerpt from an indexed source file + line range —
  *                    nothing is generated beyond what's indexed unless an
@@ -298,7 +299,7 @@ export async function doGetStory(): Promise<StoryResult> {
       },
     ],
     source:
-      "Candidate's own timeline copy, hand-maintained in src/engine.ts and mirrored from edgeorgie-portfolio's 'Beyond the code' section. Paraphrase, not a quote: the same facts are covered in data/RECRUITER-FAQ.md ('What do you do outside of work?', 'core technical stack'), but this wording appears in no corpus file — call ask_about_edgeorgie for file+line citations.",
+      "Candidate's own timeline copy, hand-maintained in src/engine.ts and mirrored from edgeorgie-portfolio's 'Beyond the code' section. Paraphrase, not a quote: the same facts are covered in data/RECRUITER-FAQ.md ('What do you do outside of work?', 'core technical stack'), and some phrases overlap it verbatim, but this is editorial copy rather than an indexed excerpt — call ask_about_edgeorgie for file+line citations.",
   };
 }
 
