@@ -10,7 +10,46 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { doGetExperience, doGetProjects, doAskAboutEdgeorgie, doGetStory } from "./engine.js";
+import {
+  doGetExperience,
+  doGetProjects,
+  doAskAboutEdgeorgie,
+  doGetStory,
+  type ProjectResult,
+} from "./engine.js";
+
+/**
+ * Renders the `get_projects` text block from the engine's own project data.
+ *
+ * Exported, and deliberately a pure function of its argument, for one reason:
+ * the committed transcripts in `examples/` are guarded by
+ * `tests/transcript-freshness.test.ts`, which previously could only check the
+ * `structuredContent` half. A critic defeated that by rewriting the TEXT
+ * block alone — inflating a measured accuracy figure, adding a fabricated
+ * adoption section, and attributing one project's caveats to another — with
+ * the suite green, because the text was built inline here and nothing else
+ * could reproduce it. With the rendering extracted, the guard derives the
+ * expected text by calling this exact function, so the human-readable half of
+ * the transcripts is now covered by construction rather than by a parallel
+ * reimplementation that could itself drift.
+ *
+ * Limitations are rendered into the text block, not only into
+ * `structuredContent`: a client that displays text content (most chat-style
+ * MCP clients do) would otherwise show the metrics and silently drop the
+ * caveats attached to them, which is the one direction this tool must never
+ * fail in.
+ */
+export function renderProjectsText(projects: ProjectResult[]): string {
+  return projects
+    .map((p) => {
+      const caveats = p.limitations?.length
+        ? `\n\nLimitations:\n${p.limitations.map((l) => `- ${l}`).join("\n")}`
+        : "";
+      return `## ${p.name}\n${p.description}\n\nMetrics:\n${p.realMetrics.map((m) => `- ${m}`).join("\n")}${caveats}`;
+    })
+    .join("\n\n");
+}
+
 
 export function createAskEdgeorgieServer(): McpServer {
   const server = new McpServer({
@@ -91,25 +130,7 @@ export function createAskEdgeorgieServer(): McpServer {
     async () => {
       const projects = await doGetProjects();
       return {
-        content: [
-          {
-            type: "text",
-            text: projects
-              .map((p) => {
-                // Limitations are rendered into the text block too, not only
-                // into structuredContent: a client that displays the text
-                // content (most chat-style MCP clients do) would otherwise
-                // show the metrics and silently drop the caveats attached to
-                // them, which is the one direction this tool must never fail
-                // in.
-                const caveats = p.limitations?.length
-                  ? `\n\nLimitations:\n${p.limitations.map((l) => `- ${l}`).join("\n")}`
-                  : "";
-                return `## ${p.name}\n${p.description}\n\nMetrics:\n${p.realMetrics.map((m) => `- ${m}`).join("\n")}${caveats}`;
-              })
-              .join("\n\n"),
-          },
-        ],
+        content: [{ type: "text", text: renderProjectsText(projects) }],
         structuredContent: { projects } as unknown as Record<string, unknown>,
       };
     },

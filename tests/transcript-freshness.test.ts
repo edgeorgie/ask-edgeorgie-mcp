@@ -6,9 +6,11 @@
  * repo's own recorded EVIDENCE. A reviewer who opens examples/ sees what the
  * product used to do and takes it for what it does.
  *
- * It had already drifted, and in exactly the direction that matters. PR #26
- * made `limitations` required on every project entry — the whole point being
- * that an absent caveat must never read as "this one has none" — and PR #27
+ * It HAD drifted when this guard was written, in exactly the direction that
+ * matters, and the state below is historical — the transcripts were
+ * regenerated in the same commit, so none of it describes the files today.
+ * PR #26 made `limitations` required on every project entry (the point being
+ * that an absent caveat must never read as "this one has none") and PR #27
  * tightened the tool schema (`minItems`, `minLength: 40`, `limitations` in
  * `required`). Both transcripts were left at the pre-#26 shape:
  * examples/http-transcript.json carried `limitations` on 1 of 6 projects and
@@ -17,8 +19,8 @@
  *
  * WHAT THIS GUARD ASSERTS, AND WHY IT IS SHAPED THIS WAY.
  *
- * It does NOT compare transcript text to a fresh server response. That would
- * fail on every legitimate prose edit to a project description, which is both
+ * It does NOT compare project descriptions to a fresh server response. That
+ * would fail on every legitimate prose edit to a description, which is both
  * noisy and wrong — the transcript is allowed to be a recording, it is not
  * allowed to be a recording of a DIFFERENT CONTRACT. So the comparison is
  * against the structural contract only, derived at runtime from the real
@@ -44,6 +46,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { doGetProjects } from "../src/engine.js";
+import { renderProjectsText } from "../src/create-server.js";
 
 const repoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -125,6 +128,17 @@ test("both committed transcripts record the same project set the engine returns"
  * regenerating the transcripts (commands in this file's header). That is the
  * intended consequence, not an inconvenience to design around — a recording of
  * output that no longer matches the output is the thing being prevented.
+ *
+ * WHAT THIS DOES NOT COVER, stated because an earlier version of this comment
+ * overstated it. The engine-side floor check below bounds the ENGINE's own
+ * caveats, and a critic measured the limit of that precisely: mutating the
+ * engine AND regenerating the transcripts to match leaves everything green, as
+ * it must — at that point the transcripts are faithful recordings of what the
+ * server really says, and no transcript guard can be the thing that decides
+ * whether the server is telling the truth. The floor catches degenerate engine
+ * content (under 40 chars); it does not catch plausible-length filler written
+ * upstream. Reviewing `src/engine.ts` is what covers that, and claiming
+ * otherwise here would be the same overstatement this file exists to stop.
  */
 test("every project's recorded limitations are verbatim what the engine returns", async () => {
   const live = new Map((await doGetProjects()).map((p) => [p.name, p.limitations]));
@@ -199,4 +213,128 @@ test("the tool schema recorded in each transcript requires limitations", async (
         `than the one this repo now ships. Regenerate it.`,
     );
   }
+});
+
+/**
+ * THE HUMAN-READABLE HALF, which was entirely unguarded until a critic walked
+ * through it.
+ *
+ * Every assertion above reads `get_projects.structuredContent`. But the tool
+ * returns TWO representations of the same data, and `content[0].text` is the
+ * one most MCP clients actually display — so it is the one a human reviewer
+ * opening `examples/` reads. Twelve mutations to the text block alone were
+ * measured passing at 53/53, including:
+ *
+ *   - `83.3% (15/18)` rewritten to `99.8% (1247/1250)`
+ *   - `0 GitHub stars` rewritten to `1,400 stars`
+ *   - a fabricated `Adoption:` section added
+ *   - the same cross-wiring attack this file already defends against in
+ *     `structuredContent`, applied one surface over
+ *
+ * That is the worse half to leave open: a falsified metric in prose needs no
+ * schema knowledge to read and no tooling to believe.
+ *
+ * The fix is derivation, not a second parser. `renderProjectsText()` is
+ * exported from `src/create-server.ts` — the exact function the tool handler
+ * calls — so the expected text is produced by the production code path rather
+ * than by a reimplementation here that could itself drift from it. Comparing
+ * against a hand-written template in this file would re-create the mirror
+ * problem one level up.
+ */
+test("the recorded text block is what the server's own renderer produces", async () => {
+  const expected = renderProjectsText(await doGetProjects());
+  assert.ok(
+    expected.trim().length > 0,
+    "renderProjectsText() produced nothing — this guard would be vacuous",
+  );
+
+  for (const relPath of TRANSCRIPTS) {
+    const transcript = await readTranscript(relPath);
+    const content = transcript?.get_projects?.content;
+    assert.ok(
+      Array.isArray(content) && content.length > 0,
+      `${relPath}: no get_projects.content array — the human-readable half of the ` +
+        `recording is missing entirely. Regenerate the transcript.`,
+    );
+
+    const textBlocks = (content as { type?: string; text?: string }[]).filter(
+      (c) => c.type === "text" && typeof c.text === "string",
+    );
+    assert.equal(
+      textBlocks.length,
+      1,
+      `${relPath}: expected exactly 1 text block in get_projects.content, found ` +
+        `${textBlocks.length}. More than one would mean half the prose escapes the ` +
+        `comparison below.`,
+    );
+
+    assert.equal(
+      textBlocks[0].text,
+      expected,
+      `${relPath}: the recorded get_projects text block is not what ` +
+        `renderProjectsText() produces from the current engine data. Either the engine ` +
+        `changed and the transcript was not regenerated, or the recorded prose was edited ` +
+        `— an inflated metric, a fabricated section, or caveats attributed to the wrong ` +
+        `project all land here. Regenerate it (see this file's header); do not hand-edit ` +
+        `it to match.`,
+    );
+  }
+});
+
+/**
+ * Transcript PROVENANCE. The header of each file states which server produced
+ * it and when, and both fields were editable with the suite green — so a
+ * transcript claiming to be a capture of the live public deployment could
+ * actually be a local stdio run, which is the difference between "an agent
+ * reached this over the internet" and "it ran on my laptop". That distinction
+ * is the entire evidentiary value of the HTTP transcript.
+ *
+ * Asserted narrowly and honestly: this checks the two files do not claim the
+ * SAME origin, and that each claims the right KIND of origin. It cannot verify
+ * a capture really happened at the stated time — nothing short of a signed
+ * attestation could — and `ranAt` is deliberately not range-checked, because a
+ * date assertion would start failing on a correct transcript the moment it
+ * ages, which trains people to delete guards.
+ */
+test("each transcript records the kind of origin it claims", async () => {
+  const origins = new Map<string, string>();
+
+  for (const relPath of TRANSCRIPTS) {
+    const transcript = await readTranscript(relPath);
+    const serverUrl = transcript?.serverUrl;
+    assert.equal(
+      typeof serverUrl,
+      "string",
+      `${relPath}: no \`serverUrl\` — the recording does not say what produced it.`,
+    );
+    assert.match(
+      transcript?.ranAt ?? "",
+      /^\d{4}-\d{2}-\d{2}T/,
+      `${relPath}: \`ranAt\` is not an ISO timestamp.`,
+    );
+    origins.set(relPath, serverUrl as string);
+  }
+
+  const stdio = origins.get("examples/transcript.json")!;
+  const http = origins.get("examples/http-transcript.json")!;
+
+  assert.match(
+    stdio,
+    /^stdio:/,
+    `examples/transcript.json claims origin "${stdio}", but this file is the stdio ` +
+      `capture. Regenerate it with the stdio harness.`,
+  );
+  assert.match(
+    http,
+    /^https:\/\/.+\/mcp$/,
+    `examples/http-transcript.json claims origin "${http}", but this file's evidentiary ` +
+      `value is that a real MCP client reached the deployed server over the internet. A ` +
+      `local or non-HTTPS origin here silently downgrades that claim.`,
+  );
+  assert.notEqual(
+    stdio,
+    http,
+    "both transcripts claim the same origin, so one of them is mislabeled and the two " +
+      "files are not the two independent transports they are presented as.",
+  );
 });
