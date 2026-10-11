@@ -7,6 +7,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
@@ -14,12 +15,12 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SERVER_PATH = path.join(__dirname, "..", "dist", "server.js");
 
-async function withClient(fn: (client: Client) => Promise<void>) {
+async function withClient<T>(fn: (client: Client) => Promise<T>): Promise<T> {
   const transport = new StdioClientTransport({ command: "node", args: [SERVER_PATH] });
   const client = new Client({ name: "test-client", version: "1.0.0" });
   await client.connect(transport);
   try {
-    await fn(client);
+    return await fn(client);
   } finally {
     await client.close();
   }
@@ -31,6 +32,38 @@ test("list_tools exposes the 4 expected tools", async () => {
     const names = tools.map((t) => t.name).sort();
     assert.deepEqual(names, ["ask_about_edgeorgie", "get_experience", "get_projects", "get_story"]);
   });
+});
+
+test("the health-check tool list matches the tools the server actually registers", async () => {
+  // Regression guard: the /health JSON in api/mcp.ts and src/http-server.ts is a
+  // hand-maintained array, so it silently drifted when get_story was added and
+  // advertised only 3 of the 4 real tools to anyone curling the deployment.
+  const registered = await withClient(async (client) => {
+    const { tools } = await client.listTools();
+    return tools.map((t) => t.name).sort();
+  });
+
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  const sources = [
+    ["src/http-server.ts", path.join(here, "..", "src", "http-server.ts")],
+    ["api/mcp.ts", path.join(here, "..", "api", "mcp.ts")],
+  ] as const;
+
+  for (const [label, file] of sources) {
+    const source = await readFile(file, "utf8");
+    const match = source.match(/tools:\s*\[([^\]]+)\]/);
+    assert.ok(match, `${label} must declare a tools array in its health payload`);
+    const advertised = match[1]
+      .split(",")
+      .map((s: string) => s.trim().replace(/^["']|["']$/g, ""))
+      .filter(Boolean)
+      .sort();
+    assert.deepEqual(
+      advertised,
+      registered,
+      `${label} advertises ${advertised.join(",")} but the server registers ${registered.join(",")}`,
+    );
+  }
 });
 
 test("get_experience returns real resume roles including Mercado Libre", async () => {

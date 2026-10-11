@@ -24,7 +24,8 @@ rather than whatever a model happens to already know (or guess) about me.
 | Tool | What it does |
 |---|---|
 | `get_experience` | Returns my real work history straight from `resume.txt` — Mercado Libre, Vansa, Freelance — verbatim, no embellishment. |
-| `get_projects` | Returns the 3 real shipped artifacts ([triage-desk](https://github.com/edgeorgie/triage-desk), [eval-lab](https://github.com/edgeorgie/eval-lab), [repoask-mcp](https://github.com/edgeorgie/repoask-mcp)) with their real measured metrics and PR/commit/run URLs. |
+| `get_projects` | Returns the 5 real shipped artifacts ([triage-desk](https://github.com/edgeorgie/triage-desk), [eval-lab](https://github.com/edgeorgie/eval-lab), [repoask-mcp](https://github.com/edgeorgie/repoask-mcp), [crispy-profiling](https://github.com/edgeorgie/crispy-profiling), [simplescope](https://github.com/edgeorgie/simplescope)) with their real measured metrics and PR/commit/run URLs. |
+| `get_story` | Returns my background as a structured chronological timeline (year, label, detail) rather than prose, so a client can render it as a real timeline instead of a paragraph. Same beats as the portfolio's "Beyond the code" section, kept in sync deliberately. |
 | `ask_about_edgeorgie` | Retrieval-based Q&A. TF-IDF search over a corpus built from `resume.txt`, `RELIABILITY-REPORT.md`, and `BUILD-LOG.md` (public evidence only). Every answer cites the exact source file + line range it came from. If no LLM key is set, the response is a deterministic citation dump (no generation at all); if `ANTHROPIC_API_KEY`/`OPENAI_API_KEY` is set, a model synthesizes prose but is instructed to ground every sentence in the retrieved excerpts and cite them inline — it never answers beyond what's indexed. |
 
 ## Rate limiting
@@ -84,7 +85,7 @@ This reuses the exact working deployment shape already proven for
     guarantee warm-instance reuse across requests.
 - `api/mcp.ts` — Vercel serverless function wrapping the same HTTP handler, so
   the identical tool set is reachable at `/mcp` over the public internet.
-- `api/experience.ts`, `api/projects.ts`, `api/ask.ts` — thin REST routes that
+- `api/experience.ts`, `api/projects.ts`, `api/story.ts`, `api/ask.ts` — thin REST routes that
   call the exact same `src/engine.ts` functions the MCP tools call, so the
   human-facing web UI (`public/`) and the agent-facing MCP server are
   provably the same engine, not a parallel copy.
@@ -107,7 +108,7 @@ reachable. All three were applied proactively here, not re-discovered:
    detection would try to build `dist/server.js` (the stdio entrypoint) and
    fail with "No exports found in module". Fixed by using an explicit
    `builds` array in `vercel.json` targeting `api/mcp.ts`, `api/experience.ts`,
-   `api/projects.ts`, `api/ask.ts`, and `public/**` directly, with `dist/`
+   `api/projects.ts`, `api/story.ts`, `api/ask.ts`, and `public/**` directly, with `dist/`
    excluded via `.vercelignore`.
 2. **Once `builds` is present, `rewrites` stops working** — `routes` is the
    correct routing primitive in that mode. `vercel.json` here uses `routes`
@@ -156,10 +157,11 @@ const answer = await client.callTool({
 `npm install && npm test` works without any manual build step — tests spin up
 the compiled server from `dist/`, which doesn't exist until `pretest` builds it.
 
-- `npm test` → 5/5 passing: spins up the **compiled** server as a real
+- `npm test` → 15/15 passing: spins up the **compiled** server as a real
   subprocess and drives it with a real `@modelcontextprotocol/sdk` `Client`
   over stdio (`list_tools` shape, `get_experience` structural check incl.
-  Mercado Libre, `get_projects` returns all 3 artifacts, `ask_about_edgeorgie`
+  Mercado Libre, `get_projects` returns all 5 artifacts, `get_story` returns a
+  real chronological timeline rather than prose, `ask_about_edgeorgie`
   grounds an MCP-related question in a real citation, and an unrelated/
   nonsense question correctly stays in deterministic/no-fabrication mode).
 - `examples/run-session.ts` is a standalone MCP client harness (same SDK
@@ -191,13 +193,13 @@ repo, same account already used for the other 8 live demos/repoask-mcp).
 
 - Health check, bare unauthenticated `curl`, zero Vercel session/cookie:
   `curl https://ask-edgeorgie-mcp.vercel.app/` → real 200 JSON
-  (`{"name":"ask-edgeorgie-mcp", ..., "tools":["get_experience","get_projects","ask_about_edgeorgie"], "status":"ok"}`),
+  (`{"name":"ask-edgeorgie-mcp", ..., "tools":["get_experience","get_projects","get_story","ask_about_edgeorgie"], "status":"ok"}`),
   **no SSO redirect** — the project's `ssoProtection` was `PATCH`ed to `null`
   via `https://api.vercel.com/v9/projects/ask-edgeorgie-mcp` immediately after
   the first deploy (same fix already proven for repoask-mcp), confirmed by a
   fresh deployment-protection check before this was written up.
-- `POST /mcp` `tools/list` over the real public internet → correct 3-tool
-  schema (`get_experience`, `get_projects`, `ask_about_edgeorgie`).
+- `POST /mcp` `tools/list` over the real public internet → correct 4-tool
+  schema (`get_experience`, `get_projects`, `get_story`, `ask_about_edgeorgie`).
 - Ran `examples/run-session.ts` with the real `@modelcontextprotocol/sdk`
   `Client` + `StreamableHTTPClientTransport` against
   `https://ask-edgeorgie-mcp.vercel.app/mcp` (a genuine external network
@@ -206,8 +208,8 @@ repo, same account already used for the other 8 live demos/repoask-mcp).
   results:
   - `get_experience` → 3 roles (Mercado Libre, Vansa, Freelance), parsed
     verbatim from the live-deployed copy of `resume.txt`.
-  - `get_projects` → all 3 artifacts (triage-desk, eval-lab, repoask-mcp)
-    with their real metrics/URLs.
+  - `get_projects` → all 5 artifacts (triage-desk, eval-lab, repoask-mcp,
+    crispy-profiling, simplescope) with their real metrics/URLs.
   - `ask_about_edgeorgie("What AI agent infrastructure has this person built
     in production?")` → `answerMode: deterministic` (no LLM key set in this
     deployment), top citation `resume.txt` — correctly

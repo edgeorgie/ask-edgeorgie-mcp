@@ -1,7 +1,7 @@
 /**
  * Vercel serverless function entrypoint: wraps the same Streamable HTTP MCP
- * handler used by src/http-server.ts so the 3 tools (get_experience,
- * get_projects, ask_about_edgeorgie) are reachable at
+ * handler used by src/http-server.ts so the 4 tools (get_experience,
+ * get_projects, get_story, ask_about_edgeorgie) are reachable at
  * https://<deployment>.vercel.app/mcp over the internet.
  *
  * Deliberately stateless (StreamableHTTPServerTransport with
@@ -35,7 +35,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       description: "Ask an AI agent real, grounded, cited questions about Edwin Jorge (edgeorgie).",
       transport: "streamable-http",
       mcpEndpoint: "/mcp",
-      tools: ["get_experience", "get_projects", "ask_about_edgeorgie"],
+      tools: ["get_experience", "get_projects", "get_story", "ask_about_edgeorgie"],
       status: "ok",
     });
     return;

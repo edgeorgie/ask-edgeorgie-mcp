@@ -1,10 +1,10 @@
 /**
- * Shared MCP server factory: builds a fresh McpServer with the three
+ * Shared MCP server factory: builds a fresh McpServer with the four
  * "ask about edgeorgie" tools registered (get_experience, get_projects,
- * ask_about_edgeorgie). Both transports (stdio in server.ts, Streamable HTTP
+ * get_story, ask_about_edgeorgie). Both transports (stdio in server.ts, Streamable HTTP
  * in http-server.ts / api/mcp.ts) call this so tool definitions live in
  * exactly one place. Implementations live in src/engine.ts, shared with the
- * human-facing REST routes (api/experience.ts, api/projects.ts, api/ask.ts)
+ * human-facing REST routes (api/experience.ts, api/projects.ts, api/story.ts, api/ask.ts)
  * so the MCP tools and the web UI are provably the same engine.
  */
 

@@ -54,7 +54,7 @@ export function createApp(): express.Express {
       description: "Ask an AI agent real, grounded, cited questions about Edwin Jorge (edgeorgie).",
       transport: "streamable-http",
       mcpEndpoint: "/mcp",
-      tools: ["get_experience", "get_projects", "ask_about_edgeorgie"],
+      tools: ["get_experience", "get_projects", "get_story", "ask_about_edgeorgie"],
       status: "ok",
     });
   });
