@@ -147,8 +147,8 @@ export function createAskEdgeorgieServer(): McpServer {
       title: "Ask a grounded, cited question about Edwin Jorge (edgeorgie)",
       description:
         "Answers a natural-language question about the candidate's experience, projects, or skills using " +
-        "TF-IDF retrieval over a corpus built ONLY from his real resume.txt, RELIABILITY-REPORT.md, and " +
-        "BUILD-LOG.md (public evidence only). Returns citations " +
+        "TF-IDF retrieval over a corpus built ONLY from his real resume.txt, RELIABILITY-REPORT.md, " +
+        "BUILD-LOG.md, and RECRUITER-FAQ.md (public evidence only). Returns citations " +
         "with exact source file + line range. If ANTHROPIC_API_KEY or OPENAI_API_KEY is set, also returns " +
         "a synthesized prose answer with inline [n] citations grounded strictly in the retrieved excerpts; " +
         "otherwise 'answer' is a deterministic citation dump and 'answerMode' is 'deterministic'. If a key is " +

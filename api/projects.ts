@@ -1,6 +1,11 @@
 /**
  * Human-facing REST route: GET /api/projects — same engine as the
  * get_projects MCP tool (src/engine.ts doGetProjects).
+ *
+ * Rate limiting: deliberately NOT applied, same as api/experience.ts and
+ * api/story.ts. doGetProjects returns a compile-time constant — no retrieval,
+ * no provider call — so there is no per-request cost worth metering. Add a
+ * limiter the moment this route starts doing real work.
  */
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { doGetProjects } from "../src/engine.js";

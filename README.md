@@ -72,6 +72,13 @@ before this repo, with no new biographical or project claims invented:
   eval-lab and triage-desk.
 - `BUILD-LOG.md` — a first-person account of the real debugging episodes
   (including this project's own Vercel deployment fix, documented below).
+- `RECRUITER-FAQ.md` — the candidate's own first-person answers to questions
+  recruiters actually ask (why job-searching, relocation, salary stance).
+
+The authoritative list is `CORPUS_FILES` in `src/corpus.ts`;
+`tests/corpus-list.test.ts` asserts the bullet list above and that constant
+agree, because this list silently went stale once already when a fourth file
+was added.
 
 Internal job-search process documents (sprint logs, application drafts,
 employer-specific case-study notes) are intentionally excluded from this
@@ -165,7 +172,7 @@ const answer = await client.callTool({
 `npm install && npm test` works without any manual build step — tests spin up
 the compiled server from `dist/`, which doesn't exist until `pretest` builds it.
 
-- `npm test` → 25/25 passing across five files: `tests/server.test.ts` spins
+- `npm test` → 28/28 passing across six files: `tests/server.test.ts` spins
   up the **compiled** server as a real subprocess and drives it with a real
   `@modelcontextprotocol/sdk` `Client` over stdio (`list_tools` shape, the
   health-check tool list matching the tools actually registered,
@@ -177,8 +184,11 @@ the compiled server from `dist/`, which doesn't exist until `pretest` builds it.
   asserts on the **actual runtime responses** of `api/mcp.ts`'s GET handler
   and of `src/http-server.ts` served over a real loopback socket, compared
   against what `listTools()` really returns — so advertising fewer tools than
-  are registered fails regardless of how the array is constructed (a source-
-  text lint alone misses e.g. `[...].slice(0, 3)`), plus `GET /api/story`
+  are registered fails for any array whose value is the same in every
+  environment, literal or computed (a source-text lint alone misses e.g.
+  `[...].slice(0, 3)`); it does not catch a deliberately
+  environment-conditional array, which no single-environment assertion can,
+  plus `GET /api/story`
   200/405 coverage; `tests/llm-fallback-cause.test.ts` pins "no LLM key
   configured" apart from "a key is configured but synthesis failed" in both
   the `answerMode` value and the user-visible answer text;

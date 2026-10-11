@@ -18,8 +18,14 @@
  *   - src/http-server -> boots the real Express app on an ephemeral port and
  *                        performs a real HTTP GET / over the loopback socket.
  * Both are compared against what the real MCP server's listTools() returns.
- * No source text is parsed here, so any construction of the array — literal,
- * sliced, filtered, computed, read from env — is covered.
+ *
+ * Scope, stated precisely rather than absolutely: no source text is parsed
+ * here, so any array whose value is the SAME IN EVERY ENVIRONMENT — literal,
+ * sliced, filtered, or computed — is covered. What this cannot cover is an
+ * environment-CONDITIONAL array (e.g. keyed off process.env.NODE_ENV), since
+ * these assertions only observe the value produced in the test process. A
+ * guard that watches one environment cannot make a claim about another; the
+ * honest bound is "catches drift, not deliberate per-environment divergence."
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
