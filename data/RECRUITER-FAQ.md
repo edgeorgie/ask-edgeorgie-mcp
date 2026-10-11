@@ -22,9 +22,15 @@ Negotiable — I'd rather discuss this directly in conversation than quote a fix
 
 Barranquilla, Colombia. Currently fully remote at Mercado Libre (since November 2022). Comfortable with remote-first roles; open to relocating as noted above.
 
-## Do you have the agent/MCP projects (triage-desk, eval-lab, repoask-mcp, ask-edgeorgie-mcp, crispy-profiling, simplescope) doing something besides AI/agents?
+## Do you have the agent/MCP projects (triage-desk, eval-lab, repoask-mcp, ask-edgeorgie-mcp, agentlens, crispy-profiling, simplescope) doing something besides AI/agents?
 
 Yes — my production experience at Mercado Libre is full-stack and cross-platform (web, mobile WebViews, smart TV receivers for LG/Samsung/Vidaa/TitanOS), with real SRE practice (Kibana/NewRelic/Datadog/Grafana, SLA/SLI/SLO) and Clean Architecture/DDD on legacy refactors — not just an AI-agent specialist footnote. The agent/MCP side projects are a deliberate specialty built on top of that general engineering foundation, not a replacement for it.
+
+## What is agentlens, and what can't it do?
+
+agentlens (https://github.com/edgeorgie/agentlens) is my zero-dependency tracing and waterfall visualizer for AI agent tool calls — latency, tokens, cost, nesting, errors. Version 0.1.0, no runtime dependencies, just the Node builtins `node:async_hooks` (AsyncLocalStorage, which is how spans know their parent) and `node:crypto`, on Node 18+. 5/5 tests pass on a fresh clone, 6/6 GitHub Actions runs are green, and the viewer is live at https://agentlens-nine.vercel.app/. `npm run demo` traces a multi-step agent (plan -> search_docs -> read_doc x2 -> write_summary) with one read step failing on purpose so the error path is actually exercised.
+
+What it can't do, stated upfront: it does not call any LLM API and doesn't know any provider's pricing — tokens and cost are optional fields you set yourself via `setAttrs({ tokensIn, tokensOut, costUsd, model })` and agentlens only sums what you tell it, so the demo's token numbers are stubbed demo values (that's deliberate, it keeps the demo free and key-less). It's also not on the npm registry: there are no npm credentials in my build environment (`npm whoami` returns ENEEDAUTH), and separately the name `agentlens` is already taken on npm by an unrelated package, so publishing means renaming to something like `@edgeorgie/agentlens`. `npm install github:edgeorgie/agentlens` works today. It has 0 stars and no users — I built it for my own debugging, not for an audience.
 
 ## What's your core technical stack, and how comfortable are you picking up a new one?
 
