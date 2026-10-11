@@ -185,7 +185,8 @@ const answer = await client.callTool({
 `npm install && npm test` works without any manual build step — tests spin up
 the compiled server from `dist/`, which doesn't exist until `pretest` builds it.
 
-- `npm test` → 28/28 passing across six files: `tests/server.test.ts` spins
+- `npm test` passes the whole suite (exact count stated once below, derived
+  from the real suite by `tests/readme-test-claims.test.ts`): `tests/server.test.ts` spins
   up the **compiled** server as a real subprocess and drives it with a real
   `@modelcontextprotocol/sdk` `Client` over stdio (`list_tools` shape, the
   health-check tool list matching the tools actually registered,
@@ -210,6 +211,19 @@ the compiled server from `dist/`, which doesn't exist until `pretest` builds it.
   per-caller window, the global ceiling and `Retry-After`;
   `tests/llm-prompt-injection.test.ts` covers prompt spotlighting and
   delimiter-forgery sanitization of retrieved content.
+- The suite is **12 test files**. That sentence is the only count this README
+  states, and [`tests/readme-test-claims.test.ts`](tests/readme-test-claims.test.ts)
+  derives the number from the real suite and asserts it matches. The previous
+  wording claimed "28/28 passing across six files" long after the suite had
+  grown past it: a hand-maintained mirror of something the code already knows,
+  in prose, where no compiler or test was looking. The README is this repo's
+  evidence surface, so a reader who checks the one number they can cheaply
+  verify and finds it wrong has good reason to discount the measured numbers
+  that are right.
+  A *test* count is deliberately not stated: one test in
+  `tests/corpus-list.test.ts` is declared inside a loop over the two committed
+  transcripts, so no count derived from source is exact, and the same guard
+  fails if a total reappears in the prose. Run `npm test` for the real figure.
 - CI (`.github/workflows/ci.yml`) runs install → typecheck (`tsc --noEmit`) →
   build → `npm test` on every push to `main` and every pull request, with no
   secrets provided to any step, so the suite is held to passing in
