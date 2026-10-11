@@ -94,31 +94,81 @@ test("both committed transcripts record the same project set the engine returns"
   }
 });
 
-test("every project in every committed transcript carries real limitations", async () => {
-  for (const relPath of TRANSCRIPTS) {
-    const projects = projectsOf(await readTranscript(relPath), relPath);
+/**
+ * WHY THIS ASSERTS EQUALITY AND NOT A SHAPE.
+ *
+ * The first version of this test checked only that each entry's `limitations`
+ * was a non-empty array of strings clearing the schema's 40-char floor. Both
+ * of these attacks were measured passing it 53/53:
+ *
+ *   1. FILLER. Replace all six projects' caveats with one reused 47-char
+ *      sentence ("This project has some caveats worth noting here."). Every
+ *      entry clears the floor and the transcript records nothing true.
+ *   2. CROSS-WIRING. Shift each project's real caveats to the NEXT project.
+ *      Every entry is long, specific, genuine prose — attributed to the wrong
+ *      artifact. The transcript then shows the server telling a caller that
+ *      simplescope's missing-licence warning belongs to crispy-profiling.
+ *
+ * Attack 2 is the worse one, and it is the reason a shape check cannot be the
+ * guard: it produces a transcript that is WRONG rather than SILENT, which is
+ * strictly more damaging for a provenance tool than an absent caveat. Length
+ * measures volume; neither attack is a volume problem.
+ *
+ * `limitations` is, unlike a project description, a verbatim array copied out
+ * of `doGetProjects()` into the structured output — so the honest check is
+ * equality against the real engine, per project, in order. That is a stricter
+ * contract than the rest of this file applies, and deliberately so: it is the
+ * one field whose drift was the actual defect, and the one a reader is most
+ * likely to trust as the repo's own disclosure of what its artifacts cannot do.
+ *
+ * The accepted cost: editing a caveat in `src/engine.ts` now requires
+ * regenerating the transcripts (commands in this file's header). That is the
+ * intended consequence, not an inconvenience to design around — a recording of
+ * output that no longer matches the output is the thing being prevented.
+ */
+test("every project's recorded limitations are verbatim what the engine returns", async () => {
+  const live = new Map((await doGetProjects()).map((p) => [p.name, p.limitations]));
+  assert.ok(live.size > 0, "doGetProjects() returned nothing — this guard would be vacuous");
 
-    for (const project of projects) {
-      const where = `${relPath} → ${project.name ?? "<unnamed>"}`;
+  // The engine is the authority, so its own entries must clear the schema floor
+  // before transcripts are judged against them. Without this, filler shipped in
+  // the ENGINE would become the expected value and both attacks would simply
+  // move one layer down.
+  for (const [name, limitations] of live) {
+    assert.ok(
+      Array.isArray(limitations) && limitations.length > 0,
+      `src/engine.ts → ${name}: no non-empty \`limitations\`. The schema requires one on ` +
+        `every entry precisely so an absent caveat never reads as "this one has none".`,
+    );
+    for (const limitation of limitations) {
       assert.ok(
-        Array.isArray(project.limitations) && project.limitations.length > 0,
-        `${where}: no non-empty \`limitations\`. The live schema requires one on every ` +
-          `entry precisely so an absent caveat never reads as "this one has none" — a ` +
-          `transcript without it is committed proof of the opposite.`,
+        typeof limitation === "string" && limitation.trim().length >= MIN_LIMITATION_CHARS,
+        `src/engine.ts → ${name}: limitation ${JSON.stringify(limitation)} is under ` +
+          `${MIN_LIMITATION_CHARS} chars of real text.`,
+      );
+    }
+  }
+
+  for (const relPath of TRANSCRIPTS) {
+    for (const project of projectsOf(await readTranscript(relPath), relPath)) {
+      const where = `${relPath} → ${project.name ?? "<unnamed>"}`;
+      const expected = live.get(project.name as string);
+      assert.ok(
+        expected,
+        `${where}: recorded a project the engine does not return (covered in detail by the ` +
+          `set-equality test above)`,
       );
 
-      for (const limitation of project.limitations as unknown[]) {
-        assert.equal(typeof limitation, "string", `${where}: a non-string limitation entry`);
-        // A whitespace-only or one-word entry satisfied an earlier non-empty
-        // check while saying nothing, so length is asserted on trimmed text
-        // against the same floor the live schema enforces.
-        assert.ok(
-          (limitation as string).trim().length >= MIN_LIMITATION_CHARS,
-          `${where}: limitation ${JSON.stringify(limitation)} is under ` +
-            `${MIN_LIMITATION_CHARS} chars of real text. Length is not a policy, but the ` +
-            `live schema enforces this floor and the transcript must record the same contract.`,
-        );
-      }
+      // deepEqual, in order, so reused filler and caveats attributed to the
+      // wrong artifact both fail — neither is detectable by shape or length.
+      assert.deepEqual(
+        project.limitations,
+        expected,
+        `${where}: the recorded \`limitations\` are not what the engine returns for this ` +
+          `project. Either the engine's caveats changed and the transcript was not ` +
+          `regenerated, or the transcript's caveats are filler/attributed to the wrong ` +
+          `artifact. Regenerate it (see this file's header) — do not hand-edit it to match.`,
+      );
     }
   }
 });
