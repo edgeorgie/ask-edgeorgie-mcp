@@ -85,13 +85,25 @@ test("get_projects returns all 5 real shipped artifacts", async () => {
   });
 });
 
-test("get_story returns a real chronological timeline, not prose", async () => {
+test("get_story returns a chronological timeline, not prose", async () => {
   await withClient(async (client) => {
     const res: any = await client.callTool({ name: "get_story", arguments: {} });
     const beats = res.structuredContent.beats;
     assert.ok(Array.isArray(beats) && beats.length >= 5, "expected at least 5 story beats");
-    assert.ok(beats.every((b: any) => b.year && b.label && b.body), "every beat needs year/label/body");
-    assert.ok(beats.some((b: any) => /15/.test(b.year)), "expected the age-15 origin beat");
+    assert.ok(
+      beats.every((b: any) => typeof b.year === "string" && b.year.trim() && b.label && b.body),
+      "every beat needs year/label/body",
+    );
+    // Pin the exact origin-beat label: a bare /15/ test is also satisfied by
+    // "2015" or "1500", so it would not actually prove the age-15 beat exists.
+    assert.ok(
+      beats.some((b: any) => b.year === "Age 15"),
+      `expected an "Age 15" origin beat, got years [${beats.map((b: any) => b.year).join(", ")}]`,
+    );
+    // The source field must describe provenance it can actually back —
+    // get_story is editorial copy, not retrieval, so it must not read as a
+    // file+line citation. See src/engine.ts doGetStory.
+    assert.match(res.structuredContent.source, /paraphrase, not a quote/i);
   });
 });
 

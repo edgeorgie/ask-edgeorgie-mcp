@@ -1,12 +1,17 @@
 /**
- * Shared engine for the three "ask about edgeorgie" tools. Both the MCP tool
- * handlers (create-server.ts) and the REST route (api/ask.ts) call these so
+ * Shared engine for the four "ask about edgeorgie" tools. Both the MCP tool
+ * handlers (create-server.ts) and the REST routes (api/ask.ts, api/story.ts,
+ * api/experience.ts, api/projects.ts) call these so
  * there's exactly one implementation.
  *
  * get_experience  -> returns resume.txt's work-history section verbatim.
- * get_projects    -> returns the 3 real shipped artifacts with their real
+ * get_projects    -> returns the 5 shipped artifacts with their
  *                    metrics/URLs, every field traceable to each repo's
  *                    public commit/PR history and RELIABILITY-REPORT.md.
+ * get_story       -> returns a hand-written chronological timeline of the
+ *                    candidate's background as ordered beats. This is
+ *                    editorial copy maintained in this file, NOT retrieval
+ *                    over data/ — see doGetStory's own comment.
  * ask_about_edgeorgie -> TF-IDF retrieval over the full corpus (resume.txt +
  *                    RELIABILITY-REPORT.md + BUILD-LOG.md, public evidence
  *                    only), same scoring/citation contract as repoask-mcp.
@@ -23,7 +28,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildCorpusIndex } from "./corpus.js";
 import { retrieveFromCorpus, type Citation } from "./retrieval.js";
-import { synthesize, deterministicAnswer } from "./llm.js";
+import { synthesize, deterministicAnswer, hasLlmKey } from "./llm.js";
 import type { Chunk } from "@edgeorgie/retrieval-core";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -108,7 +113,7 @@ export interface ProjectResult {
 }
 
 /**
- * Hardcoded to the 3 real shipped artifacts. Every metric/URL below is a
+ * Hardcoded to the 5 shipped artifacts. Every metric/URL below is a
  * direct, unmodified copy of facts already verified and logged in
  * progress.log / RELIABILITY-REPORT.md / this candidate's public repos —
  * nothing here is invented or estimated. The "source" field on each entry
@@ -236,9 +241,25 @@ export interface StoryResult {
  * since this repo has no shared package with the portfolio. Returned as
  * structured beats (year/label/body), not one prose paragraph, so an agent
  * or UI can render it as an actual timeline instead of a wall of text.
- * Every beat is a real, candidate-stated fact — see RECRUITER-FAQ.md's
- * "What do you do outside of work?" and "core technical stack" entries for
- * the first-person source.
+ *
+ * PROVENANCE, stated precisely because this repo's whole contract is that a
+ * `source` field names text you can go and read: these beats are the
+ * candidate's own editorial copy, authored for the portfolio timeline and
+ * maintained here by hand. They are NOT retrieved from data/ and they are
+ * NOT verbatim quotes of any corpus file — the facts behind them (the 2D
+ * platformer at 15, the dual degrees, Kotlin/Swift on the job, Unreal
+ * Engine, guitar, the 4x/week morning gym routine) overlap with
+ * RECRUITER-FAQ.md, but the wording does not, so `source` deliberately
+ * describes the copy's origin instead of citing a file+line range it could
+ * not back. Use doAskAboutEdgeorgie when a caller needs a citation.
+ *
+ * Deliberate design note: if anyone later makes this data file-driven (read
+ * the beats out of data/), that creates an UNSPOTLIGHTED path from file
+ * content into whatever renders it — doGetStory bypasses src/llm.ts's
+ * sanitizeRetrievedText / <retrieved_context> wrapping entirely, which is
+ * only safe today because this is a compile-time constant with no
+ * caller-controlled input. Route any file-driven version through the
+ * corpus/retrieval path instead.
  */
 export async function doGetStory(): Promise<StoryResult> {
   return {
@@ -253,7 +274,7 @@ export async function doGetStory(): Promise<StoryResult> {
       {
         year: "Degree",
         label: "Electronic Engineering, then Software",
-        body: "Dual degrees — Electronic Engineering and Software Development. The electronics background is part of why a new stack doesn't feel intimidating: used to learning a discipline from its fundamentals up.",
+        body: "Dual degrees — Electronic Engineering and Software Development. The electronics background is part of why a new stack doesn't feel intimidating: I'm used to learning a discipline from its fundamentals up.",
       },
       {
         year: "On the job",
@@ -263,20 +284,21 @@ export async function doGetStory(): Promise<StoryResult> {
       {
         year: "Always",
         label: "Design isn't handed to me, I own it",
-        body: "UX and interaction design on these projects — this portfolio and MCP included — are my own decisions, not a template someone else made. Caring how something feels to use, not only whether the API underneath is correct.",
+        body: "UX and interaction design on these projects — this portfolio and MCP included — are my own decisions, not a template someone else made. I care how something feels to use, not only whether the API underneath is correct.",
       },
       {
         year: "Right now",
         label: "Self-teaching Unreal Engine (5.8.3)",
-        body: "Still building games, not just playing them — currently self-teaching game development and design in Unreal Engine. Same self-directed approach as the platformer at 15, just a bigger engine.",
+        body: "Still building games, not just playing them — I'm currently self-teaching game development and design in Unreal Engine. Same self-directed approach as the platformer at 15, just a bigger engine.",
       },
       {
         year: "Right now",
         label: "Guitar, and the gym at sunrise",
-        body: "Learning to play guitar. At the gym 4 mornings a week — a morning person, prefers getting moving early over pushing it to the end of the day.",
+        body: "Learning to play guitar. At the gym 4 mornings a week — I'm a morning person, I prefer getting moving early over pushing it to the end of the day.",
       },
     ],
-    source: "RECRUITER-FAQ.md 'What do you do outside of work?' / 'core technical stack' entries; mirrors edgeorgie-portfolio's 'Beyond the code' timeline.",
+    source:
+      "Candidate's own timeline copy, hand-maintained in src/engine.ts and mirrored from edgeorgie-portfolio's 'Beyond the code' section. Paraphrase, not a quote: the same facts are covered in data/RECRUITER-FAQ.md ('What do you do outside of work?', 'core technical stack'), but this wording appears in no corpus file — call ask_about_edgeorgie for file+line citations.",
   };
 }
 
@@ -287,7 +309,19 @@ export async function doGetStory(): Promise<StoryResult> {
 export interface AskResult {
   question: string;
   answer: string;
-  answerMode: "llm" | "deterministic";
+  /**
+   * "llm"              -> a provider key was set and synthesis succeeded.
+   * "deterministic"    -> no provider key is configured; citation dump only.
+   * "synthesis-failed" -> a provider key IS configured but the call failed
+   *                       (e.g. Anthropic 400 for an org-scoped key missing
+   *                       ANTHROPIC_WORKSPACE_ID). Previously this case also
+   *                       reported "deterministic", so the badge and the
+   *                       answer body both blamed a missing key that was in
+   *                       fact present. These are now distinguishable.
+   */
+  answerMode: "llm" | "deterministic" | "synthesis-failed";
+  /** Whether any provider key is present, independent of whether the call worked. */
+  llmKeyConfigured: boolean;
   model?: string;
   citations: Citation[];
 }
@@ -302,8 +336,9 @@ export async function doAskAboutEdgeorgie(question: string, topK?: number): Prom
     text: c.excerpt,
   }));
 
+  const llmKeyConfigured = hasLlmKey();
   let answer: string;
-  let answerMode: "llm" | "deterministic";
+  let answerMode: "llm" | "deterministic" | "synthesis-failed";
   let model: string | undefined;
   try {
     const synth = await synthesize(question, "Edwin Jorge (edgeorgie) — candidate corpus", chunksForPrompt);
@@ -312,13 +347,16 @@ export async function doAskAboutEdgeorgie(question: string, topK?: number): Prom
       answerMode = "llm";
       model = synth.model;
     } else {
-      answer = deterministicAnswer(chunksForPrompt);
+      // synthesize() returns null only when no provider key is set.
+      answer = deterministicAnswer(chunksForPrompt, "no-key");
       answerMode = "deterministic";
     }
   } catch (err) {
-    answer = `LLM synthesis failed (${(err as Error).message}); falling back to citations.\n\n${deterministicAnswer(chunksForPrompt)}`;
-    answerMode = "deterministic";
+    // A key was present (synthesize threw rather than returning null), so the
+    // failure cause is the provider/config, never a missing key.
+    answer = `LLM synthesis failed (${(err as Error).message}); falling back to citations.\n\n${deterministicAnswer(chunksForPrompt, "synthesis-failed")}`;
+    answerMode = "synthesis-failed";
   }
 
-  return { question, answer, answerMode, model, citations };
+  return { question, answer, answerMode, llmKeyConfigured, model, citations };
 }

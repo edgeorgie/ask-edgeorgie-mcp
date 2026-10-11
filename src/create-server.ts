@@ -62,7 +62,8 @@ export function createAskEdgeorgieServer(): McpServer {
     {
       title: "Get Edwin Jorge's (edgeorgie) real shipped project evidence",
       description:
-        "Returns the 3 real, publicly shipped artifacts (triage-desk, eval-lab, repoask-mcp) with their " +
+        "Returns the 5 publicly shipped artifacts (triage-desk, eval-lab, repoask-mcp, " +
+        "crispy-profiling, simplescope) with their " +
         "real measured metrics, PR/commit/run URLs, and live demo links — sourced from each repo's public " +
         "commit history and RELIABILITY-REPORT.md. No metric here is estimated or invented; every claim cites exactly where " +
         "it was verified.",
@@ -106,8 +107,11 @@ export function createAskEdgeorgieServer(): McpServer {
         "degrees, picking up Kotlin/Swift on the job, owning UX/design decisions, to what he's " +
         "self-teaching right now (Unreal Engine game dev, guitar, a 4x/week morning gym routine). " +
         "Structured as ordered beats (year, label, body), not a single prose block — render it as an " +
-        "actual timeline rather than dumping the text. Every beat is a real, first-person fact, not " +
-        "generated or inferred.",
+        "actual timeline rather than dumping the text. Unlike ask_about_edgeorgie, this tool does NOT " +
+        "do retrieval and returns no line-level citations: the beats are the candidate's own " +
+        "hand-written summary, maintained as editorial copy in src/engine.ts. The underlying facts " +
+        "also appear in data/RECRUITER-FAQ.md, but the wording here is a paraphrase, not a quote from " +
+        "it — use ask_about_edgeorgie when you need a cited source file and line range.",
       inputSchema: {},
       outputSchema: {
         intro: z.string(),
@@ -147,7 +151,9 @@ export function createAskEdgeorgieServer(): McpServer {
         "BUILD-LOG.md (public evidence only). Returns citations " +
         "with exact source file + line range. If ANTHROPIC_API_KEY or OPENAI_API_KEY is set, also returns " +
         "a synthesized prose answer with inline [n] citations grounded strictly in the retrieved excerpts; " +
-        "otherwise 'answer' is a deterministic citation dump and 'answerMode' is 'deterministic'. Never " +
+        "otherwise 'answer' is a deterministic citation dump and 'answerMode' is 'deterministic'. If a key is " +
+        "set but the provider call fails, 'answerMode' is 'synthesis-failed' (not 'deterministic') and " +
+        "'llmKeyConfigured' is true, so the cause is never misreported as a missing key. Never " +
         "answers beyond what's indexed — if nothing relevant is found, it says so rather than inventing " +
         "an answer.",
       inputSchema: {
@@ -157,7 +163,8 @@ export function createAskEdgeorgieServer(): McpServer {
       outputSchema: {
         question: z.string(),
         answer: z.string(),
-        answerMode: z.enum(["llm", "deterministic"]),
+        answerMode: z.enum(["llm", "deterministic", "synthesis-failed"]),
+        llmKeyConfigured: z.boolean(),
         model: z.string().optional(),
         citations: z.array(
           z.object({

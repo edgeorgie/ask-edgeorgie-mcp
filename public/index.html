@@ -23,8 +23,9 @@
     <section class="panel">
       <h2>Ask about me</h2>
       <p class="small" id="ask-hint" style="opacity:.7">Answers are grounded and cited either way — check the
-        <code>answerMode</code> badge on the result to see whether this deployment is running LLM synthesis or
-        a deterministic citation dump.</p>
+        <code>answerMode</code> badge on the result: <code>llm</code> means a model synthesized the prose,
+        <code>deterministic</code> means no LLM key is configured on this deployment, and
+        <code>synthesis-failed</code> means a key IS configured but the provider call failed.</p>
       <form id="ask-form">
         <input id="question" type="text" placeholder="e.g. What AI agent infrastructure has this person built in production?" required />
         <button type="submit">Ask</button>
