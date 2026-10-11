@@ -234,6 +234,17 @@ the compiled server from `dist/`, which doesn't exist until `pretest` builds it.
   schedule, not in the PR suite, so a third party being unreachable never fails
   an unrelated PR. It exits 2 rather than 0 when a source cannot be reached,
   because "could not check" is not "nothing changed".
+  Both of those guards were first shipped broken and were fixed only because
+  a cold read tried to defeat them: the checker reported "all claims accurate"
+  when a claim had merely been *reworded* past its regex (a missing claim is
+  now `exit 2`, "could not check"), its stars pattern read `1,000` as `000`,
+  and the dated-figure test's own pre-filter never matched the string it named
+  as the regression, so it asserted `[] === []` and judged nothing.
+  [`scripts/mutation-battery.sh`](scripts/mutation-battery.sh) is the result:
+  it reintroduces each of those defeats in turn and fails if the guard does
+  not. It also fails if a mutation did not *apply* — a `sed` that silently
+  matches nothing scores as a guard passing when the guard was never
+  exercised, which is the same false comfort one level up.
 - The suite is **14 test files**. That sentence is the only count this README
   states, and [`tests/readme-test-claims.test.ts`](tests/readme-test-claims.test.ts)
   derives the number from the real suite and asserts it matches. The previous
