@@ -1,8 +1,8 @@
-# Build log: triage-desk, eval-lab, repoask-mcp, agentlens
+# Build log: triage-desk, eval-lab, repoask-mcp, crispy-profiling, simplescope, agentlens
 
-*Posted 2026-10-09, updated 2026-10-11 (agentlens added, and the repoask-mcp deployment section corrected once it actually shipped). Working notes from converting side projects from "demo I click through" into "thing an agent or CI pipeline actually drives." Writing this the way I'd want to read it — including the parts that didn't work on the first try.*
+*Posted 2026-10-09, updated 2026-10-11 (agentlens added, the repoask-mcp deployment section corrected once it actually shipped, and crispy-profiling + simplescope written up after my own MCP server reported it had no information about them). Working notes from converting side projects from "demo I click through" into "thing an agent or CI pipeline actually drives." Writing this the way I'd want to read it — including the parts that didn't work on the first try.*
 
-I keep a progress log while I work (mostly for myself, partly so I don't quietly round a "mostly works" into a "it works"). This is the cleaned-up version of a few days from that log, for the four things I actually shipped: a webhook-triggered GitHub triage bot, an eval CLI/Action, a fresh MCP server built off an older RAG side project, and a tracer for watching my own agents run. I'm not going to pretend any of this went in a straight line.
+I keep a progress log while I work (mostly for myself, partly so I don't quietly round a "mostly works" into a "it works"). This is the cleaned-up version of a few days from that log, covering the six things I've actually shipped: a webhook-triggered GitHub triage bot, an eval CLI/Action, a fresh MCP server built off an older RAG side project, a React re-render profiler published to npm, an interactive algorithms-learning site, and a tracer for watching my own agents run. I'm not going to pretend any of this went in a straight line.
 
 ## Pinning repos doesn't have an API. At all.
 
@@ -38,14 +38,28 @@ It's version 0.1.0 and it has no runtime dependencies at all — only two Node b
 
 Two limitations I'd rather state than have someone discover. First: agentlens does not call any LLM API and does not know any provider's pricing. Tokens and cost are optional fields the caller sets themselves via `setAttrs({ tokensIn, tokensOut, costUsd, model })`, and agentlens only sums what it's told — the demo's token numbers are stubbed and labeled as demo values, specifically so the demo costs nothing and needs no API key. If you want real cost, you supply real cost. Second: it is not published on the npm registry. Two separate reasons, not one — there are no npm credentials in this build environment (`npm whoami` returns `ENEEDAUTH`), and independently of that the name `agentlens` is already taken on npm by an unrelated package, so publishing would mean renaming to something like `@edgeorgie/agentlens`. Installing from GitHub works today: `npm install github:edgeorgie/agentlens`. It has 0 stars and no users I know of; it's a tool I built for myself and it hasn't been adopted by anyone.
 
+## The two projects this log kept leaving out, and why that mattered
+
+A gap I found by querying my own MCP server instead of reading my own repo. `get_projects` — the structured tool an agent calls — returns six artifacts. This build log only ever discussed four of them. Since the log is one of the files the retrieval tool indexes, asking the live server about `crispy-profiling` or `simplescope` retrieved nothing, so it answered that it had no information about a project the same server advertises one tool call away. Writing them up here is the fix.
+
+`crispy-profiling` ([repo](https://github.com/edgeorgie/crispy-profiling), [npm](https://www.npmjs.com/package/crispy-profiling)) is a React re-render profiler shipped as four surfaces off one engine: a CLI, a GitHub Action, an MCP server, and an Agent Skill, so Claude Code / Cursor / Codex can *measure* a re-render fix instead of guessing at one. It opens the target app in headless Chromium, drives described interactions, and reports which components re-rendered, how many times, why (props/state/context/parent), and which of those renders were avoidable. It's the one project here that is actually published: `npm i -D crispy-profiling`, latest `0.6.0`, MIT. I validated it against 5 real open-source apps (Redux Essentials, the Next.js App Router Playground, Excalidraw, shadcn-admin, react-admin) and found a fixable re-render problem in each.
+
+On its download numbers, which I'd rather explain than quote: npm reports 754 downloads in the last week. I don't read that as adoption and neither should you. The daily series is zero every day until `523` on Oct 5, `0`, `15`, `164`, `52` — spikes that line up with my own publishes, which is what registry mirrors and CI pulls look like, not users. 0 GitHub stars. The honest version is "published, installable, and validated against real apps," not "754 people use it."
+
+`simplescope` ([repo](https://github.com/edgeorgie/simplescope), [live](https://simplescope-one.vercel.app)) is the odd one out and it's here deliberately: it's the human-facing one. An interactive, gamified platform for learning algorithms by watching real JavaScript execute rather than reading a static diagram — Next.js App Router, TypeScript, Tailwind v4, shadcn/ui, MDX lessons. The design decision I'd defend is the graceful degradation: accounts and progress-sync run on Better Auth + Drizzle on Neon Postgres, but the site is fully functional with **zero** environment variables — the account UI hides itself and progress falls back to `localStorage`. A reviewer can clone it and have it work without provisioning a database, which is not true of most app-with-auth repos. It's deployed (200) and has 0 stars. I include it because "agent-native" isn't a personality trait: the same person who builds pipelines a model can drive should be able to ship a polished UI a person wants to use, and this is the evidence for that half.
+
 ## Why these exist
 
-triage-desk, eval-lab, repoask-mcp and agentlens are the same idea I keep
-coming back to: tools and pipelines a model can drive directly, not just a
-human clicking a UI. A webhook-triggered triage bot, a CI-gating eval
-harness, an MCP server, and a tracer for watching an agent's own tool calls
-all follow from that — each one is a different shape of "let an
-agent act instead of a human."
+triage-desk, eval-lab, repoask-mcp, crispy-profiling, simplescope and
+agentlens come down to one idea I keep returning to: tools a model can drive
+directly, not just a human clicking a UI. A webhook-triggered triage bot, a
+CI-gating eval harness, an MCP server, a profiler that exposes itself as a
+CLI/Action/MCP server/Agent Skill, and a tracer for watching an agent's own
+tool calls are each a different shape of "let an agent act instead of a
+human." simplescope is the deliberate exception — the human-facing one, kept
+in because shipping a UI people actually want to use is a separate skill from
+shipping an API an agent can drive, and I'd rather show both than claim only
+one.
 
 ---
 
@@ -56,6 +70,10 @@ benchmarked rather than just demoed. repoask-mcp works end-to-end over both
 stdio and HTTP, with an MCP-client transcript, and is now publicly deployed
 and reachable from outside my own machine — `https://repoask-mcp.vercel.app/`
 answers 200 and its `/mcp` endpoint returns a real `tools/list` response over
-SSE, both re-verified with `curl`. That gap is closed. agentlens is the
-newest and the least proven: 5/5 tests green, 6/6 CI runs green, a live
-viewer, and no users — unpublished on npm, installable from GitHub only.
+SSE, both re-verified with `curl`. That gap is closed. crispy-profiling is the
+only one published to npm (`0.6.0`) and validated against 5 real OSS apps,
+with download counts that reflect mirrors rather than users. simplescope is
+live and runs with zero env vars. agentlens is the newest and the least
+proven: 5/5 tests green, 6/6 CI runs green, a live viewer, and no users —
+unpublished on npm, installable from GitHub only. None of the six has stars or
+an outside user; what they have is run evidence.

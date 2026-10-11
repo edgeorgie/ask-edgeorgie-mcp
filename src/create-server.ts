@@ -62,11 +62,13 @@ export function createAskEdgeorgieServer(): McpServer {
     {
       title: "Get Edwin Jorge's (edgeorgie) real shipped project evidence",
       description:
-        "Returns the 5 publicly shipped artifacts (triage-desk, eval-lab, repoask-mcp, " +
-        "crispy-profiling, simplescope) with their " +
+        "Returns the 6 publicly shipped artifacts (triage-desk, eval-lab, repoask-mcp, " +
+        "crispy-profiling, simplescope, agentlens) with their " +
         "real measured metrics, PR/commit/run URLs, and live demo links — sourced from each repo's public " +
         "commit history and RELIABILITY-REPORT.md. No metric here is estimated or invented; every claim cites exactly where " +
-        "it was verified.",
+        "it was verified. Where a project has caveats a caller could not infer from its metrics (not published to a " +
+        "registry, no adoption, a capability it deliberately lacks), those are returned in a `limitations` array rather " +
+        "than omitted.",
       inputSchema: {},
       outputSchema: {
         projects: z.array(
@@ -76,6 +78,7 @@ export function createAskEdgeorgieServer(): McpServer {
             description: z.string(),
             realMetrics: z.array(z.string()),
             evidence: z.array(z.string()),
+            limitations: z.array(z.string()).optional(),
             source: z.string(),
           }),
         ),
@@ -88,7 +91,18 @@ export function createAskEdgeorgieServer(): McpServer {
           {
             type: "text",
             text: projects
-              .map((p) => `## ${p.name}\n${p.description}\n\nMetrics:\n${p.realMetrics.map((m) => `- ${m}`).join("\n")}`)
+              .map((p) => {
+                // Limitations are rendered into the text block too, not only
+                // into structuredContent: a client that displays the text
+                // content (most chat-style MCP clients do) would otherwise
+                // show the metrics and silently drop the caveats attached to
+                // them, which is the one direction this tool must never fail
+                // in.
+                const caveats = p.limitations?.length
+                  ? `\n\nLimitations:\n${p.limitations.map((l) => `- ${l}`).join("\n")}`
+                  : "";
+                return `## ${p.name}\n${p.description}\n\nMetrics:\n${p.realMetrics.map((m) => `- ${m}`).join("\n")}${caveats}`;
+              })
               .join("\n\n"),
           },
         ],
