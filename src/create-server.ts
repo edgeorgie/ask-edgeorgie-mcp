@@ -17,6 +17,7 @@ import {
   doGetStory,
   type ProjectResult,
 } from "./engine.js";
+import { capture, questionAskedProperties } from "./analytics.js";
 
 /**
  * Renders the `get_projects` text block from the engine's own project data.
@@ -82,6 +83,11 @@ export function createAskEdgeorgieServer(): McpServer {
     },
     async () => {
       const result = await doGetExperience();
+      // Usage shape only (the tool name), captured after the result exists and
+      // awaited before it is returned: the transport writes the response the
+      // moment this handler resolves, and a serverless instance may freeze
+      // right after that. A no-op without POSTHOG_KEY; never throws.
+      await capture("mcp_tool_called", { tool: "get_experience" });
       return {
         content: [
           {
@@ -129,6 +135,7 @@ export function createAskEdgeorgieServer(): McpServer {
     },
     async () => {
       const projects = await doGetProjects();
+      await capture("mcp_tool_called", { tool: "get_projects" });
       return {
         content: [{ type: "text", text: renderProjectsText(projects) }],
         structuredContent: { projects } as unknown as Record<string, unknown>,
@@ -167,6 +174,7 @@ export function createAskEdgeorgieServer(): McpServer {
     },
     async () => {
       const result = await doGetStory();
+      await capture("mcp_tool_called", { tool: "get_story" });
       return {
         content: [
           {
@@ -219,7 +227,15 @@ export function createAskEdgeorgieServer(): McpServer {
       },
     },
     async ({ question, topK }) => {
+      const startedAt = Date.now();
       const result = await doAskAboutEdgeorgie(question, topK);
+      // Same event name as POST /api/ask (surface "web") so one chart shows
+      // humans and agents side by side. Sent concurrently with the tool-call
+      // event; neither can reject, so Promise.all cannot either.
+      await Promise.all([
+        capture("mcp_tool_called", { tool: "ask_about_edgeorgie" }),
+        capture("question_asked", questionAskedProperties("mcp", question.length, result, Date.now() - startedAt)),
+      ]);
       return {
         content: [{ type: "text", text: result.answer }],
         structuredContent: result as unknown as Record<string, unknown>,

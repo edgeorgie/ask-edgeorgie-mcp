@@ -30,6 +30,7 @@ import express from "express";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createAskEdgeorgieServer } from "./create-server.js";
 import { checkRateLimit, getClientId } from "./rate-limit.js";
+import { capture } from "./analytics.js";
 
 export async function handleMcpRequest(req: express.Request, res: express.Response): Promise<void> {
   const server = createAskEdgeorgieServer();
@@ -63,6 +64,7 @@ export function createApp(): express.Express {
     const callerId = getClientId(req);
     const limit = checkRateLimit(callerId);
     if (!limit.allowed) {
+      await capture("rate_limited", { surface: "mcp", reason: limit.reason === "global" ? "global" : "per-caller" });
       res.setHeader("Retry-After", String(limit.retryAfterSeconds ?? 60));
       res.status(429).json({
         jsonrpc: "2.0",
