@@ -43,6 +43,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { promises as fs } from "node:fs";
+import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { doGetProjects } from "../src/engine.js";
@@ -52,6 +53,19 @@ const repoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 /** Mirrors the live schema's `minLength` on a limitations entry. */
 const MIN_LIMITATION_CHARS = 40;
+
+/**
+ * How far a committed transcript may predate the newest commit to the engine
+ * data it records, before it is reported as stale.
+ *
+ * Generous on purpose. The HTTP transcript legitimately lags the working tree
+ * — it records the DEPLOYED server, which only catches up after a merge and a
+ * deploy, so a tight bound would fail every honest PR that edits engine data.
+ * 21 days still catches the real failure mode this replaces: a recording that
+ * was simply forgotten, which is what happened to both transcripts across
+ * PR #26 and #27.
+ */
+const MAX_TRANSCRIPT_LAG_DAYS = 21;
 
 const STDIO_TRANSCRIPT = "examples/transcript.json";
 const HTTP_TRANSCRIPT = "examples/http-transcript.json";
@@ -201,24 +215,35 @@ test("every project's recorded limitations are verbatim what the engine returns"
   // equality against the engine is both correct and achievable. The HTTP
   // transcript records the deployed server and is reconciled against its own
   // structured half below — see this test's header for why.
+  //
+  // The comparison is of the WHOLE project object, not just `limitations`. An
+  // earlier version compared only that one field, which left `source` and
+  // `evidence` unguarded on both transcripts — and those are the fields a
+  // forgery would target first: `source` is the provenance claim itself
+  // ("independently audited by …") and `evidence` holds the URLs a reviewer
+  // clicks. Neither is emitted by renderProjectsText, so the prose comparison
+  // below cannot see them either. Measured: fabricating both passed the suite.
+  const engineByName = new Map((await doGetProjects()).map((p) => [p.name, p]));
   for (const project of projectsOf(await readTranscript(STDIO_TRANSCRIPT), STDIO_TRANSCRIPT)) {
     const where = `${STDIO_TRANSCRIPT} → ${project.name ?? "<unnamed>"}`;
-    const expected = live.get(project.name as string);
+    const expected = engineByName.get(project.name as string);
     assert.ok(
       expected,
       `${where}: recorded a project the engine does not return (covered in detail by the ` +
         `set-equality test above)`,
     );
 
-    // deepEqual, in order, so reused filler and caveats attributed to the
-    // wrong artifact both fail — neither is detectable by shape or length.
+    // deepEqual over the full entry, so reused filler, caveats attributed to
+    // the wrong artifact, a fabricated provenance `source` and an invented
+    // `evidence` URL all fail — none is detectable by shape or length.
     assert.deepEqual(
-      project.limitations,
+      project,
       expected,
-      `${where}: the recorded \`limitations\` are not what the engine returns for this ` +
-        `project. Either the engine's caveats changed and the transcript was not ` +
-        `regenerated, or the transcript's caveats are filler/attributed to the wrong ` +
-        `artifact. Regenerate it (see this file's header) — do not hand-edit it to match.`,
+      `${where}: the recorded project entry is not what the engine returns. Either the ` +
+        `engine's data changed and the transcript was not regenerated, or the recording was ` +
+        `edited — filler caveats, caveats attributed to the wrong artifact, a fabricated ` +
+        `\`source\` provenance line, or an invented \`evidence\` URL all land here. ` +
+        `Regenerate it (see this file's header) — do not hand-edit it to match.`,
     );
   }
 
@@ -371,9 +396,16 @@ test("the recorded text block is what the server's own renderer produces", async
  * Asserted narrowly and honestly: this checks the two files do not claim the
  * SAME origin, and that each claims the right KIND of origin. It cannot verify
  * a capture really happened at the stated time — nothing short of a signed
- * attestation could — and `ranAt` is deliberately not range-checked, because a
- * date assertion would start failing on a correct transcript the moment it
- * ages, which trains people to delete guards.
+ * attestation could.
+ *
+ * `ranAt` IS now bounded, which it was not before. The HTTP transcript is
+ * allowed to lag the working tree (see the limitations test's header), and the
+ * mechanism that was supposed to close that window was a sentence in a comment
+ * telling a maintainer to re-run the harness after a deploy — i.e. nothing. A
+ * bound makes the lag finite: a recording more than MAX_TRANSCRIPT_LAG_DAYS
+ * older than the newest commit to the engine data it records is reported.
+ * Deliberately generous, because the point is to catch a transcript that was
+ * forgotten for weeks, not to fail a correct one that is a day behind.
  */
 test("each transcript records the kind of origin it claims", async () => {
   const origins = new Map<string, string>();
@@ -416,4 +448,38 @@ test("each transcript records the kind of origin it claims", async () => {
     "both transcripts claim the same origin, so one of them is mislabeled and the two " +
       "files are not the two independent transports they are presented as.",
   );
+
+  // THE LAG BOUND. `src/engine.ts` holds the data both transcripts record, so
+  // its last commit date is the earliest moment a faithful recording could
+  // have been made. A recording far older than that is stale by definition.
+  // Uses git rather than filesystem mtimes, which a fresh clone resets.
+  const engineCommitted = execFileSync(
+    "git",
+    ["log", "-1", "--format=%cI", "--", "src/engine.ts"],
+    { cwd: repoRoot, encoding: "utf8" },
+  ).trim();
+
+  // No commit date means a shallow/export checkout with no history; skip
+  // rather than fail, and say so, since an unverifiable bound must not read as
+  // a passing one.
+  if (!engineCommitted) {
+    console.log(
+      "transcript lag NOT CHECKED: no git history for src/engine.ts in this checkout.",
+    );
+    return;
+  }
+
+  for (const relPath of TRANSCRIPTS) {
+    const transcript = await readTranscript(relPath);
+    const lagDays =
+      (Date.parse(engineCommitted) - Date.parse(transcript.ranAt as string)) / 86_400_000;
+    assert.ok(
+      lagDays <= MAX_TRANSCRIPT_LAG_DAYS,
+      `${relPath} was recorded at ${transcript.ranAt}, ${Math.floor(lagDays)} days before ` +
+        `the newest commit to src/engine.ts (${engineCommitted}) — limit ` +
+        `${MAX_TRANSCRIPT_LAG_DAYS}. The engine data has moved on and this recording was ` +
+        `never refreshed, so examples/ shows a reviewer what the server USED to answer. ` +
+        `Regenerate it (see this file's header).`,
+    );
+  }
 });

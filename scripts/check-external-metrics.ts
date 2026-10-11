@@ -1,6 +1,7 @@
 /**
  * Checks the repo's externally-sourced claims against their real live
- * sources, and exits nonzero on drift.
+ * sources, and exits nonzero on drift OR on any declared claim it could not
+ * find.
  *
  * WHY THIS IS A SCRIPT AND NOT A TEST
  *
@@ -12,26 +13,41 @@
  * to the change under review.
  *
  * So freshness runs on a schedule instead (see the `external-metrics` job in
- * .github/workflows/external-metrics.yml). Drift gets surfaced loudly on a
- * timer; nobody's PR is held hostage by api.npmjs.org.
+ * .github/workflows/external-metrics.yml). Drift gets surfaced on a timer;
+ * nobody's PR is held hostage by api.npmjs.org.
  *
- * WHAT IT CHECKS
+ * ──────────────────────────────────────────────────────────────────────────
+ * WHY COVERAGE IS DECLARED, NOT DISCOVERED  (the bug that shaped this file)
+ * ──────────────────────────────────────────────────────────────────────────
  *
- *   - The dated download figure in `src/engine.ts` and `data/BUILD-LOG.md`
- *     against npm's real lifetime total.
- *   - The repo-state figures stated alongside it (stars, forks, watchers,
- *     open issues) against the GitHub API, unauthenticated.
+ * The first version of this script ran a regex per metric and did
+ * `if (match) record(...)`. A claim whose WORDING changed therefore vanished
+ * from the result set instead of being reported — and with an empty result
+ * set the script printed "All external claims still accurate" and exited 0.
+ * Measured: rewording `0 open issues on the repo` to `7 open issues on the
+ * tracker` left a flatly false claim being served with this checker reporting
+ * clean. Its `stars` pattern was separately defeated by a thousands
+ * separator: `/(\d+)\s+GitHub stars/` against "1,000 GitHub stars" captures
+ * "000", which is 0, which matched the live count exactly.
  *
- * TOLERANCE, AND WHY IT IS NOT ZERO. A cumulative download counter moves on
- * its own — registry mirrors refetch, CI pulls. Demanding exactness would
- * mean a failing scheduled job within days of every correct update, which
- * trains everyone to ignore it. The bar is instead "is the stated figure
- * still an honest characterisation": drift beyond DRIFT_TOLERANCE (relative)
- * fails. The 754 -> 1266 case this exists to catch was 68% off, far outside
- * any sane tolerance.
+ * That is a third instance of the pattern that defeated two earlier guards in
+ * this project — asserting on the PRESENCE of something rather than the
+ * behaviour behind it — and it was sitting in the file whose own docstring
+ * warned about it.
  *
- * Usage:  npm run check:external
- * Exits:  0 = every claim still accurate; 1 = drift found; 2 = could not check.
+ * The structural fix: every claim this script is responsible for is DECLARED
+ * in `CLAIMS` below, and a declared claim that cannot be located in the prose
+ * is a failure (exit 2, "could not check"), never silence. Adding a claim
+ * surface means adding a row, and a reworded claim fails loudly until the row
+ * is updated. Coverage is a property of the table, not of whether a regex
+ * happened to fire.
+ *
+ * Exits:
+ *   0 = every declared claim was found AND still matches its live source
+ *   1 = drift found (a claim was located and is now wrong)
+ *   2 = could not check (sources unreachable, or a declared claim not found)
+ *
+ * Usage: npm run check:external
  */
 import { promises as fs } from "node:fs";
 import path from "node:path";
@@ -41,28 +57,112 @@ import { doGetProjects } from "../src/engine.js";
 
 const repoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-/** Relative drift above which a stated download figure is called stale. */
-const DRIFT_TOLERANCE = 0.15;
+/**
+ * Relative drift above which a stated download figure is called stale.
+ *
+ * Deliberately small. An earlier 15% was miscalibrated in both directions: a
+ * single publish day moved 512 downloads (40% of the total at the time), so it
+ * was far too narrow to absorb the real noise source it was written for, while
+ * still permitting ~190 downloads of silent staleness. Staleness is better
+ * bounded by the as-of DATE than by a value band, which is what
+ * MAX_CLAIM_AGE_DAYS does; this tolerance now only absorbs the handful of
+ * mirror refetches that land between a correct update and the next check.
+ */
+const DRIFT_TOLERANCE = 0.02;
+
+/**
+ * How old a dated claim may be before it is reported regardless of drift.
+ *
+ * This is the assertion that actually matches the risk. A cumulative counter
+ * is never "wrong by X%" in a way a reader cares about — it is OUT OF DATE,
+ * and the honest signal is the age of the measurement.
+ */
+const MAX_CLAIM_AGE_DAYS = 45;
 
 const PACKAGE = "crispy-profiling";
-const REPO = "edgeorgie/crispy-profiling";
 
-/** npm's download endpoints return the lifetime total for any window spanning the first publish. */
-const NPM_DOWNLOADS = `https://api.npmjs.org/downloads/point/last-month/${PACKAGE}`;
-const GITHUB_REPO = `https://api.github.com/repos/${REPO}`;
+/**
+ * Lifetime download total.
+ *
+ * NOT `point/last-month`, which the first version used on the reasoning that
+ * any window spanning the first publish returns the running total. True when
+ * written, and a clock bomb: `last-month` is a ROLLING window, so once it
+ * stopped spanning 2026-10-05 it would have reported a partial figure and the
+ * weekly job would have cried ~100% drift against a correct claim forever.
+ * Measured at the time of writing: `last-month` 1266 (correct), but the
+ * explicit window `2026-10-06:2026-10-12` only 743. A fixed start date cannot
+ * roll off the first publish.
+ */
+function npmLifetimeUrl(pkg: string): string {
+  const today = new Date().toISOString().slice(0, 10);
+  return `https://api.npmjs.org/downloads/point/1970-01-01:${today}/${pkg}`;
+}
 
-const DOWNLOAD_CLAIM = /\*{0,2}([\d,]{3,})\*{0,2}\s+as of\s+(\d{4}-\d{2}-\d{2})/;
+/** Comma-tolerant on purpose: figures in prose are written "1,266" as often as "1266". */
+const DOWNLOAD_CLAIM = /\*{0,2}([\d,]{3,})\*{0,2}\s+as of\s+(\d{4}-\d{2}-\d{2})/g;
 
-interface Drift {
+/** A repo-state claim: which repo, which metric, and the pattern that locates it. */
+interface RepoClaim {
+  /** Human label for the failure message. */
+  label: string;
+  /** owner/repo whose live state is authoritative. */
+  repo: string;
+  /** Which GitHub field answers it. */
+  metric: "stargazers_count" | "open_issues_count" | "forks_count" | "subscribers_count";
+  /**
+   * Must capture the figure in group 1. Comma-tolerant: a `(\d+)` here is how
+   * the stars check was silently defeated by "1,000".
+   */
+  pattern: RegExp;
+  /** Which prose surfaces must state it. Every one is required to match. */
+  surfaces: SurfaceId[];
+}
+
+type SurfaceId = "data/BUILD-LOG.md" | "src/engine.ts limitations[]";
+
+/**
+ * EVERY external claim this script is responsible for.
+ *
+ * Generalised past the single package the first version hard-coded. It checked
+ * only `crispy-profiling` and so never looked at `simplescope`'s "12 open
+ * issues" — the MORE volatile of the two, since it moves whenever the author
+ * files anything.
+ *
+ * `simplescope` is nonetheless ABSENT from this table, for a reason worth
+ * recording rather than quietly omitting: the repo is PRIVATE. Its API returns
+ * 404 unauthenticated, so this job — which runs with no secrets, by design —
+ * cannot verify any claim about it, and declaring it here would make the
+ * scheduled run permanently exit 2. The honest consequence is that
+ * `simplescope`'s open-issue count is unverifiable from CI and must be
+ * maintained by hand; see the note on it in src/engine.ts. A row here would
+ * look like coverage without being any.
+ */
+const CLAIMS: RepoClaim[] = [
+  {
+    label: "crispy-profiling stars",
+    repo: "edgeorgie/crispy-profiling",
+    metric: "stargazers_count",
+    pattern: /([\d,]+)\s+GitHub stars/,
+    surfaces: ["data/BUILD-LOG.md", "src/engine.ts limitations[]"],
+  },
+  {
+    label: "crispy-profiling open issues",
+    repo: "edgeorgie/crispy-profiling",
+    metric: "open_issues_count",
+    pattern: /([\d,]+)\s+open issues? on the repo/,
+    surfaces: ["src/engine.ts limitations[]"],
+  },
+];
+
+interface Problem {
+  kind: "drift" | "unchecked";
   surface: string;
-  claim: string;
-  live: string;
-  detail: string;
+  message: string;
 }
 
 async function getJson(url: string): Promise<any> {
   const res = await fetch(url, {
-    headers: { accept: "application/json", "user-agent": `${PACKAGE}-metric-check` },
+    headers: { accept: "application/json", "user-agent": "ask-edgeorgie-mcp-metric-check" },
   });
   if (!res.ok) {
     throw new Error(`${url} -> HTTP ${res.status}`);
@@ -70,63 +170,55 @@ async function getJson(url: string): Promise<any> {
   return res.json();
 }
 
-/** The stated figure, read from both surfaces. Equality between them is the test's job. */
-async function statedDownloads(): Promise<{ value: number; asOf: string }> {
-  const crispy = (await doGetProjects()).find((p) => p.name === PACKAGE);
-  if (!crispy) {
-    throw new Error(`doGetProjects() returned no project named "${PACKAGE}"`);
-  }
-  const fromEngine = crispy.limitations
-    .map((l) => DOWNLOAD_CLAIM.exec(l))
-    .find((m): m is RegExpExecArray => m !== null);
-  if (!fromEngine) {
-    throw new Error(`no dated download figure found in ${PACKAGE}'s limitations`);
-  }
-  return { value: Number(fromEngine[1].replace(/,/g, "")), asOf: fromEngine[2] };
+function parseFigure(raw: string): number {
+  return Number(raw.replace(/,/g, ""));
 }
 
 /**
- * Repo-state figures stated in prose, which drift in BOTH directions.
+ * The prose of each claim surface, keyed by id.
  *
- * Reads BOTH claim surfaces, not just the corpus file. The first version read
- * only `data/BUILD-LOG.md` and therefore silently skipped a stale "2 open
- * issues" claim that lived only in `src/engine.ts`'s limitations — a checker
- * that looks at one of two mirrors reports a clean result for a claim it never
- * examined, which is the same failure class this whole file exists to catch.
+ * `src/engine.ts limitations[]` is read through the real `doGetProjects()`
+ * rather than by grepping the file, so a refactor that moves the text still
+ * gets checked — and ALL projects' limitations are included, not one package's.
  */
-async function statedRepoState(): Promise<
-  Array<{ surface: string; kind: string; claimed: number }>
-> {
-  const surfaces: Array<[string, string]> = [
-    ["data/BUILD-LOG.md", await fs.readFile(path.join(repoRoot, "data", "BUILD-LOG.md"), "utf8")],
+async function loadSurfaces(): Promise<Map<SurfaceId, string>> {
+  const projects = await doGetProjects();
+  return new Map<SurfaceId, string>([
     [
-      "src/engine.ts limitations[]",
-      ((await doGetProjects()).find((p) => p.name === PACKAGE)?.limitations ?? []).join("\n"),
+      "data/BUILD-LOG.md",
+      await fs.readFile(path.join(repoRoot, "data", "BUILD-LOG.md"), "utf8"),
     ],
-  ];
+    ["src/engine.ts limitations[]", projects.flatMap((p) => p.limitations).join("\n")],
+  ]);
+}
 
-  const patterns: Array<[string, RegExp]> = [
-    ["stars", /(\d+)\s+GitHub stars/],
-    ["open issues", /(\d+)\s+open issues? on the repo/],
-  ];
-
-  const found: Array<{ surface: string; kind: string; claimed: number }> = [];
-  for (const [surface, text] of surfaces) {
-    for (const [kind, pattern] of patterns) {
-      const m = pattern.exec(text);
-      if (m) found.push({ surface, kind, claimed: Number(m[1]) });
-    }
-  }
-  return found;
+/**
+ * The dated download figure. Uses matchAll and requires EXACTLY ONE claim per
+ * surface: the first version used a non-global `.exec()` over the whole
+ * corpus file, so a dated decoy earlier in the text hijacked the match and the
+ * real, rotten figure went unread.
+ */
+function downloadClaimsIn(text: string): Array<{ value: number; asOf: string }> {
+  return [...text.matchAll(DOWNLOAD_CLAIM)].map((m) => ({
+    value: parseFigure(m[1]),
+    asOf: m[2],
+  }));
 }
 
 async function main(): Promise<number> {
-  const drifts: Drift[] = [];
+  const problems: Problem[] = [];
+  const surfaces = await loadSurfaces();
 
+  const repos = [...new Set(CLAIMS.map((c) => c.repo))];
   let npm: any;
-  let gh: any;
+  const ghByRepo = new Map<string, any>();
   try {
-    [npm, gh] = await Promise.all([getJson(NPM_DOWNLOADS), getJson(GITHUB_REPO)]);
+    const [npmRes, ...ghRes] = await Promise.all([
+      getJson(npmLifetimeUrl(PACKAGE)),
+      ...repos.map((r) => getJson(`https://api.github.com/repos/${r}`)),
+    ]);
+    npm = npmRes;
+    repos.forEach((r, i) => ghByRepo.set(r, ghRes[i]));
   } catch (err) {
     // A failed fetch is NOT a clean result. Report it as unchecked, with a
     // distinct exit code, so a network outage can never read as "no drift".
@@ -135,53 +227,125 @@ async function main(): Promise<number> {
     return 2;
   }
 
-  const claimed = await statedDownloads();
-  const live = npm.downloads as number;
-  const drift = Math.abs(live - claimed.value) / Math.max(live, 1);
-  if (drift > DRIFT_TOLERANCE) {
-    drifts.push({
-      surface: "src/engine.ts limitations[] + data/BUILD-LOG.md",
-      claim: `${claimed.value} (as of ${claimed.asOf})`,
-      live: String(live),
-      detail:
-        `${(drift * 100).toFixed(1)}% off, tolerance ${(DRIFT_TOLERANCE * 100).toFixed(0)}%. ` +
-        "Update both surfaces and the as-of date together.",
-    });
+  // ── The download claim: must appear exactly once per surface, agree across
+  //    surfaces, be within tolerance of the live total, and not be stale.
+  const liveDownloads = npm.downloads as number;
+  const perSurface = new Map<SurfaceId, { value: number; asOf: string }>();
+  for (const [id, text] of surfaces) {
+    const claims = downloadClaimsIn(text);
+    if (claims.length !== 1) {
+      problems.push({
+        kind: "unchecked",
+        surface: id,
+        message:
+          `expected exactly 1 dated download claim, found ${claims.length}` +
+          (claims.length > 1
+            ? ` (${claims.map((c) => `${c.value} as of ${c.asOf}`).join("; ")}). More than ` +
+              `one means an ambiguous match, and the wrong one may be the one checked.`
+            : ". The claim is either missing or reworded past the pattern — either way it " +
+              "is NOT being verified. Restate it, or update the pattern."),
+      });
+      continue;
+    }
+    perSurface.set(id, claims[0]);
   }
 
-  for (const stated of await statedRepoState()) {
-    const live = stated.kind === "stars" ? gh.stargazers_count : gh.open_issues_count;
-    if (stated.claimed !== live) {
-      drifts.push({
-        surface: stated.surface,
-        claim: `${stated.claimed} ${stated.kind}`,
-        live: String(live),
-        detail: `${stated.kind} move in both directions; exact match is required.`,
+  for (const [id, claim] of perSurface) {
+    const drift = Math.abs(liveDownloads - claim.value) / Math.max(liveDownloads, 1);
+    if (drift > DRIFT_TOLERANCE) {
+      problems.push({
+        kind: "drift",
+        surface: id,
+        message:
+          `claims ${claim.value} downloads (as of ${claim.asOf}), live total is ` +
+          `${liveDownloads} — ${(drift * 100).toFixed(1)}% off, tolerance ` +
+          `${(DRIFT_TOLERANCE * 100).toFixed(0)}%.`,
+      });
+    }
+
+    const ageDays = (Date.now() - Date.parse(`${claim.asOf}T00:00:00Z`)) / 86_400_000;
+    if (ageDays > MAX_CLAIM_AGE_DAYS) {
+      problems.push({
+        kind: "drift",
+        surface: id,
+        message:
+          `the download figure is dated ${claim.asOf}, ${Math.floor(ageDays)} days ago ` +
+          `(limit ${MAX_CLAIM_AGE_DAYS}). A cumulative counter this old is stale whether ` +
+          `or not it is still numerically close.`,
       });
     }
   }
 
-  if (drifts.length === 0) {
+  // ── Repo-state claims: every DECLARED claim must be found, and must match.
+  for (const claim of CLAIMS) {
+    const gh = ghByRepo.get(claim.repo);
+    const live = gh?.[claim.metric] as number | undefined;
+    if (typeof live !== "number") {
+      problems.push({
+        kind: "unchecked",
+        surface: claim.repo,
+        message: `GitHub did not return \`${claim.metric}\` for ${claim.repo}.`,
+      });
+      continue;
+    }
+
+    for (const surfaceId of claim.surfaces) {
+      const text = surfaces.get(surfaceId) ?? "";
+      const m = claim.pattern.exec(text);
+      if (!m) {
+        // THE CASE THE FIRST VERSION SWALLOWED. Not finding a declared claim
+        // is "could not check", never "clean".
+        problems.push({
+          kind: "unchecked",
+          surface: surfaceId,
+          message:
+            `declared claim "${claim.label}" was NOT FOUND (pattern ${claim.pattern}). ` +
+            `It was either removed or reworded — in both cases it is no longer being ` +
+            `verified, and a reworded false claim would be served silently. Restate the ` +
+            `claim, update the pattern, or delete the row from CLAIMS.`,
+        });
+        continue;
+      }
+      const claimed = parseFigure(m[1]);
+      if (claimed !== live) {
+        problems.push({
+          kind: "drift",
+          surface: surfaceId,
+          message: `"${claim.label}" claims ${claimed}, live is ${live}.`,
+        });
+      }
+    }
+  }
+
+  if (problems.length === 0) {
+    const summary = CLAIMS.map((c) => `${c.label}=${ghByRepo.get(c.repo)[c.metric]}`).join(", ");
     console.log(
-      `All external claims still accurate — ${PACKAGE} downloads ${live} ` +
-        `(claimed ${claimed.value} as of ${claimed.asOf}), ${REPO} ` +
-        `${gh.stargazers_count} stars / ${gh.open_issues_count} open issues.`,
+      `All ${CLAIMS.length + perSurface.size} declared claims found and accurate — ` +
+        `${PACKAGE} lifetime downloads ${liveDownloads}; ${summary}.`,
     );
     return 0;
   }
 
-  console.error(`${drifts.length} external claim(s) have drifted from their live source:\n`);
-  for (const d of drifts) {
-    console.error(`  ${d.surface}`);
-    console.error(`    claims: ${d.claim}`);
-    console.error(`    live:   ${d.live}`);
-    console.error(`    ${d.detail}\n`);
+  const unchecked = problems.filter((p) => p.kind === "unchecked");
+  const drifted = problems.filter((p) => p.kind === "drift");
+
+  if (drifted.length > 0) {
+    console.error(`${drifted.length} external claim(s) have DRIFTED from their live source:\n`);
+    for (const p of drifted) console.error(`  ${p.surface}\n    ${p.message}\n`);
+  }
+  if (unchecked.length > 0) {
+    console.error(`${unchecked.length} declared claim(s) could NOT BE CHECKED:\n`);
+    for (const p of unchecked) console.error(`  ${p.surface}\n    ${p.message}\n`);
   }
   console.error(
     "These numbers are served to agents via get_projects and to readers via the retrieval " +
-      "corpus. A stale figure is a cited claim that is no longer true.",
+      "corpus. A stale figure is a cited claim that is no longer true; an unchecked one is " +
+      "a claim nobody is watching.",
   );
-  return 1;
+
+  // An unlocatable claim is the more dangerous state — it looks like success
+  // to any check that only reads the drift list — so it decides the exit code.
+  return unchecked.length > 0 ? 2 : 1;
 }
 
 process.exitCode = await main();
