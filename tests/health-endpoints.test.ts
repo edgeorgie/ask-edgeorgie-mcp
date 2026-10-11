@@ -156,3 +156,46 @@ test("GET /api/story rejects non-GET methods", async () => {
   await storyHandler({ method: "POST", headers: {} } as any, res as any);
   assert.equal(captured.statusCode, 405);
 });
+
+test("POST /api/ask maps an over-length question to 413, not 500", async () => {
+  // The README states an oversized question returns 413. Without this test
+  // that claim is unfalsifiable: the engine-level cap signals by throwing,
+  // which this handler's catch maps to 500, so deleting the route's own
+  // length check degrades a client error into "the server is broken" while
+  // every other test stays green (verified by mutation — removing the check
+  // left the suite at 36/36 before this test existed).
+  const { default: askHandler } = await import("../api/ask.js");
+  const { res, captured } = captureResponse();
+
+  const oversized = "token ".repeat(4000); // 24,000 chars, over the 2000 cap
+  await askHandler(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    { method: "POST", headers: {}, body: { question: oversized } } as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    res as any,
+  );
+
+  assert.equal(captured.statusCode, 413, "an over-length question is a client error, not a 500");
+  const body = captured.body as { error?: string };
+  assert.match(body.error ?? "", /too long/i);
+  // The real length must be reported so a caller can see how far over it is.
+  assert.match(body.error ?? "", new RegExp(String(oversized.length)));
+});
+
+test("POST /api/ask still answers a question just under the cap", async () => {
+  // Pairs with the test above so the 413 path cannot be satisfied by a
+  // handler that rejects everything.
+  const { default: askHandler } = await import("../api/ask.js");
+  const { res, captured } = captureResponse();
+
+  await askHandler(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    { method: "POST", headers: {}, body: { question: "What MCP server has this person built?" } } as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    res as any,
+  );
+
+  assert.equal(captured.statusCode, 200, "a normal question must still be answered");
+  const body = captured.body as { citations?: unknown[] };
+  assert.ok(Array.isArray(body.citations), "expected a normal cited answer");
+});
