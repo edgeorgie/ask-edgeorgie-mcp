@@ -1,8 +1,8 @@
-# Build log: triage-desk, eval-lab, repoask-mcp
+# Build log: triage-desk, eval-lab, repoask-mcp, agentlens
 
-*Posted 2026-10-09. Working notes from converting three side projects from "demo I click through" into "thing an agent or CI pipeline actually drives." Writing this the way I'd want to read it — including the parts that didn't work on the first try.*
+*Posted 2026-10-09, updated 2026-10-11 (agentlens added, and the repoask-mcp deployment section corrected once it actually shipped). Working notes from converting side projects from "demo I click through" into "thing an agent or CI pipeline actually drives." Writing this the way I'd want to read it — including the parts that didn't work on the first try.*
 
-I keep a progress log while I work (mostly for myself, partly so I don't quietly round a "mostly works" into a "it works"). This is the cleaned-up version of a few days from that log, for the three things I actually shipped: a webhook-triggered GitHub triage bot, an eval CLI/Action, and a fresh MCP server built off an older RAG side project. I'm not going to pretend any of this went in a straight line.
+I keep a progress log while I work (mostly for myself, partly so I don't quietly round a "mostly works" into a "it works"). This is the cleaned-up version of a few days from that log, for the four things I actually shipped: a webhook-triggered GitHub triage bot, an eval CLI/Action, a fresh MCP server built off an older RAG side project, and a tracer for watching my own agents run. I'm not going to pretend any of this went in a straight line.
 
 ## Pinning repos doesn't have an API. At all.
 
@@ -38,12 +38,13 @@ It's version 0.1.0 and it has no runtime dependencies at all — only two Node b
 
 Two limitations I'd rather state than have someone discover. First: agentlens does not call any LLM API and does not know any provider's pricing. Tokens and cost are optional fields the caller sets themselves via `setAttrs({ tokensIn, tokensOut, costUsd, model })`, and agentlens only sums what it's told — the demo's token numbers are stubbed and labeled as demo values, specifically so the demo costs nothing and needs no API key. If you want real cost, you supply real cost. Second: it is not published on the npm registry. Two separate reasons, not one — there are no npm credentials in this build environment (`npm whoami` returns `ENEEDAUTH`), and independently of that the name `agentlens` is already taken on npm by an unrelated package, so publishing would mean renaming to something like `@edgeorgie/agentlens`. Installing from GitHub works today: `npm install github:edgeorgie/agentlens`. It has 0 stars and no users I know of; it's a tool I built for myself and it hasn't been adopted by anyone.
 
-## Why these three exist
+## Why these exist
 
-triage-desk, eval-lab, and repoask-mcp are the same idea I keep coming back
-to: tools and pipelines a model can drive directly, not just a human clicking
-a UI. A webhook-triggered triage bot, a CI-gating eval harness, and an
-MCP server all follow from that — each one is a different shape of "let an
+triage-desk, eval-lab, repoask-mcp and agentlens are the same idea I keep
+coming back to: tools and pipelines a model can drive directly, not just a
+human clicking a UI. A webhook-triggered triage bot, a CI-gating eval
+harness, an MCP server, and a tracer for watching an agent's own tool calls
+all follow from that — each one is a different shape of "let an
 agent act instead of a human."
 
 ---
