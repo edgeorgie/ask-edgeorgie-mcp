@@ -246,9 +246,9 @@ export async function doGetProjects(): Promise<ProjectResult[]> {
       ],
       limitations: [
         "0 GitHub stars, 0 forks, 0 watchers. It is published and installable, which is a real bar most of these do not clear, but published is not adopted.",
-        "The download count is lifetime, not a rate. npm reports 754 for both last-week and last-month because the package was first published on 2026-10-05, so every window containing that date returns the same total. The daily series is 0 except 523 / 15 / 164 / 52 on four days around the author's own publishes — the shape of registry mirrors and CI pulls, not users.",
+        "The download count is a lifetime total, not a rate: npm's last-week and last-month endpoints return the SAME number, because the package was first published on 2026-10-05 and every window containing that date returns the running total. The figure is 1266 as of 2026-10-11, and it is dated because it moves — an earlier snapshot of 754 was still being served here days after npm had passed it. Every nonzero day lines up with the author's own publishes: 523 on Oct 5 (0.1.0, 0.2.0) and 512 on Oct 10 (0.4.0, 0.5.0 and 0.6.0 inside three hours), which is the shape of registry mirrors and CI refetching a new version, not users.",
         "The \"found a fixable re-render problem in each of 5 apps\" result was produced and judged by the author. No maintainer of those apps reviewed or accepted a fix.",
-        "2 open issues on the repo at the time of writing, both unresolved product work.",
+        "0 open issues on the repo as of 2026-10-11, and the two that were open (both unresolved product work) have since been closed.",
       ],
       source: "Live GitHub repo README + npm registry listing, read directly (not from a secondary log) on 2026-10-10.",
     },

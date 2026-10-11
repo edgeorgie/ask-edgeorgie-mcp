@@ -4,3 +4,8 @@ dist/
 .DS_Store
 .vercel
 .env*
+
+# Crash core dumps. A 2.9GB `core` appeared here from a crashed node process
+# during a test run; it is untracked junk that must never reach a commit.
+core
+core.*

@@ -213,8 +213,28 @@ the compiled server from `dist/`, which doesn't exist until `pretest` builds it.
   delimiter-forgery sanitization of retrieved content;
   `tests/typecheck-coverage.test.ts` asserts every tracked `.ts` file is
   reached by one of the two tsconfigs, so a new directory of TypeScript
-  cannot arrive unchecked (see the typecheck note below).
-- The suite is **13 test files**. That sentence is the only count this README
+  cannot arrive unchecked (see the typecheck note below);
+  `tests/external-metric-claims.test.ts` guards the one claim class the other
+  guards structurally cannot (see below).
+- **The guard class that could not be derived locally.** Every other guard here
+  works by calling the real authority — `CORPUS_FILES`, `doGetProjects()`,
+  `listTools()`, the actual tsconfig program — and asserting prose matches. One
+  claim has no local authority: `crispy-profiling`'s npm download total is a
+  fact about a third party's live state, and it is a cumulative counter, so it
+  goes stale by simply existing. It did — this repo served **754** to agents and
+  readers while npm reported **1266**, a 68% understatement, with `tsc`, the
+  build, the deploy check and all 62 tests green. The response is split by what
+  each half can actually prove offline:
+  [`tests/external-metric-claims.test.ts`](tests/external-metric-claims.test.ts)
+  asserts the agent-facing (`get_projects`) and reader-facing (`data/BUILD-LOG.md`)
+  copies state the *same* figure and that it carries an `as of <date>` — an
+  undated cumulative number cannot be judged by a reader at all — while
+  [`scripts/check-external-metrics.ts`](scripts/check-external-metrics.ts)
+  (`npm run check:external`) queries npm and GitHub for real and runs on a
+  schedule, not in the PR suite, so a third party being unreachable never fails
+  an unrelated PR. It exits 2 rather than 0 when a source cannot be reached,
+  because "could not check" is not "nothing changed".
+- The suite is **14 test files**. That sentence is the only count this README
   states, and [`tests/readme-test-claims.test.ts`](tests/readme-test-claims.test.ts)
   derives the number from the real suite and asserts it matches. The previous
   wording claimed "28/28 passing across six files" long after the suite had
