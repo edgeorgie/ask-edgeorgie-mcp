@@ -11,6 +11,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { doGetProjects } from "../src/engine.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SERVER_PATH = path.join(__dirname, "..", "dist", "server.js");
@@ -77,11 +78,33 @@ test("get_experience returns real resume roles including Mercado Libre", async (
   });
 });
 
-test("get_projects returns all 5 real shipped artifacts", async () => {
+test("get_projects over the real MCP transport returns exactly what the engine defines", async () => {
+  // Derived from the engine rather than hardcoded. The previous revision of
+  // this test asserted a literal 5-name array, which made it a sixth
+  // hand-maintained mirror of the project list: adding `agentlens` broke it
+  // with a confusing "expected 5 artifacts" failure that said nothing about
+  // the real defect. What matters at this layer is that the MCP transport
+  // round-trips the engine's list intact, which is what this now asserts.
+  const expected = (await doGetProjects()).map((p) => p.name).sort();
+  assert.ok(expected.length > 0, "doGetProjects() returned no projects");
+
   await withClient(async (client) => {
     const res: any = await client.callTool({ name: "get_projects", arguments: {} });
     const names = res.structuredContent.projects.map((p: any) => p.name).sort();
-    assert.deepEqual(names, ["crispy-profiling", "eval-lab", "repoask-mcp", "simplescope", "triage-desk"]);
+    assert.deepEqual(names, expected);
+
+    // Limitations must survive the transport too. They are the one field a
+    // caller cannot reconstruct from anything else, and dropping them turns an
+    // honest entry into an overstated one.
+    const withCaveats = (await doGetProjects()).filter((p) => p.limitations?.length);
+    for (const project of withCaveats) {
+      const served = res.structuredContent.projects.find((p: any) => p.name === project.name);
+      assert.deepEqual(
+        served.limitations,
+        project.limitations,
+        `"${project.name}"'s limitations did not survive the MCP transport`,
+      );
+    }
   });
 });
 

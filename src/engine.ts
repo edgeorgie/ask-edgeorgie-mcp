@@ -5,9 +5,15 @@
  * there's exactly one implementation.
  *
  * get_experience  -> returns resume.txt's work-history section verbatim.
- * get_projects    -> returns the 5 shipped artifacts with their
+ * get_projects    -> returns the 6 shipped artifacts with their
  *                    metrics/URLs, every field traceable to each repo's
  *                    public commit/PR history and RELIABILITY-REPORT.md.
+ *                    The project list and this count are mirrored in several
+ *                    hand-maintained places (the tool description, README,
+ *                    BUILD-LOG prose); tests/project-list.test.ts derives the
+ *                    real set from doGetProjects() and asserts each mirror
+ *                    against it, because the last addition left most of those
+ *                    mirrors stale at once.
  * get_story       -> returns a hand-written chronological timeline of the
  *                    candidate's background as ordered beats. This is
  *                    editorial copy maintained in this file, NOT retrieval
@@ -111,11 +117,18 @@ export interface ProjectResult {
   description: string;
   realMetrics: string[];
   evidence: string[];
+  /**
+   * Caveats a caller cannot infer from `realMetrics` and would otherwise have
+   * to discover for themselves (not published, no adoption, a capability the
+   * project deliberately does not have). Optional: absent means none were
+   * identified, never "none exist" — entries are only added when verified.
+   */
+  limitations?: string[];
   source: string;
 }
 
 /**
- * Hardcoded to the 5 shipped artifacts. Every metric/URL below is a
+ * Hardcoded to the 6 shipped artifacts. Every metric/URL below is a
  * direct, unmodified copy of facts already verified and logged in
  * progress.log / RELIABILITY-REPORT.md / this candidate's public repos —
  * nothing here is invented or estimated. The "source" field on each entry
@@ -217,6 +230,33 @@ export async function doGetProjects(): Promise<ProjectResult[]> {
         "Repo: https://github.com/edgeorgie/simplescope",
       ],
       source: "Live GitHub repo README, read directly on 2026-10-10.",
+    },
+    {
+      name: "agentlens",
+      repo: "https://github.com/edgeorgie/agentlens",
+      description:
+        "Zero-dependency tracing + waterfall visualizer for AI agent tool calls: latency, tokens, cost, nesting, errors. Built to answer 'which step of this agent run was slow, and which one threw' — `node:async_hooks` AsyncLocalStorage propagates parent/child span context without threading a context object through every signature, so concurrent sibling spans cannot leak into each other's parent. `renderHtml` emits a self-contained waterfall with no external references.",
+      realMetrics: [
+        "Zero runtime dependencies — only two Node builtins (`node:async_hooks`, `node:crypto`), Node 18+",
+        "5/5 tests passing on a fresh clone (tests 5 / pass 5 / fail 0)",
+        "6/6 GitHub Actions CI runs `success`",
+        "Viewer deployed live and publicly reachable: https://agentlens-nine.vercel.app/ returns 200",
+      ],
+      evidence: [
+        "Repo: https://github.com/edgeorgie/agentlens",
+        "Live viewer: https://agentlens-nine.vercel.app/",
+        "CI runs: https://github.com/edgeorgie/agentlens/actions",
+      ],
+      // Stated as limitations rather than omitted: an agent reading this tool
+      // gets the same caveats a human reading the README would, and neither
+      // can be inferred from the metrics above.
+      limitations: [
+        "Does NOT call any LLM API and knows no provider's pricing — `tokensIn`/`tokensOut`/`costUsd`/`model` are optional fields the caller sets via `setAttrs()`, and agentlens only sums what it is told. The demo's token numbers are stubbed and labeled as demo values so the demo costs nothing and needs no API key.",
+        "NOT published on the npm registry, for two independent reasons: no npm credentials in the build environment (`npm whoami` -> ENEEDAUTH), and the name `agentlens` is already taken on npm by an unrelated package, so publishing would require renaming (e.g. `@edgeorgie/agentlens`). Installing from GitHub works today: `npm install github:edgeorgie/agentlens`.",
+        "Version 0.1.0, 0 stars, no known users — a tool built for the author's own use that has not been adopted by anyone.",
+      ],
+      source:
+        "Live GitHub repo (package.json, test run, Actions history) and a live HTTP check of the viewer, all read directly on 2026-10-11 — not from a secondary log.",
     },
   ];
 }
