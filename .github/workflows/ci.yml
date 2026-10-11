@@ -33,6 +33,25 @@ jobs:
       - name: Typecheck
         run: npx tsc --noEmit
 
+      # tsconfig.json's `include` is src/**/*.ts, because src/ is what the
+      # build emits to dist/. So the step above covers NONE of api/, tests/ or
+      # examples/, and `tsx` strips types without checking them, so the suite
+      # cannot notice either. Measured, not assumed: a type error planted in
+      # api/projects.ts left `tsc --noEmit` exit 0, `npm run build` exit 0 and
+      # the full suite green.
+      #
+      # api/ is the worst possible place for that blind spot, because those
+      # five files are not helpers — they ARE the deployed Vercel serverless
+      # functions (/api/ask, /api/mcp, /api/projects, /api/experience,
+      # /api/story). The production request handlers were the code this repo's
+      # CI checked least. tests/ and examples/ matter for a second reason:
+      # they hold the derived guards the README's claims rest on and the
+      # generator for the committed evidence transcripts.
+      #
+      # Same planted error against this config: exit 2.
+      - name: Typecheck api, tests and examples
+        run: npx tsc -p tsconfig.check.json
+
       - name: Build
         run: npm run build
 

@@ -1,0 +1,10 @@
+{
+  "//": "Typecheck config for everything the build does NOT compile. tsconfig.json's include is src/**/*.ts, because src/ is what `npm run build` emits to dist/. The unintended consequence: `tsc --noEmit` — CI's Typecheck step — covered NONE of api/, tests/ or examples/, and `tsx` strips types without checking them, so the suite could not notice either. That is not merely a hygiene gap in this repo: api/*.ts ARE the deployed Vercel serverless functions (/api/ask, /api/mcp, /api/projects, /api/experience, /api/story), so the production request handlers were the code CI checked least. Verified, not assumed: a type error planted in api/projects.ts left `tsc --noEmit` exit 0, `npm run build` exit 0, and the full suite green. Kept as a separate config rather than widening tsconfig.json's include, which would pull api/, tests/ and examples/ into the published dist/ output and change what `npm run build` emits.",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".",
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts", "api/**/*.ts", "tests/**/*.ts", "examples/**/*.ts"]
+}

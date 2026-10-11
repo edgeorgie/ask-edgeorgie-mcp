@@ -210,8 +210,11 @@ the compiled server from `dist/`, which doesn't exist until `pretest` builds it.
   `tests/rate-limit.test.ts` covers the
   per-caller window, the global ceiling and `Retry-After`;
   `tests/llm-prompt-injection.test.ts` covers prompt spotlighting and
-  delimiter-forgery sanitization of retrieved content.
-- The suite is **12 test files**. That sentence is the only count this README
+  delimiter-forgery sanitization of retrieved content;
+  `tests/typecheck-coverage.test.ts` asserts every tracked `.ts` file is
+  reached by one of the two tsconfigs, so a new directory of TypeScript
+  cannot arrive unchecked (see the typecheck note below).
+- The suite is **13 test files**. That sentence is the only count this README
   states, and [`tests/readme-test-claims.test.ts`](tests/readme-test-claims.test.ts)
   derives the number from the real suite and asserts it matches. The previous
   wording claimed "28/28 passing across six files" long after the suite had
@@ -225,9 +228,26 @@ the compiled server from `dist/`, which doesn't exist until `pretest` builds it.
   transcripts, so no count derived from source is exact, and the same guard
   fails if a total reappears in the prose. Run `npm test` for the real figure.
 - CI (`.github/workflows/ci.yml`) runs install → typecheck (`tsc --noEmit`) →
-  build → `npm test` on every push to `main` and every pull request, with no
-  secrets provided to any step, so the suite is held to passing in
-  deterministic mode on a clean checkout.
+  typecheck api/tests/examples (`tsc -p tsconfig.check.json`) → build →
+  `npm test` → production-dependency audit on every push to `main` and every
+  pull request, with no secrets provided to any step, so the suite is held to
+  passing in deterministic mode on a clean checkout.
+- **Why there are two typecheck steps, and why that is not redundant.**
+  `tsconfig.json`'s `include` is `src/**/*.ts`, because src/ is what the build
+  emits to `dist/`. A consequence nobody intended: `tsc --noEmit` covered none
+  of `api/`, `tests/` or `examples/`, and `tsx` strips types without checking
+  them, so the suite could not notice either. Measured rather than assumed — a
+  type error planted in `api/projects.ts` left `tsc --noEmit` at exit 0,
+  `npm run build` at exit 0 and the full suite green. `api/` is the worst place
+  for that: those five files are the deployed Vercel serverless functions, so
+  the production request handlers were the repo's least-checked code.
+  `tsconfig.check.json` extends the build config and adds all three
+  directories; the same planted error gives exit 2.
+  Its `include` is still a hand-maintained list, so
+  `tests/typecheck-coverage.test.ts` derives the real file set by walking the
+  repo from the root with an *exclusion* list and asserts every tracked `.ts`
+  file is matched by one of the two configs — a new source directory therefore
+  fails CI instead of arriving silently unchecked.
 - `examples/run-session.ts` is a standalone MCP client harness (same SDK
   `Client`, real stdio or real Streamable HTTP depending on args) that asks
   the real questions below and commits the literal transcript to
