@@ -186,12 +186,67 @@ interface Problem {
   message: string;
 }
 
-async function getJson(url: string): Promise<any> {
-  const res = await fetch(url, {
-    headers: { accept: "application/json", "user-agent": "ask-edgeorgie-mcp-metric-check" },
-  });
+/**
+ * Why api.github.com calls are AUTHENTICATED when a token is present.
+ *
+ * Unauthenticated, api.github.com allows 60 requests/hour **per source IP**,
+ * and GitHub-hosted runners share a NAT pool with every other job on the
+ * platform. The budget is therefore not this repo's to spend: a run can be
+ * refused having made no prior call of its own. Measured on a real PR
+ * (`dependabot/github_actions/actions/setup-node-7`, run 38188353650): this
+ * job exited 2 with
+ *
+ *     UNABLE TO CHECK — live sources unreachable:
+ *     https://api.github.com/repos/edgeorgie/crispy-profiling -> HTTP 403
+ *
+ * That exit code was CORRECT — "could not check" is not a pass, which is the
+ * property this script was built around. The defect is upstream of it: the
+ * check cannot answer its question on a shared IP, so it fails on a condition
+ * unrelated to the change under review. An alert that fires on something the
+ * reader cannot act on is noise, and noise on a freshness gate is worse than
+ * no gate, because a permanently-red check is one nobody reads.
+ *
+ * `GITHUB_TOKEN` raises the ceiling to 5,000/hour scoped to this repository's
+ * installation, and `permissions: contents: read` is all it needs. The token
+ * is optional on purpose: a local `npm run check:external` with no token in
+ * the environment still works against the unauthenticated budget, so the
+ * script is not CI-only.
+ *
+ * api.npmjs.org is deliberately NOT authenticated — it takes no credential and
+ * has no comparable per-IP limit.
+ */
+function githubHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    accept: "application/vnd.github+json",
+    "user-agent": "ask-edgeorgie-mcp-metric-check",
+    "x-github-api-version": "2022-11-28",
+  };
+  // GH_TOKEN as well as GITHUB_TOKEN: the former is what `gh` exports, so a
+  // local run inside an authenticated shell picks the higher limit up for free.
+  const token = process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN;
+  if (token) {
+    headers.authorization = `Bearer ${token}`;
+  }
+  return headers;
+}
+
+async function getJson(url: string, headers: Record<string, string>): Promise<any> {
+  const res = await fetch(url, { headers });
   if (!res.ok) {
-    throw new Error(`${url} -> HTTP ${res.status}`);
+    // Rate-limit refusals are reported as such rather than as a bare status.
+    // A 403 from api.github.com is overwhelmingly an exhausted budget, not a
+    // permissions problem, and the two want different responses from a reader:
+    // one is "wait or add a token", the other is "the claim is unverifiable".
+    const remaining = res.headers.get("x-ratelimit-remaining");
+    const detail =
+      remaining === "0"
+        ? ` (rate limit exhausted; x-ratelimit-limit=${res.headers.get("x-ratelimit-limit")}` +
+          `, resets at ${new Date(
+            Number(res.headers.get("x-ratelimit-reset") ?? 0) * 1000,
+          ).toISOString()}` +
+          `${headers.authorization ? "" : " — this request was UNAUTHENTICATED"})`
+        : "";
+    throw new Error(`${url} -> HTTP ${res.status}${detail}`);
   }
   return res.json();
 }
@@ -238,10 +293,14 @@ async function main(): Promise<number> {
   const repos = [...new Set(CLAIMS.map((c) => c.repo))];
   let npm: any;
   const ghByRepo = new Map<string, any>();
+  const ghHeaders = githubHeaders();
   try {
     const [npmRes, ...ghRes] = await Promise.all([
-      getJson(npmLifetimeUrl(PACKAGE)),
-      ...repos.map((r) => getJson(`https://api.github.com/repos/${r}`)),
+      getJson(npmLifetimeUrl(PACKAGE), {
+        accept: "application/json",
+        "user-agent": "ask-edgeorgie-mcp-metric-check",
+      }),
+      ...repos.map((r) => getJson(`https://api.github.com/repos/${r}`, ghHeaders)),
     ]);
     npm = npmRes;
     repos.forEach((r, i) => ghByRepo.set(r, ghRes[i]));

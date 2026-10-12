@@ -7,6 +7,40 @@ updates:
     groups:
       minor-and-patch:
         update-types: [minor, patch]
+
+    # WHY TWO PACKAGES ARE IGNORED
+    #
+    # `undici` and `@fastify/busboy` reach this repo only through
+    # `@vercel/node`, a devDependency consumed purely as a type (every
+    # reference in `api/` is `import type { VercelRequest, VercelResponse }`,
+    # erased by `tsc`, with Vercel supplying the real runtime). See the SCOPE
+    # comment in .github/workflows/ci.yml for the full dependency edges.
+    #
+    # Dependabot cannot patch either one. From its own updater log
+    # (run 38188304484):
+    #
+    #   "A patched version exists for undici, but the available update path
+    #    would downgrade @vercel/node from 23.0.1 to 3.0.1"
+    #
+    # with `"fix_available": false` and `"fix_updates": []`. So every attempt
+    # fails, and it attempted three times in twelve minutes — 6 of the first
+    # 8 "Dependabot Updates" runs on this repo were red, all of them these two
+    # packages. A security job that is permanently red is worse than none,
+    # because it buries the alert that is real: the next genuine advisory in
+    # the PRODUCTION tree arrives into a list the reader has learned to skip.
+    #
+    # Ignoring them is therefore the fix to the alert LOGIC, not a silencing
+    # of a live risk — the 12 open alerts behind these two packages are all
+    # `dependency.scope == "development"`, none in the deployed function, and
+    # `npm audit --omit=dev --audit-level=high` in CI still gates the tree that
+    # actually serves requests. The day `@vercel/node` ships a release carrying
+    # a patched `undici`, the normal weekly bump of `@vercel/node` itself picks
+    # it up: these ignores are scoped to the two transitive packages, NOT to
+    # their parent, so the real upgrade path stays open and unignored.
+    ignore:
+      - dependency-name: undici
+      - dependency-name: "@fastify/busboy"
+
   - package-ecosystem: github-actions
     directory: /
     schedule:
