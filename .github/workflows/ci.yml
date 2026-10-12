@@ -63,11 +63,10 @@ jobs:
       # a devDependency whose OUTPUT is the artifact. That class of build-time
       # supply-chain compromise is blind to this flag. What covers part of it:
       # `npm ci` pins every install to the committed lockfile, and
-      # `.github/dependabot.yml` keeps those pins under weekly review with
-      # repo-level vulnerability alerts enabled. Both only react to published
-      # advisories against known versions, so a package that is malicious
-      # before any advisory exists still gets in — that gap is narrowed here,
-      # not closed.
+      # `.github/dependabot.yml` keeps those pins under weekly review. Both only
+      # react to published advisories against known versions, so a package that
+      # is malicious before any advisory exists still gets in — that gap is
+      # narrowed here, not closed.
       #
       # The narrower claim this rests on is about the advisories actually
       # present. All of them resolve to one devDependency, `@vercel/node`:
