@@ -59,5 +59,15 @@ jobs:
       # because "could not check" and "nothing changed" are different states
       # and conflating them is how a risk gets marked cleared without ever
       # being measured.
+      #
+      # GITHUB_TOKEN is passed because api.github.com's UNAUTHENTICATED budget
+      # is 60 requests/hour per source IP, and GitHub-hosted runners share a
+      # NAT pool with the rest of the platform — so this job was being refused
+      # 403 having made no prior call of its own (run 38188353650). With the
+      # token the limit is 5,000/hour scoped to this repo's installation. No
+      # extra permission is needed beyond the `contents: read` declared above;
+      # the script treats the token as optional so a local run still works.
       - name: Check claims against live sources
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run check:external

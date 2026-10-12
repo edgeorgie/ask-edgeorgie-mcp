@@ -283,7 +283,7 @@ the compiled server from `dist/`, which doesn't exist until `pretest` builds it.
   not. It also fails if a mutation did not *apply* — a `sed` that silently
   matches nothing scores as a guard passing when the guard was never
   exercised, which is the same false comfort one level up.
-- The suite is **15 test files**. That sentence is the only count this README
+- The suite is **16 test files**. That sentence is the only count this README
   states, and [`tests/readme-test-claims.test.ts`](tests/readme-test-claims.test.ts)
   derives the number from the real suite and asserts it matches. The previous
   wording claimed "28/28 passing across six files" long after the suite had
