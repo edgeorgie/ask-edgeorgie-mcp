@@ -36,9 +36,13 @@
  *      against a server whose contract was laxer cannot pass.
  *
  * Regenerate with, from the repo root:
- *   npm run build
- *   node --import tsx examples/run-session.ts                                   # stdio
- *   node --import tsx examples/run-session.ts <deployed-url>/mcp examples/http-transcript.json
+ *   npm run regen:transcript        # stdio, against the local engine
+ *   npm run regen:transcript:http   # HTTP, against the DEPLOYED server
+ *
+ * The two are not interchangeable. The stdio transcript records this working
+ * tree; the HTTP one records whatever is live on Vercel, so running it before
+ * a push re-records the OLD figures. Order matters: push, wait for the deploy,
+ * then regenerate the HTTP transcript.
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";

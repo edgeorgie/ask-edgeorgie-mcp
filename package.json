@@ -16,7 +16,9 @@
     "dev:http": "tsx src/http-server.ts",
     "pretest": "npm run build",
     "test": "node --import tsx --test tests/*.test.ts",
-    "check:external": "node --import tsx scripts/check-external-metrics.ts"
+    "check:external": "node --import tsx scripts/check-external-metrics.ts",
+    "regen:transcript": "npm run build && node --import tsx examples/run-session.ts",
+    "regen:transcript:http": "npm run build && node --import tsx examples/run-session.ts https://ask-edgeorgie-mcp.vercel.app/mcp examples/http-transcript.json"
   },
   "repository": {
     "type": "git",
