@@ -120,7 +120,9 @@ export function createAskEdgeorgieServer(): McpServer {
         projects: z.array(
           z.object({
             name: z.string(),
-            repo: z.string(),
+            // Optional: omitted when the project has no PUBLIC repo. A private
+            // repo 404s unauthenticated, so a URL here would be a dead link.
+            repo: z.string().optional(),
             description: z.string(),
             realMetrics: z.array(z.string()),
             evidence: z.array(z.string()),
