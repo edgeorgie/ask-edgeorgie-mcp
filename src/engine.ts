@@ -113,7 +113,13 @@ export async function doGetExperience(): Promise<ExperienceResult> {
 
 export interface ProjectResult {
   name: string;
-  repo: string;
+  /**
+   * Public repo URL. OPTIONAL and omitted when no public repo exists: a
+   * private repo returns 404 unauthenticated, so emitting the URL anyway
+   * hands every caller a dead link and claims inspectable code that is not.
+   * When this is absent, `limitations` says why.
+   */
+  repo?: string;
   description: string;
   realMetrics: string[];
   evidence: string[];
@@ -254,7 +260,10 @@ export async function doGetProjects(): Promise<ProjectResult[]> {
     },
     {
       name: "simplescope",
-      repo: "https://github.com/edgeorgie/simplescope",
+      // No `repo` field: the GitHub repo is private and returns 404 to any
+      // unauthenticated reader. `evidence` already refused to list it for
+      // exactly this reason; emitting it here contradicted that decision and
+      // handed agents a dead link. `limitations` states the repo is private.
       description:
         "Interactive, visual, gamified platform for learning algorithms by watching real JavaScript run — not static diagrams. Built with Next.js (App Router) + TypeScript, Tailwind v4, shadcn/ui, MDX lessons; optional account/progress-sync via Better Auth + Drizzle on Neon Postgres, with the site fully functional with zero environment variables (progress falls back to browser localStorage) when accounts aren't configured.",
       realMetrics: [

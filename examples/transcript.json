@@ -1,6 +1,6 @@
 {
   "serverUrl": "stdio:dist/server.js",
-  "ranAt": "2026-10-15T12:02:11.526Z",
+  "ranAt": "2026-10-16T12:11:23.674Z",
   "list_tools": {
     "tools": [
       {
@@ -116,7 +116,6 @@
                 },
                 "required": [
                   "name",
-                  "repo",
                   "description",
                   "realMetrics",
                   "evidence",
@@ -464,7 +463,6 @@
         },
         {
           "name": "simplescope",
-          "repo": "https://github.com/edgeorgie/simplescope",
           "description": "Interactive, visual, gamified platform for learning algorithms by watching real JavaScript run — not static diagrams. Built with Next.js (App Router) + TypeScript, Tailwind v4, shadcn/ui, MDX lessons; optional account/progress-sync via Better Auth + Drizzle on Neon Postgres, with the site fully functional with zero environment variables (progress falls back to browser localStorage) when accounts aren't configured.",
           "realMetrics": [
             "Deployed live and publicly reachable: https://simplescope-one.vercel.app",
