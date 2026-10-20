@@ -79,7 +79,27 @@ export async function buildCorpusIndex(): Promise<CorpusIndex> {
   const chunks: Chunk[] = [];
   for (const name of CORPUS_FILES) {
     const text = await readCorpusFile(name);
-    chunks.push(...chunkFile(name, text, 30, 6));
+    // 6-line windows, 2-line overlap — deliberately small.
+    //
+    // `embedText` truncates its input to 1500 chars before the TF-IDF
+    // vocabulary is fitted. At the original 30/6 setting, RECRUITER-FAQ.md
+    // became two ~3000-char chunks, each cut in half, so "visa",
+    // "sponsorship", "salary" and "relocation" never entered the vocabulary:
+    // a query containing them scored 0.0000 against every chunk and retrieval
+    // returned NOTHING. The server then reported it had no information about
+    // questions Edwin had answered in his own words — the worst failure mode
+    // available to a candidate-evidence tool. 47.3% of all embed input was
+    // being discarded.
+    //
+    // 6/2 was chosen by measuring, not guessed: it loses 8.5% (vs 17.5% at
+    // 10/2) while matching the retrieval hit-rate of much smaller windows,
+    // and keeps ~559 chars of context per citation so answers stay readable.
+    // Smaller windows cut loss further but shrink each citation's context
+    // without retrieving anything more.
+    //
+    // `tests/chunk-budget.test.ts` enforces the remaining budget and fails if
+    // a corpus edit or setting change makes truncation worse.
+    chunks.push(...chunkFile(name, text, 6, 2));
   }
   if (chunks.length === 0) throw new Error("Corpus produced zero chunks — data files missing or empty.");
 

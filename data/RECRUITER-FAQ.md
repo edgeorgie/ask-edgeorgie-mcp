@@ -22,6 +22,35 @@ Negotiable — I'd rather discuss this directly in conversation than quote a fix
 
 Barranquilla, Colombia. Currently fully remote at Mercado Libre (since November 2022). Comfortable with remote-first roles; open to relocating as noted above.
 
+## What's your English level?
+
+Professional/fluent. I handle meetings, code review, technical interviews and written async communication in English without friction — my day-to-day at Mercado Libre is a LATAM-scale org where English is normal working language for documentation and cross-team work. Spanish is my native language.
+
+## What's your notice period / when could you start?
+
+30 days.
+
+## Have you been on call for production incidents?
+
+Yes — formal on-call rotation at Mercado Libre with real incidents, not just office-hours support. That's also where my SRE practice comes from: Kibana, New Relic, Datadog, Grafana, and working against defined SLA/SLI/SLOs rather than ad-hoc firefighting.
+
+## What's your experience with Kubernetes, Docker and infrastructure?
+
+Straight answer: Docker yes, Kubernetes not really. I'm comfortable with containers in my own workflow and projects. At Mercado Libre, deployment and orchestration run on internal platform tooling, so I consume that platform rather than designing or operating clusters myself — I'd be learning Kubernetes properly on the job, not arriving with production depth in it. My production depth is application-level: full-stack and cross-platform work, plus the reliability/observability side above.
+
+## What does "agent-native software" mean to you?
+
+<!-- DRAFT — Edwin to review and rewrite in his own words. Captured from a
+     voice note and reconstructed, so the phrasing is the assistant's, not
+     his. The substance (early adoption since the first capable models,
+     harness/control architecture, extracting maximum leverage) is his. -->
+
+Software designed so an agent is a first-class user, not a human-only UI with an API bolted on. Concretely, three things I keep coming back to:
+
+1. **The harness is the product.** The interesting engineering is rarely the prompt — it's the control architecture around the model: what tools exist, what the agent is allowed to do, how failures are caught, how output gets verified. I've been building that kind of scaffolding since capable models first shipped, both at Mercado Libre on production agent workflows and in my own projects.
+2. **Every claim an agent makes should be checkable.** That's why my projects return citations with exact file and line ranges instead of prose, and why `get_projects` ships a mandatory `limitations` field — an agent consuming it gets the caveats it could not infer, not just the highlights.
+3. **Dual-audience by default.** The same engine serves the MCP tool and the human web UI. If a capability only exists behind a chat box, it isn't agent-native; if it only exists in a UI, an agent can't use it at all.
+
 ## Do you have the agent/MCP projects (triage-desk, eval-lab, repoask-mcp, ask-edgeorgie-mcp, agentlens, crispy-profiling, simplescope) doing something besides AI/agents?
 
 Yes — my production experience at Mercado Libre is full-stack and cross-platform (web, mobile WebViews, smart TV receivers for LG/Samsung/Vidaa/TitanOS), with real SRE practice (Kibana/NewRelic/Datadog/Grafana, SLA/SLI/SLO) and Clean Architecture/DDD on legacy refactors — not just an AI-agent specialist footnote. The agent/MCP side projects are a deliberate specialty built on top of that general engineering foundation, not a replacement for it.
