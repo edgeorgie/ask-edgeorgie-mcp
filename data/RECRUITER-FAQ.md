@@ -40,16 +40,15 @@ Straight answer: Docker yes, Kubernetes not really. I'm comfortable with contain
 
 ## What does "agent-native software" mean to you?
 
-<!-- DRAFT — Edwin to review and rewrite in his own words. Captured from a
-     voice note and reconstructed, so the phrasing is the assistant's, not
-     his. The substance (early adoption since the first capable models,
-     harness/control architecture, extracting maximum leverage) is his. -->
+It means an agent is a real user of the thing, not an afterthought bolted onto a human UI. I've been building this way since the first models that were actually good enough to build on — at Mercado Libre on production agent workflows, and in my own projects to try things I couldn't try at work.
 
-Software designed so an agent is a first-class user, not a human-only UI with an API bolted on. Concretely, three things I keep coming back to:
+Three things I've landed on:
 
-1. **The harness is the product.** The interesting engineering is rarely the prompt — it's the control architecture around the model: what tools exist, what the agent is allowed to do, how failures are caught, how output gets verified. I've been building that kind of scaffolding since capable models first shipped, both at Mercado Libre on production agent workflows and in my own projects.
-2. **Every claim an agent makes should be checkable.** That's why my projects return citations with exact file and line ranges instead of prose, and why `get_projects` ships a mandatory `limitations` field — an agent consuming it gets the caveats it could not infer, not just the highlights.
-3. **Dual-audience by default.** The same engine serves the MCP tool and the human web UI. If a capability only exists behind a chat box, it isn't agent-native; if it only exists in a UI, an agent can't use it at all.
+**The harness matters more than the prompt.** Most of the real engineering is the control architecture around the model: which tools exist, what the agent is allowed to do, where failures get caught, how output gets verified before anyone trusts it. Prompts are the easy part, and the part people obsess over.
+
+**If an agent says something, you should be able to check it.** My retrieval tools hand back citations with exact file and line ranges instead of prose. `get_projects` has a required `limitations` field, so whoever calls it gets the caveats they couldn't have guessed — not a highlight reel. I'd rather ship a tool that admits what it doesn't know than one that just sounds confident.
+
+**One engine, two audiences.** The same code powers the MCP tool and the human web UI. If a capability only lives behind a chat box, it isn't agent-native. If it only lives in a UI, an agent can't touch it at all.
 
 ## Do you have the agent/MCP projects (triage-desk, eval-lab, repoask-mcp, ask-edgeorgie-mcp, agentlens, crispy-profiling, simplescope) doing something besides AI/agents?
 
