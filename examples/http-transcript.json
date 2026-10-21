@@ -1,6 +1,6 @@
 {
   "serverUrl": "https://ask-edgeorgie-mcp.vercel.app/mcp",
-  "ranAt": "2026-10-21T01:16:25.364Z",
+  "ranAt": "2026-10-21T01:27:10.545Z",
   "list_tools": {
     "tools": [
       {
@@ -511,12 +511,12 @@
       "content": [
         {
           "type": "text",
-          "text": "Edwin has built AI agent infrastructure at Mercado Libre in a production environment serving millions of users. Here's what he's delivered:\n\n**Agent Architecture & Workflows** [1][6]\nHe designed AI workflows and agent-based architectures, defining agent rules, skills, and orchestration across services. Using these agentic architectures, he delivered 10+ initiatives end-to-end solo, with 5 being directly monetizable, reaching 4M+ users across LATAM [6].\n\n**Production Scale** [6]\nOne feature shipped with these architectures reached 1.5M+ users with zero production incidents.\n\n**Agent Tooling (Side Projects)** [3][5]\nBeyond production work, he built **agentlens** — a zero-dependency tracing and waterfall visualizer for AI agent tool calls that tracks latency, tokens, cost, nesting, and errors. It uses only Node builtins (`node:async_hooks` and `node:crypto`) and has a live demo at https://agentlens-nine.vercel.app/ [3].\n\n**Foundation** [1]\nHis agent-focused work sits on top of a full-stack, cross-platform engineering foundation (web, mobile WebViews, smart TV receivers) with real SRE practice (Kibana, NewRelic, Datadog, Grafana, SLA/SLI/SLO) — not just an AI-agent specialist focus [1]."
+          "text": "Edwin has built AI agent infrastructure at Mercado Libre as part of his production work there (starting November 2022), though his focus has been on defining and orchestrating agent-based systems rather than building infrastructure from scratch.\n\n**Production agent work at Mercado Libre:**\nHe \"designed AI workflows and agent-based architectures, defining agent rules, skills, and orchestration across services\" [6]. Using these agent architectures, he delivered 10+ initiatives end-to-end, 5 of them directly monetizable, reaching 4M+ users across LATAM [6].\n\n**Side projects (agent infrastructure):**\nHis personal projects in this space include `triage-desk`, `eval-lab`, `repoask-mcp`, `ask-edgeorgie-mcp`, `agentlens`, `crispy-profiling`, and `simplescope` [1]. The most documented of these is **agentlens**, a \"zero-dependency tracing and waterfall visualizer for AI agent tool calls — latency, tokens, cost, nesting, errors\" [3]. It uses Node builtins (`async_hooks` for span tracing, `crypto`) with no runtime dependencies, is live at https://agentlens-nine.vercel.app/, and includes a demo tracing multi-step agent workflows with planned failure paths [3][4].\n\n**Important context:** Edwin emphasizes that his production foundation is **full-stack and cross-platform (web, mobile WebViews, smart TV)** with real SRE practice (monitoring, SLAs/SLIs/SLOs), and his agent/MCP projects are \"a deliberate specialty built on top of that general engineering foundation, not a replacement for it\" [3]."
         }
       ],
       "structuredContent": {
         "question": "What AI agent infrastructure has this person built in production?",
-        "answer": "Edwin has built AI agent infrastructure at Mercado Libre in a production environment serving millions of users. Here's what he's delivered:\n\n**Agent Architecture & Workflows** [1][6]\nHe designed AI workflows and agent-based architectures, defining agent rules, skills, and orchestration across services. Using these agentic architectures, he delivered 10+ initiatives end-to-end solo, with 5 being directly monetizable, reaching 4M+ users across LATAM [6].\n\n**Production Scale** [6]\nOne feature shipped with these architectures reached 1.5M+ users with zero production incidents.\n\n**Agent Tooling (Side Projects)** [3][5]\nBeyond production work, he built **agentlens** — a zero-dependency tracing and waterfall visualizer for AI agent tool calls that tracks latency, tokens, cost, nesting, and errors. It uses only Node builtins (`node:async_hooks` and `node:crypto`) and has a live demo at https://agentlens-nine.vercel.app/ [3].\n\n**Foundation** [1]\nHis agent-focused work sits on top of a full-stack, cross-platform engineering foundation (web, mobile WebViews, smart TV receivers) with real SRE practice (Kibana, NewRelic, Datadog, Grafana, SLA/SLI/SLO) — not just an AI-agent specialist focus [1].",
+        "answer": "Edwin has built AI agent infrastructure at Mercado Libre as part of his production work there (starting November 2022), though his focus has been on defining and orchestrating agent-based systems rather than building infrastructure from scratch.\n\n**Production agent work at Mercado Libre:**\nHe \"designed AI workflows and agent-based architectures, defining agent rules, skills, and orchestration across services\" [6]. Using these agent architectures, he delivered 10+ initiatives end-to-end, 5 of them directly monetizable, reaching 4M+ users across LATAM [6].\n\n**Side projects (agent infrastructure):**\nHis personal projects in this space include `triage-desk`, `eval-lab`, `repoask-mcp`, `ask-edgeorgie-mcp`, `agentlens`, `crispy-profiling`, and `simplescope` [1]. The most documented of these is **agentlens**, a \"zero-dependency tracing and waterfall visualizer for AI agent tool calls — latency, tokens, cost, nesting, errors\" [3]. It uses Node builtins (`async_hooks` for span tracing, `crypto`) with no runtime dependencies, is live at https://agentlens-nine.vercel.app/, and includes a demo tracing multi-step agent workflows with planned failure paths [3][4].\n\n**Important context:** Edwin emphasizes that his production foundation is **full-stack and cross-platform (web, mobile WebViews, smart TV)** with real SRE practice (monitoring, SLAs/SLIs/SLOs), and his agent/MCP projects are \"a deliberate specialty built on top of that general engineering foundation, not a replacement for it\" [3].",
         "answerMode": "llm",
         "llmKeyConfigured": true,
         "model": "claude-haiku-4-5",
@@ -524,25 +524,25 @@
           {
             "rank": 1,
             "source": "RECRUITER-FAQ.md",
-            "startLine": 69,
-            "endLine": 76,
-            "score": 0.17,
+            "startLine": 79,
+            "endLine": 86,
+            "score": 0.171,
             "excerpt": "**One engine, two audiences.** The same code powers the MCP tool and the human web UI. If a capability only lives behind a chat box, it isn't agent-native. If it only lives in a UI, an agent can't touch it at all.\n\n## Do you have the agent/MCP projects (triage-desk, eval-lab, repoask-mcp, ask-edgeorgie-mcp, agentlens, crispy-profiling, simplescope) doing something besides AI/agents?\n\nYes — my production experience at Mercado Libre is full-stack and cross-platform (web, mobile WebViews, smart TV receivers for LG/Samsung/Vidaa/TitanOS), with real SRE practice (Kibana/NewRelic/Datadog/Grafana, SLA/SLI/SLO) and Clean Architecture/DDD on legacy refactors — not just an AI-agent specialist footnote. The agent/MCP side projects are a deliberate specialty built on top of that general engineering foundation, not a replacement for it.\n\n## What is agentlens, and what can't it do?"
           },
           {
             "rank": 2,
             "source": "RECRUITER-FAQ.md",
-            "startLine": 49,
-            "endLine": 60,
-            "score": 0.142,
+            "startLine": 59,
+            "endLine": 70,
+            "score": 0.143,
             "excerpt": "None. I haven't shipped Rust and I'm not going to claim otherwise. My depth is TypeScript/JavaScript, with production Kotlin and Swift at Mercado Libre that I picked up on the job — which is the honest evidence that I ramp on a new language when a role needs it.\n\n## Have you been on call for production incidents?\n\nYes — formal on-call rotation at Mercado Libre with real incidents, not just office-hours support. That's also where my SRE practice comes from: Kibana, New Relic, Datadog, Grafana, and working against defined SLA/SLI/SLOs rather than ad-hoc firefighting.\n\n## What's your experience with Kubernetes, Docker and infrastructure?\n\nStraight answer: Docker yes, Kubernetes not really. I'm comfortable with containers in my own workflow and projects. At Mercado Libre, deployment and orchestration run on internal platform tooling, so I consume that platform rather than designing or operating clusters myself — I'd be learning Kubernetes properly on the job, not arriving with production depth in it. My production depth is application-level: full-stack and cross-platform work, plus the reliability/observability side above.\n\n## What does \"agent-native software\" mean to you?"
           },
           {
             "rank": 3,
             "source": "RECRUITER-FAQ.md",
-            "startLine": 73,
-            "endLine": 78,
-            "score": 0.141,
+            "startLine": 83,
+            "endLine": 88,
+            "score": 0.142,
             "excerpt": "Yes — my production experience at Mercado Libre is full-stack and cross-platform (web, mobile WebViews, smart TV receivers for LG/Samsung/Vidaa/TitanOS), with real SRE practice (Kibana/NewRelic/Datadog/Grafana, SLA/SLI/SLO) and Clean Architecture/DDD on legacy refactors — not just an AI-agent specialist footnote. The agent/MCP side projects are a deliberate specialty built on top of that general engineering foundation, not a replacement for it.\n\n## What is agentlens, and what can't it do?\n\nagentlens (https://github.com/edgeorgie/agentlens) is my zero-dependency tracing and waterfall visualizer for AI agent tool calls — latency, tokens, cost, nesting, errors. Version 0.1.0, no runtime dependencies, just the Node builtins `node:async_hooks` (AsyncLocalStorage, which is how spans know their parent) and `node:crypto`, on Node 18+. 5/5 tests pass on a fresh clone, 6/6 GitHub Actions runs are green, and the viewer is live at https://agentlens-nine.vercel.app/. `npm run demo` traces a multi-step agent (plan -> search_docs -> read_doc x2 -> write_summary) with one read step failing on purpose so the error path is actually exercised."
           },
           {
@@ -566,7 +566,7 @@
             "source": "resume.txt",
             "startLine": 1,
             "endLine": 19,
-            "score": 0.082,
+            "score": 0.084,
             "excerpt": "Resume - Edwin Jorge.docx\nEdwin Jorge\n\nBarranquilla, Colombia | LinkedIn | Portfolio | ed.jorge1122@gmail.com\n\nSoftware Engineer focused on AI-enabled full-stack development with 5+ years of experience building scalable web platforms using TypeScript, React, Next.js, and Node.js. Dual degrees in Electronic Engineering and Software Development. Contributed to applications serving 4.3M+ users across LATAM, delivering high-performance and intelligent digital experiences.\n\nWORK EXPERIENCE\n\nMercado Libre            Remote\n\nSoftware Engineer          November 2022 – present\n\nDesigned AI workflows and agent-based architectures, defining agent rules, skills, and orchestration across services.\nUsing that agentic-architecture workflow, delivered 10+ initiatives end-to-end solo (100% individually owned), 5 of them directly monetizable and the rest product-improvement initiatives, together reaching 4M+ users across LATAM.\nLed those initiatives directly, owning scope, delivery, and cross-team coordination end-to-end.\nLed cross-platform initiatives (web, mobile, TV/Samsung/LG) using Spec-Driven Development and scalable frontend architecture.\nWorked across platforms beyond desktop web: mobile WebViews and AI-assisted native development for Android (Kotlin) and iOS (Swift).\nShipped a production feature used by 1.5M+ users, delivered in record time with zero production incidents."
           }
         ]
@@ -579,12 +579,12 @@
       "content": [
         {
           "type": "text",
-          "text": "That's subjective, but based on Edwin's own framing, **agentlens** [1][3] seems to be what he's most proud of recently. He describes it as solving a real pain point: \"when a multi-step agent run goes wrong, I couldn't see *where*. Which tool call was slow, which one threw, what was nested under what. So I wrote the smallest thing that would answer that.\"\n\nWhat makes it interesting technically is the constraint he chose: **zero dependencies** [1][3]. That's a deliberate design decision that forces elegant engineering rather than reaching for convenience libraries.\n\nMore broadly though, his philosophy on **agent-native software** [2] is what ties his work together — the idea that \"an agent is a real user of the thing, not an afterthought.\" He's built this way across multiple projects, emphasizing that **the harness (control architecture) matters more than the prompt** [2][6], and that tools should admit their limitations rather than just sound confident [6].\n\nIf you're evaluating him, the technical depth isn't in any single library — it's in how he thinks about the problem space (agents as first-class users, not an add-on) and how that shapes his shipping decisions."
+          "text": "That's subjective, but based on Edwin's own framing, **agentlens** stands out as solving a real pain point with elegant constraints [1][3]:\n\n> \"zero-dependency tracing + waterfall visualizer for AI agent tool calls: latency, tokens, cost, nesting, errors.\" It came out of a plain annoyance: when a multi-step agent run goes wrong, I couldn't see *where*. Which tool call was slow, which one threw, what was nested under what. So I wrote the smallest thing that would answer that.\n\nThe technical elegance is in the **zero-dependency** design — it's a tracer that doesn't bloat your dependencies while giving visibility into multi-step agent execution, which is genuinely hard to debug otherwise.\n\nThat said, **repoask-mcp** (a fresh MCP server built off an older RAG project) and the **triage-desk** webhook bot also show interesting engineering decisions, particularly around [2] Edwin's philosophy that \"the harness matters more than the prompt\" — the real work is the control architecture, not prompts.\n\nWhich resonates more likely depends on whether you care more about observability tooling, agent architecture, or automation."
         }
       ],
       "structuredContent": {
         "question": "What's the most technically interesting thing they shipped?",
-        "answer": "That's subjective, but based on Edwin's own framing, **agentlens** [1][3] seems to be what he's most proud of recently. He describes it as solving a real pain point: \"when a multi-step agent run goes wrong, I couldn't see *where*. Which tool call was slow, which one threw, what was nested under what. So I wrote the smallest thing that would answer that.\"\n\nWhat makes it interesting technically is the constraint he chose: **zero dependencies** [1][3]. That's a deliberate design decision that forces elegant engineering rather than reaching for convenience libraries.\n\nMore broadly though, his philosophy on **agent-native software** [2] is what ties his work together — the idea that \"an agent is a real user of the thing, not an afterthought.\" He's built this way across multiple projects, emphasizing that **the harness (control architecture) matters more than the prompt** [2][6], and that tools should admit their limitations rather than just sound confident [6].\n\nIf you're evaluating him, the technical depth isn't in any single library — it's in how he thinks about the problem space (agents as first-class users, not an add-on) and how that shapes his shipping decisions.",
+        "answer": "That's subjective, but based on Edwin's own framing, **agentlens** stands out as solving a real pain point with elegant constraints [1][3]:\n\n> \"zero-dependency tracing + waterfall visualizer for AI agent tool calls: latency, tokens, cost, nesting, errors.\" It came out of a plain annoyance: when a multi-step agent run goes wrong, I couldn't see *where*. Which tool call was slow, which one threw, what was nested under what. So I wrote the smallest thing that would answer that.\n\nThe technical elegance is in the **zero-dependency** design — it's a tracer that doesn't bloat your dependencies while giving visibility into multi-step agent execution, which is genuinely hard to debug otherwise.\n\nThat said, **repoask-mcp** (a fresh MCP server built off an older RAG project) and the **triage-desk** webhook bot also show interesting engineering decisions, particularly around [2] Edwin's philosophy that \"the harness matters more than the prompt\" — the real work is the control architecture, not prompts.\n\nWhich resonates more likely depends on whether you care more about observability tooling, agent architecture, or automation.",
         "answerMode": "llm",
         "llmKeyConfigured": true,
         "model": "claude-haiku-4-5",
@@ -594,14 +594,14 @@
             "source": "BUILD-LOG.md",
             "startLine": 35,
             "endLine": 36,
-            "score": 0.12,
+            "score": 0.119,
             "excerpt": "The newest of these is `agentlens` ([repo](https://github.com/edgeorgie/agentlens)) — \"zero-dependency tracing + waterfall visualizer for AI agent tool calls: latency, tokens, cost, nesting, errors.\" It came out of a plain annoyance: when a multi-step agent run goes wrong, I couldn't see *where*. Which tool call was slow, which one threw, what was nested under what. So I wrote the smallest thing that would answer that."
           },
           {
             "rank": 2,
             "source": "RECRUITER-FAQ.md",
-            "startLine": 57,
-            "endLine": 66,
+            "startLine": 67,
+            "endLine": 76,
             "score": 0.119,
             "excerpt": "Straight answer: Docker yes, Kubernetes not really. I'm comfortable with containers in my own workflow and projects. At Mercado Libre, deployment and orchestration run on internal platform tooling, so I consume that platform rather than designing or operating clusters myself — I'd be learning Kubernetes properly on the job, not arriving with production depth in it. My production depth is application-level: full-stack and cross-platform work, plus the reliability/observability side above.\n\n## What does \"agent-native software\" mean to you?\n\nIt means an agent is a real user of the thing, not an afterthought bolted onto a human UI. I've been building this way since the first models that were actually good enough to build on — at Mercado Libre on production agent workflows, and in my own projects to try things I couldn't try at work.\n\nThree things I've landed on:\n\n**The harness matters more than the prompt.** Most of the real engineering is the control architecture around the model: which tools exist, what the agent is allowed to do, where failures get caught, how output gets verified before anyone trusts it. Prompts are the easy part, and the part people obsess over."
           },
@@ -610,15 +610,15 @@
             "source": "BUILD-LOG.md",
             "startLine": 32,
             "endLine": 36,
-            "score": 0.111,
+            "score": 0.11,
             "excerpt": "## agentlens: tracing my own agents, with zero dependencies\n\nThe newest of these is `agentlens` ([repo](https://github.com/edgeorgie/agentlens)) — \"zero-dependency tracing + waterfall visualizer for AI agent tool calls: latency, tokens, cost, nesting, errors.\" It came out of a plain annoyance: when a multi-step agent run goes wrong, I couldn't see *where*. Which tool call was slow, which one threw, what was nested under what. So I wrote the smallest thing that would answer that."
           },
           {
             "rank": 4,
             "source": "RECRUITER-FAQ.md",
-            "startLine": 80,
-            "endLine": 90,
-            "score": 0.102,
+            "startLine": 90,
+            "endLine": 100,
+            "score": 0.103,
             "excerpt": "## What's your core technical stack, and how comfortable are you picking up a new one?\n\nJavaScript/TypeScript is my core expertise — that's where I'm deepest and fastest. I don't shy away from new stacks though: at Mercado Libre I did AI-assisted native development in Kotlin (Android) and Swift (iOS) alongside the web work, picking both up on the job rather than coming in already fluent. I'm self-taught by background — I hold an Electronic Engineering degree alongside Software Development, and most of what I know about AI/agentic systems specifically I taught myself outside of any formal course.\n\n## Do you design, or just build to someone else's design?\n\nBoth. UX and interaction design are something I actively work on, not just hand off — the projects I've shipped (this portfolio included) are my own design decisions, not a template. I care about how something feels to use, not just whether the API underneath is correct.\n\n## What do you do outside of work?"
           },
           {
@@ -632,8 +632,8 @@
           {
             "rank": 6,
             "source": "RECRUITER-FAQ.md",
-            "startLine": 65,
-            "endLine": 72,
+            "startLine": 75,
+            "endLine": 82,
             "score": 0.073,
             "excerpt": "**The harness matters more than the prompt.** Most of the real engineering is the control architecture around the model: which tools exist, what the agent is allowed to do, where failures get caught, how output gets verified before anyone trusts it. Prompts are the easy part, and the part people obsess over.\n\n**If an agent says something, you should be able to check it.** My retrieval tools hand back citations with exact file and line ranges instead of prose. `get_projects` has a required `limitations` field, so whoever calls it gets the caveats they couldn't have guessed — not a highlight reel. I'd rather ship a tool that admits what it doesn't know than one that just sounds confident.\n\n**One engine, two audiences.** The same code powers the MCP tool and the human web UI. If a capability only lives behind a chat box, it isn't agent-native. If it only lives in a UI, an agent can't touch it at all.\n\n## Do you have the agent/MCP projects (triage-desk, eval-lab, repoask-mcp, ask-edgeorgie-mcp, agentlens, crispy-profiling, simplescope) doing something besides AI/agents?"
           }
@@ -647,12 +647,12 @@
       "content": [
         {
           "type": "text",
-          "text": "Edwin benchmarked triage-desk's fallback heuristic (the code path that runs when no LLM key is configured) against 18 self-labeled synthetic issues across 3 runs. [2][3]\n\n**Measured accuracy:** 83.3% (15/18) on both `kind` and `priority` classification. [2][3]\n\n**Known failure modes:** [2][3]\n\n1. **Keyword ordering issue**: One issue titled \"...or a bug?\" was classified as a bug because the literal substring \"bug\" appears before the question-detection branch in the if/else chain — a rhetorical mention of the word outranks the actual question structure.\n\n2. **Brittle duplicate detection**: A paraphrased duplicate issue was missed entirely by the Jaccard token-overlap duplicate detector, while a near-verbatim duplicate was caught. The detector is brittle to rewording, not just noise-sensitive. (Duplicate detection showed 50% accuracy on n=2 cases.) [4]\n\nEdwin explicitly notes [2][3] that these are not \"needs more training data\" problems—they're fixable with \"a few lines of ordering and a weak similarity metric.\" He reports the number and failure modes as measured, not rounded up."
+          "text": "Edwin benchmarked triage-desk's heuristic fallback classifier (the code that runs when no LLM key is configured) against 18 self-labeled synthetic issues across 3 runs. [1][2]\n\n**Measured accuracy:** 83.3% (15/18) on both `kind` and `priority` classification. [2][3]\n\n**Known failure modes:** [2][3]\n\n1. **Keyword ordering issue**: An issue titled \"...or a bug?\" was misclassified as a bug because the substring \"bug\" appears earlier in the if/else chain than the question-detection branch, so a rhetorical mention of the word outranks actual question structure.\n\n2. **Brittle duplicate detection**: A paraphrased duplicate issue was missed entirely by the Jaccard token-overlap duplicate detector, while a near-verbatim duplicate was caught. The detector is brittle to rewording, not just noise-sensitive. (50% duplicate-detection accuracy on n=2.) [4]\n\n**Edwin's assessment:** [2][3] He notes this is not a \"needs more training data\" problem—it's fixable with \"a few lines of ordering and a weak similarity metric.\" The failure modes are reported as measured, not rounded up or obscured."
         }
       ],
       "structuredContent": {
         "question": "What is their measured accuracy on the triage bot and what are its known failure modes?",
-        "answer": "Edwin benchmarked triage-desk's fallback heuristic (the code path that runs when no LLM key is configured) against 18 self-labeled synthetic issues across 3 runs. [2][3]\n\n**Measured accuracy:** 83.3% (15/18) on both `kind` and `priority` classification. [2][3]\n\n**Known failure modes:** [2][3]\n\n1. **Keyword ordering issue**: One issue titled \"...or a bug?\" was classified as a bug because the literal substring \"bug\" appears before the question-detection branch in the if/else chain — a rhetorical mention of the word outranks the actual question structure.\n\n2. **Brittle duplicate detection**: A paraphrased duplicate issue was missed entirely by the Jaccard token-overlap duplicate detector, while a near-verbatim duplicate was caught. The detector is brittle to rewording, not just noise-sensitive. (Duplicate detection showed 50% accuracy on n=2 cases.) [4]\n\nEdwin explicitly notes [2][3] that these are not \"needs more training data\" problems—they're fixable with \"a few lines of ordering and a weak similarity metric.\" He reports the number and failure modes as measured, not rounded up.",
+        "answer": "Edwin benchmarked triage-desk's heuristic fallback classifier (the code that runs when no LLM key is configured) against 18 self-labeled synthetic issues across 3 runs. [1][2]\n\n**Measured accuracy:** 83.3% (15/18) on both `kind` and `priority` classification. [2][3]\n\n**Known failure modes:** [2][3]\n\n1. **Keyword ordering issue**: An issue titled \"...or a bug?\" was misclassified as a bug because the substring \"bug\" appears earlier in the if/else chain than the question-detection branch, so a rhetorical mention of the word outranks actual question structure.\n\n2. **Brittle duplicate detection**: A paraphrased duplicate issue was missed entirely by the Jaccard token-overlap duplicate detector, while a near-verbatim duplicate was caught. The detector is brittle to rewording, not just noise-sensitive. (50% duplicate-detection accuracy on n=2.) [4]\n\n**Edwin's assessment:** [2][3] He notes this is not a \"needs more training data\" problem—it's fixable with \"a few lines of ordering and a weak similarity metric.\" The failure modes are reported as measured, not rounded up or obscured.",
         "answerMode": "llm",
         "llmKeyConfigured": true,
         "model": "claude-haiku-4-5",
@@ -700,8 +700,8 @@
           {
             "rank": 6,
             "source": "RECRUITER-FAQ.md",
-            "startLine": 35,
-            "endLine": 44,
+            "startLine": 45,
+            "endLine": 54,
             "score": 0.097,
             "excerpt": "UTC-5 (Colombia, no daylight saving). That's full overlap with US East and a solid working overlap with the West Coast. I'm flexible on hours and happy to shift my day toward the team's timezone — I've worked remote-first since 2022, so async-heavy collaboration is normal for me, not an adjustment.\n\n## What's your biggest professional failure?\n\nThe first monetization feature I took to production at Mercado Libre. Monetization is about as unforgiving as scope gets — a bug there doesn't degrade an experience, it stops revenue — and mine had one. It blocked monetization for roughly two weeks before it was fully resolved. I diagnosed it and shipped the fix myself.\n\nWhat I took from it: on revenue-critical paths, \"it works in staging\" is not evidence. The failure mode wasn't in the happy path I'd tested, it was in a real-money edge case I hadn't thought to construct. It's a big part of why my side projects now lean so hard on measured evidence and mutation-tested guards rather than a passing demo — I'd rather find out from a test than from two weeks of lost revenue.\n\n## Have you fine-tuned an LLM, or do you use APIs?"
           }
