@@ -30,6 +30,24 @@ Professional/fluent. I handle meetings, code review, technical interviews and wr
 
 30 days.
 
+## What timezone are you in, and how much do you overlap with US teams?
+
+UTC-5 (Colombia, no daylight saving). That's full overlap with US East and a solid working overlap with the West Coast. I'm flexible on hours and happy to shift my day toward the team's timezone — I've worked remote-first since 2022, so async-heavy collaboration is normal for me, not an adjustment.
+
+## What's your biggest professional failure?
+
+The first monetization feature I took to production at Mercado Libre. Monetization is about as unforgiving as scope gets — a bug there doesn't degrade an experience, it stops revenue — and mine had one. It blocked monetization for roughly two weeks before it was fully resolved. I diagnosed it and shipped the fix myself.
+
+What I took from it: on revenue-critical paths, "it works in staging" is not evidence. The failure mode wasn't in the happy path I'd tested, it was in a real-money edge case I hadn't thought to construct. It's a big part of why my side projects now lean so hard on measured evidence and mutation-tested guards rather than a passing demo — I'd rather find out from a test than from two weeks of lost revenue.
+
+## Have you fine-tuned an LLM, or do you use APIs?
+
+APIs, prompting, RAG and evals — not fine-tuning. I want to be precise about that rather than let "AI engineer" imply model training: my depth is in the layer around the model. Retrieval and chunking (`repoask`, `repoask-mcp`, this server), eval harnesses that gate CI (`eval-lab`), tracing agent tool calls (`agentlens`), and cost-governed agent loops (`budget-keeper`). Fine-tuning is a gap I can state plainly; the harness engineering is where I've actually shipped.
+
+## What's your experience with Rust?
+
+None. I haven't shipped Rust and I'm not going to claim otherwise. My depth is TypeScript/JavaScript, with production Kotlin and Swift at Mercado Libre that I picked up on the job — which is the honest evidence that I ramp on a new language when a role needs it.
+
 ## Have you been on call for production incidents?
 
 Yes — formal on-call rotation at Mercado Libre with real incidents, not just office-hours support. That's also where my SRE practice comes from: Kibana, New Relic, Datadog, Grafana, and working against defined SLA/SLI/SLOs rather than ad-hoc firefighting.
