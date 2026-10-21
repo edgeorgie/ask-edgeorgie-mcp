@@ -1,6 +1,6 @@
 {
   "serverUrl": "https://ask-edgeorgie-mcp.vercel.app/mcp",
-  "ranAt": "2026-10-20T23:33:00.560Z",
+  "ranAt": "2026-10-21T01:16:25.364Z",
   "list_tools": {
     "tools": [
       {
@@ -511,12 +511,12 @@
       "content": [
         {
           "type": "text",
-          "text": "Edwin has built AI agent infrastructure in production at Mercado Libre since November 2022 [5]. Specifically, he [designed AI workflows and agent-based architectures, defining agent rules, skills, and orchestration across services][5].\n\nHis production agent work is grounded in full-stack, cross-platform engineering — web, mobile WebViews, and smart TV receivers (LG/Samsung/Vidaa/TitanOS) — combined with real SRE practice (Kibana/NewRelic/Datadog/Grafana, SLA/SLI/SLO) and Clean Architecture/DDD on legacy refactors [2]. This forms his foundation; the agent/MCP side projects are a deliberate specialty built on top of that [2].\n\nBeyond Mercado Libre, his open-source agent infrastructure includes [6]:\n\n- **agentlens** — a zero-dependency tracing and waterfall visualizer for AI agent tool calls that captures latency, tokens, cost, nesting, and errors. Version 0.1.0, built with Node 18+ builtins (`async_hooks`, `crypto`), with a live demo viewer [2].\n- Several other agent/MCP projects (triage-desk, eval-lab, repoask-mcp, ask-edgeorgie-mcp, crispy-profiling) designed as CLI/Action/MCP server/Agent Skill shapes, all centered on \"let an agent act instead of a human\" [6]."
+          "text": "Edwin has built AI agent infrastructure at Mercado Libre in a production environment serving millions of users. Here's what he's delivered:\n\n**Agent Architecture & Workflows** [1][6]\nHe designed AI workflows and agent-based architectures, defining agent rules, skills, and orchestration across services. Using these agentic architectures, he delivered 10+ initiatives end-to-end solo, with 5 being directly monetizable, reaching 4M+ users across LATAM [6].\n\n**Production Scale** [6]\nOne feature shipped with these architectures reached 1.5M+ users with zero production incidents.\n\n**Agent Tooling (Side Projects)** [3][5]\nBeyond production work, he built **agentlens** — a zero-dependency tracing and waterfall visualizer for AI agent tool calls that tracks latency, tokens, cost, nesting, and errors. It uses only Node builtins (`node:async_hooks` and `node:crypto`) and has a live demo at https://agentlens-nine.vercel.app/ [3].\n\n**Foundation** [1]\nHis agent-focused work sits on top of a full-stack, cross-platform engineering foundation (web, mobile WebViews, smart TV receivers) with real SRE practice (Kibana, NewRelic, Datadog, Grafana, SLA/SLI/SLO) — not just an AI-agent specialist focus [1]."
         }
       ],
       "structuredContent": {
         "question": "What AI agent infrastructure has this person built in production?",
-        "answer": "Edwin has built AI agent infrastructure in production at Mercado Libre since November 2022 [5]. Specifically, he [designed AI workflows and agent-based architectures, defining agent rules, skills, and orchestration across services][5].\n\nHis production agent work is grounded in full-stack, cross-platform engineering — web, mobile WebViews, and smart TV receivers (LG/Samsung/Vidaa/TitanOS) — combined with real SRE practice (Kibana/NewRelic/Datadog/Grafana, SLA/SLI/SLO) and Clean Architecture/DDD on legacy refactors [2]. This forms his foundation; the agent/MCP side projects are a deliberate specialty built on top of that [2].\n\nBeyond Mercado Libre, his open-source agent infrastructure includes [6]:\n\n- **agentlens** — a zero-dependency tracing and waterfall visualizer for AI agent tool calls that captures latency, tokens, cost, nesting, and errors. Version 0.1.0, built with Node 18+ builtins (`async_hooks`, `crypto`), with a live demo viewer [2].\n- Several other agent/MCP projects (triage-desk, eval-lab, repoask-mcp, ask-edgeorgie-mcp, crispy-profiling) designed as CLI/Action/MCP server/Agent Skill shapes, all centered on \"let an agent act instead of a human\" [6].",
+        "answer": "Edwin has built AI agent infrastructure at Mercado Libre in a production environment serving millions of users. Here's what he's delivered:\n\n**Agent Architecture & Workflows** [1][6]\nHe designed AI workflows and agent-based architectures, defining agent rules, skills, and orchestration across services. Using these agentic architectures, he delivered 10+ initiatives end-to-end solo, with 5 being directly monetizable, reaching 4M+ users across LATAM [6].\n\n**Production Scale** [6]\nOne feature shipped with these architectures reached 1.5M+ users with zero production incidents.\n\n**Agent Tooling (Side Projects)** [3][5]\nBeyond production work, he built **agentlens** — a zero-dependency tracing and waterfall visualizer for AI agent tool calls that tracks latency, tokens, cost, nesting, and errors. It uses only Node builtins (`node:async_hooks` and `node:crypto`) and has a live demo at https://agentlens-nine.vercel.app/ [3].\n\n**Foundation** [1]\nHis agent-focused work sits on top of a full-stack, cross-platform engineering foundation (web, mobile WebViews, smart TV receivers) with real SRE practice (Kibana, NewRelic, Datadog, Grafana, SLA/SLI/SLO) — not just an AI-agent specialist focus [1].",
         "answerMode": "llm",
         "llmKeyConfigured": true,
         "model": "claude-haiku-4-5",
@@ -524,50 +524,50 @@
           {
             "rank": 1,
             "source": "RECRUITER-FAQ.md",
-            "startLine": 51,
-            "endLine": 56,
-            "score": 0.171,
-            "excerpt": "**One engine, two audiences.** The same code powers the MCP tool and the human web UI. If a capability only lives behind a chat box, it isn't agent-native. If it only lives in a UI, an agent can't touch it at all.\n\n## Do you have the agent/MCP projects (triage-desk, eval-lab, repoask-mcp, ask-edgeorgie-mcp, agentlens, crispy-profiling, simplescope) doing something besides AI/agents?\n\nYes — my production experience at Mercado Libre is full-stack and cross-platform (web, mobile WebViews, smart TV receivers for LG/Samsung/Vidaa/TitanOS), with real SRE practice (Kibana/NewRelic/Datadog/Grafana, SLA/SLI/SLO) and Clean Architecture/DDD on legacy refactors — not just an AI-agent specialist footnote. The agent/MCP side projects are a deliberate specialty built on top of that general engineering foundation, not a replacement for it."
+            "startLine": 69,
+            "endLine": 76,
+            "score": 0.17,
+            "excerpt": "**One engine, two audiences.** The same code powers the MCP tool and the human web UI. If a capability only lives behind a chat box, it isn't agent-native. If it only lives in a UI, an agent can't touch it at all.\n\n## Do you have the agent/MCP projects (triage-desk, eval-lab, repoask-mcp, ask-edgeorgie-mcp, agentlens, crispy-profiling, simplescope) doing something besides AI/agents?\n\nYes — my production experience at Mercado Libre is full-stack and cross-platform (web, mobile WebViews, smart TV receivers for LG/Samsung/Vidaa/TitanOS), with real SRE practice (Kibana/NewRelic/Datadog/Grafana, SLA/SLI/SLO) and Clean Architecture/DDD on legacy refactors — not just an AI-agent specialist footnote. The agent/MCP side projects are a deliberate specialty built on top of that general engineering foundation, not a replacement for it.\n\n## What is agentlens, and what can't it do?"
           },
           {
             "rank": 2,
             "source": "RECRUITER-FAQ.md",
-            "startLine": 55,
+            "startLine": 49,
             "endLine": 60,
-            "score": 0.157,
-            "excerpt": "Yes — my production experience at Mercado Libre is full-stack and cross-platform (web, mobile WebViews, smart TV receivers for LG/Samsung/Vidaa/TitanOS), with real SRE practice (Kibana/NewRelic/Datadog/Grafana, SLA/SLI/SLO) and Clean Architecture/DDD on legacy refactors — not just an AI-agent specialist footnote. The agent/MCP side projects are a deliberate specialty built on top of that general engineering foundation, not a replacement for it.\n\n## What is agentlens, and what can't it do?\n\nagentlens (https://github.com/edgeorgie/agentlens) is my zero-dependency tracing and waterfall visualizer for AI agent tool calls — latency, tokens, cost, nesting, errors. Version 0.1.0, no runtime dependencies, just the Node builtins `node:async_hooks` (AsyncLocalStorage, which is how spans know their parent) and `node:crypto`, on Node 18+. 5/5 tests pass on a fresh clone, 6/6 GitHub Actions runs are green, and the viewer is live at https://agentlens-nine.vercel.app/. `npm run demo` traces a multi-step agent (plan -> search_docs -> read_doc x2 -> write_summary) with one read step failing on purpose so the error path is actually exercised."
+            "score": 0.142,
+            "excerpt": "None. I haven't shipped Rust and I'm not going to claim otherwise. My depth is TypeScript/JavaScript, with production Kotlin and Swift at Mercado Libre that I picked up on the job — which is the honest evidence that I ramp on a new language when a role needs it.\n\n## Have you been on call for production incidents?\n\nYes — formal on-call rotation at Mercado Libre with real incidents, not just office-hours support. That's also where my SRE practice comes from: Kibana, New Relic, Datadog, Grafana, and working against defined SLA/SLI/SLOs rather than ad-hoc firefighting.\n\n## What's your experience with Kubernetes, Docker and infrastructure?\n\nStraight answer: Docker yes, Kubernetes not really. I'm comfortable with containers in my own workflow and projects. At Mercado Libre, deployment and orchestration run on internal platform tooling, so I consume that platform rather than designing or operating clusters myself — I'd be learning Kubernetes properly on the job, not arriving with production depth in it. My production depth is application-level: full-stack and cross-platform work, plus the reliability/observability side above.\n\n## What does \"agent-native software\" mean to you?"
           },
           {
             "rank": 3,
             "source": "RECRUITER-FAQ.md",
-            "startLine": 39,
-            "endLine": 44,
+            "startLine": 73,
+            "endLine": 78,
             "score": 0.141,
-            "excerpt": "Straight answer: Docker yes, Kubernetes not really. I'm comfortable with containers in my own workflow and projects. At Mercado Libre, deployment and orchestration run on internal platform tooling, so I consume that platform rather than designing or operating clusters myself — I'd be learning Kubernetes properly on the job, not arriving with production depth in it. My production depth is application-level: full-stack and cross-platform work, plus the reliability/observability side above.\n\n## What does \"agent-native software\" mean to you?\n\nIt means an agent is a real user of the thing, not an afterthought bolted onto a human UI. I've been building this way since the first models that were actually good enough to build on — at Mercado Libre on production agent workflows, and in my own projects to try things I couldn't try at work."
+            "excerpt": "Yes — my production experience at Mercado Libre is full-stack and cross-platform (web, mobile WebViews, smart TV receivers for LG/Samsung/Vidaa/TitanOS), with real SRE practice (Kibana/NewRelic/Datadog/Grafana, SLA/SLI/SLO) and Clean Architecture/DDD on legacy refactors — not just an AI-agent specialist footnote. The agent/MCP side projects are a deliberate specialty built on top of that general engineering foundation, not a replacement for it.\n\n## What is agentlens, and what can't it do?\n\nagentlens (https://github.com/edgeorgie/agentlens) is my zero-dependency tracing and waterfall visualizer for AI agent tool calls — latency, tokens, cost, nesting, errors. Version 0.1.0, no runtime dependencies, just the Node builtins `node:async_hooks` (AsyncLocalStorage, which is how spans know their parent) and `node:crypto`, on Node 18+. 5/5 tests pass on a fresh clone, 6/6 GitHub Actions runs are green, and the viewer is live at https://agentlens-nine.vercel.app/. `npm run demo` traces a multi-step agent (plan -> search_docs -> read_doc x2 -> write_summary) with one read step failing on purpose so the error path is actually exercised."
           },
           {
             "rank": 4,
-            "source": "resume.txt",
-            "startLine": 69,
-            "endLine": 74,
-            "score": 0.138,
-            "excerpt": "AI Engineering & Agentic Systems\n\nPrompt Engineering • LLM Integration (OpenAI, LLaMA, Local Models) • AI Agents • Agentic Workflows • Retrieval-Augmented Generation (RAG) • Embeddings • Context Engineering • AI-Assisted Development Workflows • AI Coding Tools (Claude Code, LLM-powered IDEs, CLI tooling)\n\nFrontend Engineering"
+            "source": "BUILD-LOG.md",
+            "startLine": 35,
+            "endLine": 36,
+            "score": 0.113,
+            "excerpt": "The newest of these is `agentlens` ([repo](https://github.com/edgeorgie/agentlens)) — \"zero-dependency tracing + waterfall visualizer for AI agent tool calls: latency, tokens, cost, nesting, errors.\" It came out of a plain annoyance: when a multi-step agent run goes wrong, I couldn't see *where*. Which tool call was slow, which one threw, what was nested under what. So I wrote the smallest thing that would answer that."
           },
           {
             "rank": 5,
-            "source": "resume.txt",
-            "startLine": 9,
-            "endLine": 14,
-            "score": 0.134,
-            "excerpt": "Mercado Libre            Remote\n\nSoftware Engineer          November 2022 – present\n\nDesigned AI workflows and agent-based architectures, defining agent rules, skills, and orchestration across services."
+            "source": "BUILD-LOG.md",
+            "startLine": 32,
+            "endLine": 36,
+            "score": 0.104,
+            "excerpt": "## agentlens: tracing my own agents, with zero dependencies\n\nThe newest of these is `agentlens` ([repo](https://github.com/edgeorgie/agentlens)) — \"zero-dependency tracing + waterfall visualizer for AI agent tool calls: latency, tokens, cost, nesting, errors.\" It came out of a plain annoyance: when a multi-step agent run goes wrong, I couldn't see *where*. Which tool call was slow, which one threw, what was nested under what. So I wrote the smallest thing that would answer that."
           },
           {
             "rank": 6,
-            "source": "BUILD-LOG.md",
-            "startLine": 57,
-            "endLine": 62,
-            "score": 0.107,
-            "excerpt": "CLI/Action/MCP server/Agent Skill, and a tracer for watching an agent's own\ntool calls are each a different shape of \"let an agent act instead of a\nhuman.\" simplescope is the deliberate exception — the human-facing one, kept\nin because shipping a UI people actually want to use is a separate skill from\nshipping an API an agent can drive, and I'd rather show both than claim only\none."
+            "source": "resume.txt",
+            "startLine": 1,
+            "endLine": 19,
+            "score": 0.082,
+            "excerpt": "Resume - Edwin Jorge.docx\nEdwin Jorge\n\nBarranquilla, Colombia | LinkedIn | Portfolio | ed.jorge1122@gmail.com\n\nSoftware Engineer focused on AI-enabled full-stack development with 5+ years of experience building scalable web platforms using TypeScript, React, Next.js, and Node.js. Dual degrees in Electronic Engineering and Software Development. Contributed to applications serving 4.3M+ users across LATAM, delivering high-performance and intelligent digital experiences.\n\nWORK EXPERIENCE\n\nMercado Libre            Remote\n\nSoftware Engineer          November 2022 – present\n\nDesigned AI workflows and agent-based architectures, defining agent rules, skills, and orchestration across services.\nUsing that agentic-architecture workflow, delivered 10+ initiatives end-to-end solo (100% individually owned), 5 of them directly monetizable and the rest product-improvement initiatives, together reaching 4M+ users across LATAM.\nLed those initiatives directly, owning scope, delivery, and cross-team coordination end-to-end.\nLed cross-platform initiatives (web, mobile, TV/Samsung/LG) using Spec-Driven Development and scalable frontend architecture.\nWorked across platforms beyond desktop web: mobile WebViews and AI-assisted native development for Android (Kotlin) and iOS (Swift).\nShipped a production feature used by 1.5M+ users, delivered in record time with zero production incidents."
           }
         ]
       }
@@ -579,63 +579,63 @@
       "content": [
         {
           "type": "text",
-          "text": "Based on Edwin's own work, **`agentlens`** stands out as particularly technically interesting [2].\n\nIt's a zero-dependency tracing and visualization tool for AI agent tool calls. What makes it technically notable:\n\n1. **Minimal dependencies** — only two Node builtins (`node:async_hooks` and `node:crypto`) on Node 18+ [2]\n\n2. **Clever use of AsyncLocalStorage** — this is doing the core engineering work: it lets spans track their own parent without threading context through every function signature, and prevents concurrent sibling spans from cross-contaminating each other's parent context [2]\n\n3. **Solves a real problem** — when multi-step agent runs fail, you can't see *where*. Edwin built the smallest thing that would actually answer that question [2]\n\n4. **Well-tested and shipped** — 5 tests, all passing on a fresh clone, including edge cases like nested spans, error handling, token/cost aggregation, and concurrent siblings [2]\n\nThe viewer is live at `https://agentlens-nine.vercel.app/` and `npm run demo` runs a deliberate failure case so the error path gets rendered [2].\n\nHowever, Edwin himself emphasizes a broader philosophy: **\"The harness matters more than the prompt.\"** Most of the real engineering in agent systems is the control architecture — which tools exist, what's allowed, where failures get caught, how output gets verified — not the prompts [1]."
+          "text": "That's subjective, but based on Edwin's own framing, **agentlens** [1][3] seems to be what he's most proud of recently. He describes it as solving a real pain point: \"when a multi-step agent run goes wrong, I couldn't see *where*. Which tool call was slow, which one threw, what was nested under what. So I wrote the smallest thing that would answer that.\"\n\nWhat makes it interesting technically is the constraint he chose: **zero dependencies** [1][3]. That's a deliberate design decision that forces elegant engineering rather than reaching for convenience libraries.\n\nMore broadly though, his philosophy on **agent-native software** [2] is what ties his work together — the idea that \"an agent is a real user of the thing, not an afterthought.\" He's built this way across multiple projects, emphasizing that **the harness (control architecture) matters more than the prompt** [2][6], and that tools should admit their limitations rather than just sound confident [6].\n\nIf you're evaluating him, the technical depth isn't in any single library — it's in how he thinks about the problem space (agents as first-class users, not an add-on) and how that shapes his shipping decisions."
         }
       ],
       "structuredContent": {
         "question": "What's the most technically interesting thing they shipped?",
-        "answer": "Based on Edwin's own work, **`agentlens`** stands out as particularly technically interesting [2].\n\nIt's a zero-dependency tracing and visualization tool for AI agent tool calls. What makes it technically notable:\n\n1. **Minimal dependencies** — only two Node builtins (`node:async_hooks` and `node:crypto`) on Node 18+ [2]\n\n2. **Clever use of AsyncLocalStorage** — this is doing the core engineering work: it lets spans track their own parent without threading context through every function signature, and prevents concurrent sibling spans from cross-contaminating each other's parent context [2]\n\n3. **Solves a real problem** — when multi-step agent runs fail, you can't see *where*. Edwin built the smallest thing that would actually answer that question [2]\n\n4. **Well-tested and shipped** — 5 tests, all passing on a fresh clone, including edge cases like nested spans, error handling, token/cost aggregation, and concurrent siblings [2]\n\nThe viewer is live at `https://agentlens-nine.vercel.app/` and `npm run demo` runs a deliberate failure case so the error path gets rendered [2].\n\nHowever, Edwin himself emphasizes a broader philosophy: **\"The harness matters more than the prompt.\"** Most of the real engineering in agent systems is the control architecture — which tools exist, what's allowed, where failures get caught, how output gets verified — not the prompts [1].",
+        "answer": "That's subjective, but based on Edwin's own framing, **agentlens** [1][3] seems to be what he's most proud of recently. He describes it as solving a real pain point: \"when a multi-step agent run goes wrong, I couldn't see *where*. Which tool call was slow, which one threw, what was nested under what. So I wrote the smallest thing that would answer that.\"\n\nWhat makes it interesting technically is the constraint he chose: **zero dependencies** [1][3]. That's a deliberate design decision that forces elegant engineering rather than reaching for convenience libraries.\n\nMore broadly though, his philosophy on **agent-native software** [2] is what ties his work together — the idea that \"an agent is a real user of the thing, not an afterthought.\" He's built this way across multiple projects, emphasizing that **the harness (control architecture) matters more than the prompt** [2][6], and that tools should admit their limitations rather than just sound confident [6].\n\nIf you're evaluating him, the technical depth isn't in any single library — it's in how he thinks about the problem space (agents as first-class users, not an add-on) and how that shapes his shipping decisions.",
         "answerMode": "llm",
         "llmKeyConfigured": true,
         "model": "claude-haiku-4-5",
         "citations": [
           {
             "rank": 1,
-            "source": "RECRUITER-FAQ.md",
-            "startLine": 43,
-            "endLine": 48,
-            "score": 0.143,
-            "excerpt": "It means an agent is a real user of the thing, not an afterthought bolted onto a human UI. I've been building this way since the first models that were actually good enough to build on — at Mercado Libre on production agent workflows, and in my own projects to try things I couldn't try at work.\n\nThree things I've landed on:\n\n**The harness matters more than the prompt.** Most of the real engineering is the control architecture around the model: which tools exist, what the agent is allowed to do, where failures get caught, how output gets verified before anyone trusts it. Prompts are the easy part, and the part people obsess over."
+            "source": "BUILD-LOG.md",
+            "startLine": 35,
+            "endLine": 36,
+            "score": 0.12,
+            "excerpt": "The newest of these is `agentlens` ([repo](https://github.com/edgeorgie/agentlens)) — \"zero-dependency tracing + waterfall visualizer for AI agent tool calls: latency, tokens, cost, nesting, errors.\" It came out of a plain annoyance: when a multi-step agent run goes wrong, I couldn't see *where*. Which tool call was slow, which one threw, what was nested under what. So I wrote the smallest thing that would answer that."
           },
           {
             "rank": 2,
-            "source": "BUILD-LOG.md",
-            "startLine": 35,
-            "endLine": 40,
-            "score": 0.102,
-            "excerpt": "The newest of these is `agentlens` ([repo](https://github.com/edgeorgie/agentlens)) — \"zero-dependency tracing + waterfall visualizer for AI agent tool calls: latency, tokens, cost, nesting, errors.\" It came out of a plain annoyance: when a multi-step agent run goes wrong, I couldn't see *where*. Which tool call was slow, which one threw, what was nested under what. So I wrote the smallest thing that would answer that.\n\nIt's version 0.1.0 and it has no runtime dependencies at all — only two Node builtins, `node:async_hooks` and `node:crypto`, on Node 18+. `AsyncLocalStorage` is doing the interesting work: it's what lets a span know its own parent without me threading a context object through every function signature, and it's what makes concurrent sibling spans not leak into each other's parent. There are 5 tests and all 5 pass on a fresh clone (`tests 5 / pass 5 / fail 0`): nested spans getting the right parent/child via AsyncLocalStorage, a span whose fn throws recording error status and message without losing the rest of the trace, token and cost fields summing into trace totals, concurrent siblings not cross-contaminating parent context, and `renderHtml` producing self-contained HTML with no external references. CI is 6 GitHub Actions runs, all 6 `success`. The viewer is live at `https://agentlens-nine.vercel.app/` (200). `npm run demo` runs a small multi-step agent — plan -> search_docs -> read_doc x2 -> write_summary — where one of the read steps deliberately fails, because an error path you've never rendered is an error path you don't know renders.\n\nTwo limitations. First: agentlens does not call any LLM API and does not know any provider's pricing. Tokens and cost are optional fields the caller sets themselves via `setAttrs({ tokensIn, tokensOut, costUsd, model })`, and agentlens only sums what it's told — the demo's token numbers are stubbed and labeled as demo values, specifically so the demo costs nothing and needs no API key. If you want real cost, you supply real cost. Second: it is not published on the npm registry. Two separate reasons, not one — there are no npm credentials in this build environment (`npm whoami` returns `ENEEDAUTH`), and independently of that the name `agentlens` is already taken on npm by an unrelated package, so publishing would mean renaming to something like `@edgeorgie/agentlens`. Installing from GitHub works today: `npm install github:edgeorgie/agentlens`. It has 0 stars and no users I know of; it's a tool I built for myself and it hasn't been adopted by anyone."
+            "source": "RECRUITER-FAQ.md",
+            "startLine": 57,
+            "endLine": 66,
+            "score": 0.119,
+            "excerpt": "Straight answer: Docker yes, Kubernetes not really. I'm comfortable with containers in my own workflow and projects. At Mercado Libre, deployment and orchestration run on internal platform tooling, so I consume that platform rather than designing or operating clusters myself — I'd be learning Kubernetes properly on the job, not arriving with production depth in it. My production depth is application-level: full-stack and cross-platform work, plus the reliability/observability side above.\n\n## What does \"agent-native software\" mean to you?\n\nIt means an agent is a real user of the thing, not an afterthought bolted onto a human UI. I've been building this way since the first models that were actually good enough to build on — at Mercado Libre on production agent workflows, and in my own projects to try things I couldn't try at work.\n\nThree things I've landed on:\n\n**The harness matters more than the prompt.** Most of the real engineering is the control architecture around the model: which tools exist, what the agent is allowed to do, where failures get caught, how output gets verified before anyone trusts it. Prompts are the easy part, and the part people obsess over."
           },
           {
             "rank": 3,
-            "source": "RECRUITER-FAQ.md",
-            "startLine": 65,
-            "endLine": 70,
-            "score": 0.098,
-            "excerpt": "JavaScript/TypeScript is my core expertise — that's where I'm deepest and fastest. I don't shy away from new stacks though: at Mercado Libre I did AI-assisted native development in Kotlin (Android) and Swift (iOS) alongside the web work, picking both up on the job rather than coming in already fluent. I'm self-taught by background — I hold an Electronic Engineering degree alongside Software Development, and most of what I know about AI/agentic systems specifically I taught myself outside of any formal course.\n\n## Do you design, or just build to someone else's design?\n\nBoth. UX and interaction design are something I actively work on, not just hand off — the projects I've shipped (this portfolio included) are my own design decisions, not a template. I care about how something feels to use, not just whether the API underneath is correct."
+            "source": "BUILD-LOG.md",
+            "startLine": 32,
+            "endLine": 36,
+            "score": 0.111,
+            "excerpt": "## agentlens: tracing my own agents, with zero dependencies\n\nThe newest of these is `agentlens` ([repo](https://github.com/edgeorgie/agentlens)) — \"zero-dependency tracing + waterfall visualizer for AI agent tool calls: latency, tokens, cost, nesting, errors.\" It came out of a plain annoyance: when a multi-step agent run goes wrong, I couldn't see *where*. Which tool call was slow, which one threw, what was nested under what. So I wrote the smallest thing that would answer that."
           },
           {
             "rank": 4,
-            "source": "BUILD-LOG.md",
-            "startLine": 1,
-            "endLine": 6,
-            "score": 0.091,
-            "excerpt": "# Build log: triage-desk, eval-lab, repoask-mcp, crispy-profiling, simplescope, agentlens\n\n*Posted 2026-10-09, updated 2026-10-11 (agentlens added, the repoask-mcp deployment section corrected once it actually shipped, and crispy-profiling + simplescope written up after my own MCP server reported it had no information about them). Working notes from converting side projects from \"demo I click through\" into \"thing an agent or CI pipeline actually drives.\" Writing this the way I'd want to read it — including the parts that didn't work on the first try.*\n\nI keep a progress log while I work (mostly for myself, partly so I don't quietly round a \"mostly works\" into a \"it works\"). This is the cleaned-up version of a few days from that log, covering the six things I've actually shipped: a webhook-triggered GitHub triage bot, an eval CLI/Action, a fresh MCP server built off an older RAG side project, a React re-render profiler published to npm, an interactive algorithms-learning site, and a tracer for watching my own agents run. I'm not going to pretend any of this went in a straight line."
+            "source": "RECRUITER-FAQ.md",
+            "startLine": 80,
+            "endLine": 90,
+            "score": 0.102,
+            "excerpt": "## What's your core technical stack, and how comfortable are you picking up a new one?\n\nJavaScript/TypeScript is my core expertise — that's where I'm deepest and fastest. I don't shy away from new stacks though: at Mercado Libre I did AI-assisted native development in Kotlin (Android) and Swift (iOS) alongside the web work, picking both up on the job rather than coming in already fluent. I'm self-taught by background — I hold an Electronic Engineering degree alongside Software Development, and most of what I know about AI/agentic systems specifically I taught myself outside of any formal course.\n\n## Do you design, or just build to someone else's design?\n\nBoth. UX and interaction design are something I actively work on, not just hand off — the projects I've shipped (this portfolio included) are my own design decisions, not a template. I care about how something feels to use, not just whether the API underneath is correct.\n\n## What do you do outside of work?"
           },
           {
             "rank": 5,
-            "source": "RECRUITER-FAQ.md",
-            "startLine": 61,
-            "endLine": 66,
-            "score": 0.086,
-            "excerpt": "What it can't do, stated upfront: it does not call any LLM API and doesn't know any provider's pricing — tokens and cost are optional fields you set yourself via `setAttrs({ tokensIn, tokensOut, costUsd, model })` and agentlens only sums what you tell it, so the demo's token numbers are stubbed demo values (that's deliberate, it keeps the demo free and key-less). It's also not on the npm registry: there are no npm credentials in my build environment (`npm whoami` returns ENEEDAUTH), and separately the name `agentlens` is already taken on npm by an unrelated package, so publishing means renaming to something like `@edgeorgie/agentlens`. `npm install github:edgeorgie/agentlens` works today. It has 0 stars and no users — I built it for my own debugging, not for an audience.\n\n## What's your core technical stack, and how comfortable are you picking up a new one?\n\nJavaScript/TypeScript is my core expertise — that's where I'm deepest and fastest. I don't shy away from new stacks though: at Mercado Libre I did AI-assisted native development in Kotlin (Android) and Swift (iOS) alongside the web work, picking both up on the job rather than coming in already fluent. I'm self-taught by background — I hold an Electronic Engineering degree alongside Software Development, and most of what I know about AI/agentic systems specifically I taught myself outside of any formal course."
+            "source": "BUILD-LOG.md",
+            "startLine": 1,
+            "endLine": 8,
+            "score": 0.08,
+            "excerpt": "# Build log: triage-desk, eval-lab, repoask-mcp, crispy-profiling, simplescope, agentlens\n\n*Posted 2026-10-09, updated 2026-10-11 (agentlens added, the repoask-mcp deployment section corrected once it actually shipped, and crispy-profiling + simplescope written up after my own MCP server reported it had no information about them). Working notes from converting side projects from \"demo I click through\" into \"thing an agent or CI pipeline actually drives.\" Writing this the way I'd want to read it — including the parts that didn't work on the first try.*\n\nI keep a progress log while I work (mostly for myself, partly so I don't quietly round a \"mostly works\" into a \"it works\"). This is the cleaned-up version of a few days from that log, covering the six things I've actually shipped: a webhook-triggered GitHub triage bot, an eval CLI/Action, a fresh MCP server built off an older RAG side project, a React re-render profiler published to npm, an interactive algorithms-learning site, and a tracer for watching my own agents run. I'm not going to pretend any of this went in a straight line.\n\n## Pinning repos doesn't have an API. At all."
           },
           {
             "rank": 6,
-            "source": "RELIABILITY-REPORT.md",
-            "startLine": 171,
-            "endLine": 176,
-            "score": 0.07,
-            "excerpt": "---\n\n## Summary\n\n| Artifact | What's measured | Real number | Caveat |\n|---|---|---|---|"
+            "source": "RECRUITER-FAQ.md",
+            "startLine": 65,
+            "endLine": 72,
+            "score": 0.073,
+            "excerpt": "**The harness matters more than the prompt.** Most of the real engineering is the control architecture around the model: which tools exist, what the agent is allowed to do, where failures get caught, how output gets verified before anyone trusts it. Prompts are the easy part, and the part people obsess over.\n\n**If an agent says something, you should be able to check it.** My retrieval tools hand back citations with exact file and line ranges instead of prose. `get_projects` has a required `limitations` field, so whoever calls it gets the caveats they couldn't have guessed — not a highlight reel. I'd rather ship a tool that admits what it doesn't know than one that just sounds confident.\n\n**One engine, two audiences.** The same code powers the MCP tool and the human web UI. If a capability only lives behind a chat box, it isn't agent-native. If it only lives in a UI, an agent can't touch it at all.\n\n## Do you have the agent/MCP projects (triage-desk, eval-lab, repoask-mcp, ask-edgeorgie-mcp, agentlens, crispy-profiling, simplescope) doing something besides AI/agents?"
           }
         ]
       }
@@ -647,12 +647,12 @@
       "content": [
         {
           "type": "text",
-          "text": "Edwin's triage-desk fallback heuristic (the code path that runs when no LLM key is configured) achieved **83.3% accuracy (15/18)** on both `kind` and `priority` classification against 18 synthetic issue test cases [4].\n\n**Known failure modes:**\n\n1. **Rhetorical mentions outrank structure:** An issue titled \"...or a bug?\" was classified as a bug because the literal substring \"bug\" appears before the question-detection branch in the if/else chain — the word match runs before checking actual question structure [4].\n\n2. **Brittleness to rewording:** The Jaccard token-overlap duplicate detector missed a paraphrased duplicate entirely, while catching a near-verbatim duplicate. The detector is sensitive to rewording, not just noise [4].\n\nEdwin characterizes these as \"a few lines of ordering and a weak similarity metric\" rather than fundamental data problems [4]. He notes the failure modes are worth fixing and explicitly reports \"the number and failure modes here are reported as measured, not rounded up\" [4]."
+          "text": "Edwin benchmarked triage-desk's fallback heuristic (the code path that runs when no LLM key is configured) against 18 self-labeled synthetic issues across 3 runs. [2][3]\n\n**Measured accuracy:** 83.3% (15/18) on both `kind` and `priority` classification. [2][3]\n\n**Known failure modes:** [2][3]\n\n1. **Keyword ordering issue**: One issue titled \"...or a bug?\" was classified as a bug because the literal substring \"bug\" appears before the question-detection branch in the if/else chain — a rhetorical mention of the word outranks the actual question structure.\n\n2. **Brittle duplicate detection**: A paraphrased duplicate issue was missed entirely by the Jaccard token-overlap duplicate detector, while a near-verbatim duplicate was caught. The detector is brittle to rewording, not just noise-sensitive. (Duplicate detection showed 50% accuracy on n=2 cases.) [4]\n\nEdwin explicitly notes [2][3] that these are not \"needs more training data\" problems—they're fixable with \"a few lines of ordering and a weak similarity metric.\" He reports the number and failure modes as measured, not rounded up."
         }
       ],
       "structuredContent": {
         "question": "What is their measured accuracy on the triage bot and what are its known failure modes?",
-        "answer": "Edwin's triage-desk fallback heuristic (the code path that runs when no LLM key is configured) achieved **83.3% accuracy (15/18)** on both `kind` and `priority` classification against 18 synthetic issue test cases [4].\n\n**Known failure modes:**\n\n1. **Rhetorical mentions outrank structure:** An issue titled \"...or a bug?\" was classified as a bug because the literal substring \"bug\" appears before the question-detection branch in the if/else chain — the word match runs before checking actual question structure [4].\n\n2. **Brittleness to rewording:** The Jaccard token-overlap duplicate detector missed a paraphrased duplicate entirely, while catching a near-verbatim duplicate. The detector is sensitive to rewording, not just noise [4].\n\nEdwin characterizes these as \"a few lines of ordering and a weak similarity metric\" rather than fundamental data problems [4]. He notes the failure modes are worth fixing and explicitly reports \"the number and failure modes here are reported as measured, not rounded up\" [4].",
+        "answer": "Edwin benchmarked triage-desk's fallback heuristic (the code path that runs when no LLM key is configured) against 18 self-labeled synthetic issues across 3 runs. [2][3]\n\n**Measured accuracy:** 83.3% (15/18) on both `kind` and `priority` classification. [2][3]\n\n**Known failure modes:** [2][3]\n\n1. **Keyword ordering issue**: One issue titled \"...or a bug?\" was classified as a bug because the literal substring \"bug\" appears before the question-detection branch in the if/else chain — a rhetorical mention of the word outranks the actual question structure.\n\n2. **Brittle duplicate detection**: A paraphrased duplicate issue was missed entirely by the Jaccard token-overlap duplicate detector, while a near-verbatim duplicate was caught. The detector is brittle to rewording, not just noise-sensitive. (Duplicate detection showed 50% accuracy on n=2 cases.) [4]\n\nEdwin explicitly notes [2][3] that these are not \"needs more training data\" problems—they're fixable with \"a few lines of ordering and a weak similarity metric.\" He reports the number and failure modes as measured, not rounded up.",
         "answerMode": "llm",
         "llmKeyConfigured": true,
         "model": "claude-haiku-4-5",
@@ -660,50 +660,50 @@
           {
             "rank": 1,
             "source": "RELIABILITY-REPORT.md",
-            "startLine": 74,
-            "endLine": 79,
-            "score": 0.246,
-            "excerpt": "---\n\n## 2. triage-desk — heuristic triage accuracy benchmark\n\n**What was run:** `lib/heuristic-triage.ts`'s `heuristicTriage()` function (the exact"
+            "startLine": 77,
+            "endLine": 98,
+            "score": 0.202,
+            "excerpt": "## 2. triage-desk — heuristic triage accuracy benchmark\n\n**What was run:** `lib/heuristic-triage.ts`'s `heuristicTriage()` function (the exact\ncode the production bot falls back to when no LLM key is configured — see\n`scripts/triage-bot.ts`), run directly in Node via a new local harness\n(`tests-local/benchmark-triage.mjs`), NOT via GitHub Actions, against 18 synthetic issue\nbodies spanning bug / feature / question / docs / support / duplicate cases.\n\n**Ground truth is self-labeled.** The expected kind/priority for each of the 18 cases was\nassigned by me, reading the heuristic's own keyword rules, not sourced from an external\ndataset or a third party's judgment. This measures internal consistency/predictability of\nthe heuristic against a human's best-effort labeling of realistic issue text — it is NOT\nan independently validated benchmark and should not be read as proof the heuristic matches\nreal-world maintainer judgment. Some cases were deliberately written to be ambiguous\n(e.g. \"Dashboard feels slow — not sure if this is a bug or just me\") specifically to find\nfailure modes rather than only confirm easy wins.\n\nRun 3 times to confirm the heuristic is deterministic (no randomness, so accuracy should\nbe identical run over run — this also sanity-checks the harness itself).\n\n### Results (3 runs, 18 cases each)"
           },
           {
             "rank": 2,
-            "source": "RELIABILITY-REPORT.md",
-            "startLine": 171,
-            "endLine": 176,
-            "score": 0.212,
-            "excerpt": "---\n\n## Summary\n\n| Artifact | What's measured | Real number | Caveat |\n|---|---|---|---|"
+            "source": "BUILD-LOG.md",
+            "startLine": 28,
+            "endLine": 34,
+            "score": 0.185,
+            "excerpt": "## The heuristic triage bot is 83.3% accurate, and I know exactly where it breaks\n\nThe last piece worth writing up: I benchmarked triage-desk's fallback heuristic (the path that runs when no LLM key is configured) against 18 self-labeled synthetic issues. 83.3% (15/18) on both `kind` and `priority` classification, same three misses for both since they're coupled. I expected something cleaner. The actual confusion matrix is more interesting than the number: one issue titled \"...or a bug?\" got classified as a bug purely because the literal substring \"bug\" appears before the question-detection branch runs in the if/else chain — a rhetorical mention of the word outranks the actual question structure. A paraphrased duplicate issue was missed entirely by the Jaccard token-overlap duplicate detector, while a near-verbatim duplicate was caught — the detector is brittle to rewording, not just noise-sensitive. None of this is a \"needs more training data\" problem, it's a few lines of ordering and a weak similarity metric. Worth fixing, but the number and failure modes here are reported as measured, not rounded up. ([ACCURACY.md](https://github.com/edgeorgie/triage-desk/blob/main/ACCURACY.md), [PR #28](https://github.com/edgeorgie/triage-desk/pull/28))\n\n## agentlens: tracing my own agents, with zero dependencies"
           },
           {
             "rank": 3,
-            "source": "RELIABILITY-REPORT.md",
-            "startLine": 78,
-            "endLine": 83,
-            "score": 0.21,
-            "excerpt": "**What was run:** `lib/heuristic-triage.ts`'s `heuristicTriage()` function (the exact\ncode the production bot falls back to when no LLM key is configured — see\n`scripts/triage-bot.ts`), run directly in Node via a new local harness\n(`tests-local/benchmark-triage.mjs`), NOT via GitHub Actions, against 18 synthetic issue\nbodies spanning bug / feature / question / docs / support / duplicate cases."
+            "source": "BUILD-LOG.md",
+            "startLine": 31,
+            "endLine": 34,
+            "score": 0.156,
+            "excerpt": "The last piece worth writing up: I benchmarked triage-desk's fallback heuristic (the path that runs when no LLM key is configured) against 18 self-labeled synthetic issues. 83.3% (15/18) on both `kind` and `priority` classification, same three misses for both since they're coupled. I expected something cleaner. The actual confusion matrix is more interesting than the number: one issue titled \"...or a bug?\" got classified as a bug purely because the literal substring \"bug\" appears before the question-detection branch runs in the if/else chain — a rhetorical mention of the word outranks the actual question structure. A paraphrased duplicate issue was missed entirely by the Jaccard token-overlap duplicate detector, while a near-verbatim duplicate was caught — the detector is brittle to rewording, not just noise-sensitive. None of this is a \"needs more training data\" problem, it's a few lines of ordering and a weak similarity metric. Worth fixing, but the number and failure modes here are reported as measured, not rounded up. ([ACCURACY.md](https://github.com/edgeorgie/triage-desk/blob/main/ACCURACY.md), [PR #28](https://github.com/edgeorgie/triage-desk/pull/28))\n\n## agentlens: tracing my own agents, with zero dependencies"
           },
           {
             "rank": 4,
-            "source": "BUILD-LOG.md",
-            "startLine": 31,
-            "endLine": 36,
-            "score": 0.142,
-            "excerpt": "The last piece worth writing up: I benchmarked triage-desk's fallback heuristic (the path that runs when no LLM key is configured) against 18 self-labeled synthetic issues. 83.3% (15/18) on both `kind` and `priority` classification, same three misses for both since they're coupled. I expected something cleaner. The actual confusion matrix is more interesting than the number: one issue titled \"...or a bug?\" got classified as a bug purely because the literal substring \"bug\" appears before the question-detection branch runs in the if/else chain — a rhetorical mention of the word outranks the actual question structure. A paraphrased duplicate issue was missed entirely by the Jaccard token-overlap duplicate detector, while a near-verbatim duplicate was caught — the detector is brittle to rewording, not just noise-sensitive. None of this is a \"needs more training data\" problem, it's a few lines of ordering and a weak similarity metric. Worth fixing, but the number and failure modes here are reported as measured, not rounded up. ([ACCURACY.md](https://github.com/edgeorgie/triage-desk/blob/main/ACCURACY.md), [PR #28](https://github.com/edgeorgie/triage-desk/pull/28))\n\n## agentlens: tracing my own agents, with zero dependencies\n\nThe newest of these is `agentlens` ([repo](https://github.com/edgeorgie/agentlens)) — \"zero-dependency tracing + waterfall visualizer for AI agent tool calls: latency, tokens, cost, nesting, errors.\" It came out of a plain annoyance: when a multi-step agent run goes wrong, I couldn't see *where*. Which tool call was slow, which one threw, what was nested under what. So I wrote the smallest thing that would answer that."
+            "source": "RELIABILITY-REPORT.md",
+            "startLine": 166,
+            "endLine": 186,
+            "score": 0.127,
+            "excerpt": "an ANTHROPIC_API_KEY/OPENAI_API_KEY not present in this environment).\n- Duplicate detection was only tested with 2 duplicate-intended cases; a 50% rate on n=2\n  is directionally informative (token overlap is brittle to paraphrasing) but not a\n  statistically solid estimate.\n\n---\n\n## Summary\n\n| Artifact | What's measured | Real number | Caveat |\n|---|---|---|---|\n| eval-lab | Offline demo-model matrix, 24 cells, 3 runs | 100% pass rate, 20.21ms avg/cell, $0 cost (no cost field wired into CLI) | Measures the eval engine's own correctness/stability, not a real LLM |\n| triage-desk | Heuristic triage, 18 self-labeled cases, 3 runs | 83.3% kind accuracy, 83.3% priority accuracy, 50% duplicate-detection (n=2), <0.3ms avg/case | Self-labeled ground truth, small sample, heuristic path only |\n\nNeither number is a sweeping reliability claim. eval-lab's 100% reflects a\ndeterministic offline stand-in behaving as designed, not a production LLM's accuracy.\ntriage-desk's 83.3% is a real, reproducible measurement of where a pure-heuristic\nclassifier breaks (keyword absence, keyword-in-rhetorical-question, paraphrased\nduplicates) — which is arguably more useful evidence of engineering judgment than a\nhigher, less-scrutinized number would have been."
           },
           {
             "rank": 5,
-            "source": "BUILD-LOG.md",
-            "startLine": 53,
-            "endLine": 58,
-            "score": 0.087,
-            "excerpt": "triage-desk, eval-lab, repoask-mcp, crispy-profiling, simplescope and\nagentlens come down to one idea I keep returning to: tools a model can drive\ndirectly, not just a human clicking a UI. A webhook-triggered triage bot, a\nCI-gating eval harness, an MCP server, a profiler that exposes itself as a\nCLI/Action/MCP server/Agent Skill, and a tracer for watching an agent's own\ntool calls are each a different shape of \"let an agent act instead of a"
+            "source": "RELIABILITY-REPORT.md",
+            "startLine": 56,
+            "endLine": 81,
+            "score": 0.125,
+            "excerpt": "and report consistent timings run over run) — it does NOT measure a real LLM's accuracy,\nsince no real LLM was called. That is the honest scope of what \"offline demo model\" means.\n\n**Reproduce:**\n```bash\ncd eval-lab/cli\nnode bin/eval-lab.mjs run --config examples/benchmark.config.json --out /tmp/run-1.json\nnode bin/eval-lab.mjs run --config examples/benchmark.config.json --out /tmp/run-2.json\nnode bin/eval-lab.mjs run --config examples/benchmark.config.json --out /tmp/run-3.json\n# Per-cell latency / pass counts are in each run-N.json's \"cells\" array (ms, pass fields).\n```\n\n### Limitations\n- Offline `demo` model only — zero real LLM calls, zero real API latency/cost. This is a\n  benchmark of the eval *engine*, not of any production LLM's reliability.\n- 12 cases / 2 variants is still small; it exercises the breadth of assertion types\n  (contains, not_contains, max_words, judge) but is not a statistically powered sample.\n- No cost field exists in the CLI's own output today (see above).\n\n---\n\n## 2. triage-desk — heuristic triage accuracy benchmark\n\n**What was run:** `lib/heuristic-triage.ts`'s `heuristicTriage()` function (the exact\ncode the production bot falls back to when no LLM key is configured — see\n`scripts/triage-bot.ts`), run directly in Node via a new local harness"
           },
           {
             "rank": 6,
-            "source": "BUILD-LOG.md",
-            "startLine": 65,
-            "endLine": 70,
-            "score": 0.078,
-            "excerpt": "Net state right now: triage-desk and eval-lab are both agent/CI-driven with\nrun evidence, cross-dogfooded (eval-lab gates triage-desk's own CI —\n[triage-desk PR #27](https://github.com/edgeorgie/triage-desk/pull/27)), and\nbenchmarked rather than just demoed. repoask-mcp works end-to-end over both\nstdio and HTTP, with an MCP-client transcript, and is now publicly deployed"
+            "source": "RECRUITER-FAQ.md",
+            "startLine": 35,
+            "endLine": 44,
+            "score": 0.097,
+            "excerpt": "UTC-5 (Colombia, no daylight saving). That's full overlap with US East and a solid working overlap with the West Coast. I'm flexible on hours and happy to shift my day toward the team's timezone — I've worked remote-first since 2022, so async-heavy collaboration is normal for me, not an adjustment.\n\n## What's your biggest professional failure?\n\nThe first monetization feature I took to production at Mercado Libre. Monetization is about as unforgiving as scope gets — a bug there doesn't degrade an experience, it stops revenue — and mine had one. It blocked monetization for roughly two weeks before it was fully resolved. I diagnosed it and shipped the fix myself.\n\nWhat I took from it: on revenue-critical paths, \"it works in staging\" is not evidence. The failure mode wasn't in the happy path I'd tested, it was in a real-money edge case I hadn't thought to construct. It's a big part of why my side projects now lean so hard on measured evidence and mutation-tested guards rather than a passing demo — I'd rather find out from a test than from two weeks of lost revenue.\n\n## Have you fine-tuned an LLM, or do you use APIs?"
           }
         ]
       }
