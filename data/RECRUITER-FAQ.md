@@ -30,6 +30,16 @@ Professional/fluent. I handle meetings, code review, technical interviews and wr
 
 30 days.
 
+## Have you led a team or mentored engineers?
+
+Two different things, and I'd rather separate them than blur them.
+
+Formal team leadership: yes, but not recently. As Head of Development and Design at University of Antioquia (July–December 2021) I led two development teams on a MERN stack, planned roadmaps, and ran sprint planning and task assignment under SCRUM.
+
+At Mercado Libre: I've led *initiatives*, not people. I've owned 10+ initiatives end-to-end — scope, delivery, and cross-team coordination — but I'm an individual contributor, not a manager, and nobody reports to me.
+
+So if the role needs someone who has managed a team at scale, that's a gap I'd be growing into. If it needs someone who can carry hard scope end-to-end and coordinate across teams to land it, that's what I've been doing.
+
 ## What timezone are you in, and how much do you overlap with US teams?
 
 UTC-5 (Colombia, no daylight saving). That's full overlap with US East and a solid working overlap with the West Coast. I'm flexible on hours and happy to shift my day toward the team's timezone — I've worked remote-first since 2022, so async-heavy collaboration is normal for me, not an adjustment.
