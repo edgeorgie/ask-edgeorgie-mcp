@@ -103,3 +103,44 @@ test("a question answered in the FAQ retrieves the FAQ", async () => {
     );
   }
 });
+
+test("a claim and the evidence that proves it land in the same chunk", async () => {
+  const { retrieveFromCorpus } = await import("../src/retrieval.js");
+  const index = await buildCorpusIndex();
+
+  // The regression this guards: at 6-line windows, BUILD-LOG.md split
+  // "triage-desk and eval-lab are both agent/CI-driven with" from the link to
+  // triage-desk PR #27 that substantiates it. The server then retrieved the
+  // claim, could not see the proof, and told a recruiter asking for evidence
+  // that it had none — while the evidence sat one chunk away.
+  const cites = retrieveFromCorpus(
+    index,
+    "Show me proof an AI agent actually drives one of his projects.",
+    6,
+  );
+  assert.ok(cites.length > 0, "retrieved nothing at all");
+  assert.ok(
+    cites.some((c) => /pull\/27/.test(c.excerpt)),
+    `no retrieved chunk contains the PR link that proves the claim; got:\n` +
+      cites.map((c) => `  ${c.source}:${c.startLine}-${c.endLine}`).join("\n"),
+  );
+});
+
+test("chunks are sized by character budget, not line count", async () => {
+  const index = await buildCorpusIndex();
+
+  // Guards the unit itself. Line-based windows are wrong for this corpus
+  // because average line length ranges from 54 to 205 chars across files, so
+  // one line count is too coarse for one file and too fine for another. If a
+  // future change reverts to line windows, chunk sizes diverge wildly again.
+  const sizes = index.chunks.map((c) => `${c.path}\n${c.text}`.length);
+  const oversized = sizes.filter((n) => n > EMBED_INPUT_CAP).length;
+
+  // Only genuinely unsplittable lines may exceed the cap. BUILD-LOG.md has
+  // exactly one such line (1820 chars); allow a little room, not a free pass.
+  assert.ok(
+    oversized <= 2,
+    `${oversized} chunks exceed the ${EMBED_INPUT_CAP}-char cap; only lines too long ` +
+      `to split should. Sizes: ${sizes.filter((n) => n > EMBED_INPUT_CAP).join(", ")}`,
+  );
+});
