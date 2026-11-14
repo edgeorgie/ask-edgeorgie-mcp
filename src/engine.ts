@@ -35,7 +35,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildCorpusIndex } from "./corpus.js";
 import { retrieveFromCorpus, type Citation } from "./retrieval.js";
-import { synthesize, deterministicAnswer, hasLlmKey } from "./llm.js";
+import { synthesize, deterministicAnswer, hasLlmKey, SynthesisError, type SynthesisReason } from "./llm.js";
 import { checkQuestionLength } from "./rate-limit.js";
 import type { Chunk } from "@edgeorgie/retrieval-core";
 
@@ -420,6 +420,12 @@ export interface AskResult {
   /** Whether any provider key is present, independent of whether the call worked. */
   llmKeyConfigured: boolean;
   model?: string;
+  /**
+   * Present only when answerMode is "synthesis-failed": why, as an enum
+   * (auth | rate_limited | timeout | network | provider_error | empty_response).
+   * Never provider text — see src/llm/providers.ts.
+   */
+  fallbackReason?: SynthesisReason;
   citations: Citation[];
 }
 
@@ -446,6 +452,7 @@ export async function doAskAboutEdgeorgie(question: string, topK?: number): Prom
   let answer: string;
   let answerMode: "llm" | "deterministic" | "synthesis-failed";
   let model: string | undefined;
+  let fallbackReason: SynthesisReason | undefined;
   try {
     const synth = await synthesize(question, "Edwin Jorge (edgeorgie) — candidate corpus", chunksForPrompt);
     if (synth) {
@@ -459,10 +466,14 @@ export async function doAskAboutEdgeorgie(question: string, topK?: number): Prom
     }
   } catch (err) {
     // A key was present (synthesize threw rather than returning null), so the
-    // failure cause is the provider/config, never a missing key.
-    answer = `LLM synthesis failed (${(err as Error).message}); falling back to citations.\n\n${deterministicAnswer(chunksForPrompt, "synthesis-failed")}`;
+    // failure cause is the provider/config, never a missing key. The answer
+    // body carries NO provider text: it once shipped the raw Anthropic 401
+    // body, request id included, to every visitor. The cause is the enum in
+    // `fallbackReason`; the detail is in the function log (src/llm.ts).
+    answer = deterministicAnswer(chunksForPrompt, "synthesis-failed");
     answerMode = "synthesis-failed";
+    fallbackReason = err instanceof SynthesisError ? err.reason : "provider_error";
   }
 
-  return { question, answer, answerMode, llmKeyConfigured, model, citations };
+  return { question, answer, answerMode, llmKeyConfigured, model, ...(fallbackReason ? { fallbackReason } : {}), citations };
 }

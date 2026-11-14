@@ -69,8 +69,8 @@ test("deterministicAnswer only claims a missing key when the key is actually mis
     /No LLM key configured/,
     "a synthesis failure must NOT be reported to the user as a missing key",
   );
-  assert.match(failed, /key IS configured/);
-  assert.match(failed, /provider\/configuration failure/);
+  assert.match(failed, /a model key is configured/);
+  assert.match(failed, /LLM synthesis is temporarily unavailable/);
   // The citations themselves survive in both modes.
   assert.match(failed, /resume\.txt \(lines 1-3\)/);
 });
@@ -80,6 +80,8 @@ test("with a key present but the provider failing, answerMode is synthesis-faile
     { ANTHROPIC_API_KEY: "sk-ant-not-a-working-key", OPENAI_API_KEY: undefined, ANTHROPIC_MODEL: "claude-haiku-4-5" },
     async () => {
       const realFetch = globalThis.fetch;
+      const realError = console.error;
+      console.error = () => {};
       globalThis.fetch = (async () => {
         throw new Error("Anthropic API error 400: workspace-id required for org-scoped key");
       }) as typeof fetch;
@@ -98,11 +100,12 @@ test("with a key present but the provider failing, answerMode is synthesis-faile
           /No LLM key configured/,
           "the answer body must not blame a missing key when a key is configured",
         );
-        assert.match(res.answer, /LLM synthesis failed/);
-        assert.match(res.answer, /key IS configured/);
+        assert.match(res.answer, /LLM synthesis is temporarily unavailable/);
+        assert.equal(res.fallbackReason, "network", "a fetch that throws is a transport failure");
         assert.ok(res.citations.length > 0, "citations are still returned on the failure path");
       } finally {
         globalThis.fetch = realFetch;
+        console.error = realError;
       }
     },
   );
@@ -115,6 +118,7 @@ test("with no key at all, answerMode is deterministic and llmKeyConfigured is fa
     assert.equal(res.answerMode, "deterministic");
     assert.equal(res.llmKeyConfigured, false);
     assert.match(res.answer, /No LLM key configured/);
+    assert.equal(res.fallbackReason, undefined, "fallbackReason only exists on the synthesis-failed path");
   });
 });
 

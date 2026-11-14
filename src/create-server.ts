@@ -18,6 +18,7 @@ import {
   type ProjectResult,
 } from "./engine.js";
 import { capture, questionAskedProperties } from "./analytics.js";
+import { SYNTHESIS_REASONS, type SynthesisReason } from "./llm.js";
 
 /**
  * Renders the `get_projects` text block from the engine's own project data.
@@ -203,7 +204,8 @@ export function createAskEdgeorgieServer(): McpServer {
         "a synthesized prose answer with inline [n] citations grounded strictly in the retrieved excerpts; " +
         "otherwise 'answer' is a deterministic citation dump and 'answerMode' is 'deterministic'. If a key is " +
         "set but the provider call fails, 'answerMode' is 'synthesis-failed' (not 'deterministic') and " +
-        "'llmKeyConfigured' is true, so the cause is never misreported as a missing key. Never " +
+        "'llmKeyConfigured' is true, so the cause is never misreported as a missing key; 'fallbackReason' then " +
+        "says why (auth, rate_limited, timeout, network, provider_error, empty_response). Never " +
         "answers beyond what's indexed — if nothing relevant is found, it says so rather than inventing " +
         "an answer.",
       inputSchema: {
@@ -216,6 +218,7 @@ export function createAskEdgeorgieServer(): McpServer {
         answerMode: z.enum(["llm", "deterministic", "synthesis-failed"]),
         llmKeyConfigured: z.boolean(),
         model: z.string().optional(),
+        fallbackReason: z.enum(SYNTHESIS_REASONS as [SynthesisReason, ...SynthesisReason[]]).optional(),
         citations: z.array(
           z.object({
             rank: z.number().int(),
