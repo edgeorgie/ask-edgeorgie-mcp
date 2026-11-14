@@ -28,7 +28,7 @@ rather than whatever a model happens to already know (or guess) about me.
 | `get_experience` | Returns my real work history straight from `resume.txt` — Mercado Libre, Vansa, Freelance — verbatim, no embellishment. |
 | `get_projects` | Returns the 6 real shipped artifacts ([triage-desk](https://github.com/edgeorgie/triage-desk), [eval-lab](https://github.com/edgeorgie/eval-lab), [repoask-mcp](https://github.com/edgeorgie/repoask-mcp), [crispy-profiling](https://github.com/edgeorgie/crispy-profiling), simplescope (no repo link — private), [agentlens](https://github.com/edgeorgie/agentlens)) with their real measured metrics and PR/commit/run URLs, plus a `limitations` array on any project with caveats a caller could not infer from its metrics (not on a registry, no adoption, a capability it deliberately lacks). |
 | `get_story` | Returns my background as a structured chronological timeline (year, label, detail) rather than prose, so a client can render it as a real timeline instead of a paragraph. Same beats as the portfolio's "Beyond the code" section, kept in sync deliberately. This one is editorial copy maintained in `src/engine.ts`, not retrieval — it returns no file+line citations, and its `source` field says so. Use `ask_about_edgeorgie` when you need a citation. |
-| `ask_about_edgeorgie` | Retrieval-based Q&A. TF-IDF search over a corpus built from `resume.txt`, `RELIABILITY-REPORT.md`, `BUILD-LOG.md` and `RECRUITER-FAQ.md` (public evidence only). Every answer cites the exact source file + line range it came from. If no LLM key is set, the response is a deterministic citation dump (no generation at all) and `answerMode` is `deterministic`; if `ANTHROPIC_API_KEY`/`OPENAI_API_KEY` is set, a model synthesizes prose but is instructed to ground every sentence in the retrieved excerpts and cite them inline — it never answers beyond what's indexed. If a key is set but the provider call fails, `answerMode` is `synthesis-failed` and `llmKeyConfigured` is `true`, so the fallback is never misreported as a missing key. |
+| `ask_about_edgeorgie` | Retrieval-based Q&A. TF-IDF search over a corpus built from `resume.txt`, `RELIABILITY-REPORT.md`, `BUILD-LOG.md` and `RECRUITER-FAQ.md` (public evidence only). Every answer cites the exact source file + line range it came from. If no LLM key is set, the response is a deterministic citation dump (no generation at all) and `answerMode` is `deterministic`; if `ANTHROPIC_API_KEY`/`OPENAI_API_KEY` is set, a model synthesizes prose but is instructed to ground every sentence in the retrieved excerpts and cite them inline — it never answers beyond what's indexed. If a key is set but the provider call fails, `answerMode` is `synthesis-failed`, `llmKeyConfigured` is `true` and `fallbackReason` names the cause (`auth`, `rate_limited`, `timeout`, `network`, `provider_error`, `empty_response`), so the fallback is never misreported as a missing key. The provider's own error text never appears in the response; it is written to the function log as one `[llm] <provider> <reason>: …` line. |
 
 ## Rate limiting
 
@@ -82,7 +82,7 @@ which is what CI asserts. Every variable below is optional.
 
 | Variable | Effect when set |
 |---|---|
-| `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` | Turns on LLM synthesis in `ask_about_edgeorgie` (`answerMode: "llm"`). Billed to the key's owner, so read "Rate limiting" above first. `ANTHROPIC_MODEL` / `OPENAI_MODEL` override the provider's default model; `ANTHROPIC_WORKSPACE_ID` is needed by org-scoped Anthropic keys. |
+| `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` | Turns on LLM synthesis in `ask_about_edgeorgie` (`answerMode: "llm"`). Billed to the key's owner, so read "Rate limiting" above first. `ANTHROPIC_MODEL` / `OPENAI_MODEL` override the provider's default model; `ANTHROPIC_WORKSPACE_ID` is needed by org-scoped Anthropic keys. With both keys set, OpenAI is tried when Anthropic fails. Each provider call times out after 9 s (`PROVIDER_TIMEOUT_MS`). A revoked or mistyped key shows up as `answerMode: "synthesis-failed"`, `fallbackReason: "auth"`; rotate it in the Vercel project and redeploy. |
 | `POSTHOG_KEY` | Turns on server-side product analytics (`src/analytics.ts`, via [posthog-node](https://github.com/PostHog/posthog-js/tree/main/packages/node)). Unset, the facade is a complete no-op: no client is created, no request leaves the function, nothing is logged. Set it in the Vercel project's environment variables to start recording. |
 | `PORT` | Listen port for the standalone Streamable HTTP server (`npm run start:http`); default 3000. Not used on Vercel. |
 
@@ -152,6 +152,11 @@ This reuses the exact working deployment shape already proven for
   call the exact same `src/engine.ts` functions the MCP tools call, so the
   human-facing web UI (`public/`) and the agent-facing MCP server are
   provably the same engine, not a parallel copy.
+- Optional answer synthesis behind one entry point, `src/llm.ts`, split by
+  concern: `src/llm/prompt.ts` (system prompt and prompt-injection
+  spotlighting), `src/llm/providers.ts` (Anthropic/OpenAI transport, timeout,
+  failure classification) and `src/llm/fallback.ts` (the citation-only answer
+  used when no model writes one).
 - Retrieval logic — chunking, TF-IDF embedding, cosine scoring, prompt/citation
   building — is imported from
   [`@edgeorgie/retrieval-core`](https://github.com/edgeorgie/retrieval-core),
@@ -242,6 +247,10 @@ the compiled server from `dist/`, which doesn't exist until `pretest` builds it.
   200/405 coverage; `tests/llm-fallback-cause.test.ts` pins "no LLM key
   configured" apart from "a key is configured but synthesis failed" in both
   the `answerMode` value and the user-visible answer text;
+  `tests/llm-providers.test.ts` replays the production 401 with a stubbed
+  fetch and asserts no provider text reaches `answer` (it goes to the
+  function log), plus the OpenAI fall-through, the per-call timeout and the
+  `fallbackReason` classification;
   `tests/rate-limit.test.ts` covers the
   per-caller window, the global ceiling and `Retry-After`;
   `tests/llm-prompt-injection.test.ts` covers prompt spotlighting and
@@ -283,7 +292,7 @@ the compiled server from `dist/`, which doesn't exist until `pretest` builds it.
   not. It also fails if a mutation did not *apply* — a `sed` that silently
   matches nothing scores as a guard passing when the guard was never
   exercised, which is the same false comfort one level up.
-- The suite is **18 test files**. That sentence is the only count this README
+- The suite is **19 test files**. That sentence is the only count this README
   states, and [`tests/readme-test-claims.test.ts`](tests/readme-test-claims.test.ts)
   derives the number from the real suite and asserts it matches. The previous
   wording claimed "28/28 passing across six files" long after the suite had
